@@ -1,0 +1,65 @@
+{% extends "admin/base.html" %}
+
+{% block title %}Add New Article - Admin Dashboard{% endblock %}
+
+{% block header_title %}Add New Article{% endblock %}
+
+{% block content %}
+<div class="container-fluid mt-4">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title">Create New Article</h5>
+                </div>
+                <div class="card-body">
+                    {% if error %}
+                    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                        {{ error }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                    {% endif %}
+
+                    <form method="POST" action="/admin/articles/add">
+                        <div class="mb-3">
+                            <label for="title" class="form-label">Title <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" id="title" name="title" value="" required>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="category_id" class="form-label">Category <span class="text-danger">*</span></label>
+                            <select class="form-select" id="category_id" name="category_id" required>
+                                <option value="">Select Category</option>
+                                {% for category in categories %}
+                                <option value="{{ category.id }}">{{ category.name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="content" class="form-label">Content <span class="text-danger">*</span></label>
+                            <textarea class="form-control" id="content" name="content" rows="10" required></textarea>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="featured_image" class="form-label">Featured Image URL</label>
+                            <input type="url" class="form-control" id="featured_image" name="featured_image" value="" placeholder="https://example.com/image.jpg">
+                            <div class="form-text">Leave empty if no featured image is needed</div>
+                        </div>
+                        
+                        <div class="mb-3 form-check">
+                            <input type="checkbox" class="form-check-input" id="published" name="published">
+                            <label class="form-check-label" for="published">Publish immediately</label>
+                        </div>
+                        
+                        <div class="d-flex justify-content-between">
+                            <a href="/admin/articles" class="btn btn-secondary">Cancel</a>
+                            <button type="submit" class="btn btn-primary">Save Article</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

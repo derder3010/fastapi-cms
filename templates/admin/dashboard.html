@@ -1,0 +1,128 @@
+{% extends "admin/base.html" %}
+
+{% block title %}Dashboard - FastAPI CMS{% endblock %}
+
+{% block header_title %}Dashboard{% endblock %}
+
+{% block content %}
+<div class="container-fluid mt-4">
+    <div class="row">
+        <div class="col-12">
+            <div class="alert alert-info">
+                <h4 class="alert-heading">Welcome, {{ user.username }}!</h4>
+                <p>Here's an overview of your CMS content.</p>
+            </div>
+        </div>
+    </div>
+    
+    <div class="row mt-3">
+        <div class="col-md-3 mb-4">
+            <div class="card h-100">
+                <div class="card-body text-center">
+                    <h5 class="card-title text-primary">
+                        <i class="bi bi-people fs-1 d-block mb-3"></i>
+                        Users
+                    </h5>
+                    <p class="card-text display-4">{{ users_count }}</p>
+                    <a href="/admin/users" class="btn btn-sm btn-outline-primary mt-2">Manage Users</a>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-3 mb-4">
+            <div class="card h-100">
+                <div class="card-body text-center">
+                    <h5 class="card-title text-success">
+                        <i class="bi bi-tags fs-1 d-block mb-3"></i>
+                        Categories
+                    </h5>
+                    <p class="card-text display-4">{{ categories_count }}</p>
+                    <a href="/admin/categories" class="btn btn-sm btn-outline-success mt-2">Manage Categories</a>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-3 mb-4">
+            <div class="card h-100">
+                <div class="card-body text-center">
+                    <h5 class="card-title text-info">
+                        <i class="bi bi-file-text fs-1 d-block mb-3"></i>
+                        Articles
+                    </h5>
+                    <p class="card-text display-4">{{ articles_count }}</p>
+                    <a href="/admin/articles" class="btn btn-sm btn-outline-info mt-2">Manage Articles</a>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-3 mb-4">
+            <div class="card h-100">
+                <div class="card-body text-center">
+                    <h5 class="card-title text-warning">
+                        <i class="bi bi-chat-left-text fs-1 d-block mb-3"></i>
+                        Comments
+                    </h5>
+                    <p class="card-text display-4">{{ comments_count }}</p>
+                    <a href="/admin/comments" class="btn btn-sm btn-outline-warning mt-2">Manage Comments</a>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="row mt-3">
+        <div class="col-md-6 mb-4">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="card-title mb-0">Recent Articles</h5>
+                    <a href="/admin/articles" class="btn btn-sm btn-primary">View All</a>
+                </div>
+                <div class="card-body">
+                    {% if recent_articles %}
+                    <div class="list-group">
+                        {% for article in recent_articles %}
+                        <a href="/admin/articles/{{ article.id }}/edit" class="list-group-item list-group-item-action">
+                            <div class="d-flex w-100 justify-content-between">
+                                <h6 class="mb-1">{{ article.title }}</h6>
+                                <small>{{ article.created_at.strftime('%Y-%m-%d') }}</small>
+                            </div>
+                            <p class="mb-1 text-truncate">{{ article.content }}</p>
+                            <small class="text-muted">By {{ article.author.username }} in {{ article.category.name }}</small>
+                        </a>
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                    <div class="alert alert-light mb-0">No articles yet. <a href="/admin/articles/add">Create your first article</a>.</div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-6 mb-4">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="card-title mb-0">Recent Comments</h5>
+                    <a href="/admin/comments" class="btn btn-sm btn-primary">View All</a>
+                </div>
+                <div class="card-body">
+                    {% if recent_comments %}
+                    <div class="list-group">
+                        {% for comment in recent_comments %}
+                        <a href="/admin/comments/{{ comment.id }}/edit" class="list-group-item list-group-item-action">
+                            <div class="d-flex w-100 justify-content-between">
+                                <h6 class="mb-1">On {{ comment.article.title }}</h6>
+                                <small>{{ comment.created_at.strftime('%Y-%m-%d') }}</small>
+                            </div>
+                            <p class="mb-1 text-truncate">{{ comment.content }}</p>
+                            <small class="text-muted">By {{ comment.author.username }}</small>
+                        </a>
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                    <div class="alert alert-light mb-0">No comments yet.</div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

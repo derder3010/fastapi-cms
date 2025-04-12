@@ -1,0 +1,17 @@
+services:
+  # Web service
+  - type: web
+    name: fastapi-cms
+    env: docker
+    region: ohio  # You can change this to a region closer to your users
+    plan: free
+    healthCheckPath: /
+    buildFilter:
+      paths:
+        - Dockerfile
+        - app/**
+        - templates/**
+        - requirements.txt
+    envVars:
+      - key: PYTHONUNBUFFERED
+        value: 1 
