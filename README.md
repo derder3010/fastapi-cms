@@ -1,268 +1,188 @@
 # FastAPI CMS
 
-A content management system (CMS) built with FastAPI, providing a modern admin interface for managing content with a clean and responsive UI.
+A modern, high-performance Content Management System built with FastAPI, SQLModel, and Pydantic.
 
 ## Features
 
-- User authentication with JWT
-- Role-based access control
-- Content management for articles, categories, and comments
-- Modern responsive admin dashboard built with Bootstrap 5
-- RESTful API for CRUD operations
-- SQLite database for simplicity (can be replaced with other databases)
-- Jinja2 templates for server-side rendering
-- Modular architecture with organized routers
-- Environment-based configuration using .env files
+- **API-first design**: RESTful API endpoints for all resources
+- **Admin Dashboard**: Intuitive web interface for content management
+- **Authentication**: JWT-based authentication system
+- **Content Management**: Articles, categories, tags, comments, and products
+- **Database**: SQLite by default, with support for PostgreSQL
+- **Docker Support**: Easy deployment using Docker
+- **Responsive Design**: Mobile-friendly admin interface
 
-## Requirements
+## Tech Stack
 
-- Python 3.8+
-- FastAPI
-- SQLModel (SQLAlchemy + Pydantic)
-- Bootstrap 5 (served via CDN)
-- Other dependencies listed in requirements.txt
+- **FastAPI**: High-performance Python web framework
+- **SQLModel**: SQL databases in Python with type checking
+- **Pydantic**: Data validation and settings management
+- **Jinja2**: Template engine for the admin interface
+- **JWT**: JSON Web Token for authentication
+- **Alembic**: Database migration tool
 
-## Installation
+## Application Structure
 
-1. Clone this repository:
+```
+fastapi-cms/
+├── alembic/           # Database migrations
+├── app/               # Main application
+│   ├── api/           # API endpoints
+│   ├── auth/          # Authentication
+│   ├── models.py      # SQLModel models
+│   ├── config.py      # Application settings
+│   ├── database.py    # Database connection
+│   ├── main.py        # Application entry point
+│   ├── routers/       # Admin panel routes
+│   └── utils/         # Utility functions
+├── media/             # User-uploaded files
+├── static/            # Static files (CSS, JS, etc.)
+├── templates/         # Jinja2 templates
+├── .env               # Environment variables
+├── .env.example       # Example environment file
+├── Dockerfile         # Docker configuration
+├── docker-entrypoint.sh # Docker entrypoint script
+├── requirements.txt   # Python dependencies
+└── alembic.ini        # Alembic configuration
+```
 
+## Models
+
+- **User**: Authentication and authorization
+- **Category**: Content categorization
+- **Article**: Main content type
+- **Comment**: User feedback on articles
+- **Tag**: Content tagging and filtering
+- **Product**: E-commerce product listings with external store links
+
+## Getting Started
+
+### Prerequisites
+
+- Python 3.10+
+- pip (Python package manager)
+
+### Installation
+
+1. Clone the repository:
+
+   ```bash
+   git clone https://github.com/yourusername/fastapi-cms.git
+   cd fastapi-cms
    ```
-   git clone <repository-url>
-   cd <repository-directory>
-   ```
 
-2. Create a virtual environment and activate it:
+2. Create a virtual environment:
 
-   ```
+   ```bash
    python -m venv .venv
    source .venv/bin/activate  # On Windows, use: .venv\Scripts\activate
    ```
 
-3. Install the dependencies:
+3. Install dependencies:
 
-   ```
+   ```bash
    pip install -r requirements.txt
    ```
 
-4. Configure your environment:
-   ```
-   # Copy the example .env file
+4. Create a `.env` file from the example:
+
+   ```bash
    cp .env.example .env
-   # Edit the .env file with your own settings
    ```
 
-## Running the Application
+5. Run the application:
 
-1. Start the application:
-
-   ```
-   fastapi dev app/main.py
+   ```bash
+   uvicorn app.main:app --reload
    ```
 
-   Or for production:
+6. Access the application:
+   - Admin interface: http://localhost:8000/admin
+   - API documentation: http://localhost:8000/docs
 
-   ```
-   fastapi run
-   ```
-
-2. Access the application:
-   - Home Page: [http://localhost:8000/](http://localhost:8000/)
-   - API Documentation: [http://localhost:8000/docs](http://localhost:8000/docs)
-   - Admin Interface: [http://localhost:8000/admin/login](http://localhost:8000/admin/login)
-
-## Default Admin User
-
-A default admin user is created automatically when you first run the application:
+### Default Admin Credentials
 
 - Username: `admin`
 - Password: `admin`
 
-Be sure to change these credentials in a production environment by modifying the .env file.
+> ⚠️ **Important**: Change the default admin credentials in production by setting `ADMIN_USERNAME`, `ADMIN_EMAIL`, and `ADMIN_PASSWORD` in your `.env` file.
 
-## Configuration
+## Docker Deployment
 
-The application uses a `.env` file to configure various settings. The following settings can be configured:
+1. Build the Docker image:
 
-```
-# App settings
-APP_NAME="FastAPI CMS"
-APP_DESCRIPTION="A Content Management System built with FastAPI"
-DEBUG=true
-ENV=development
+   ```bash
+   docker build -t fastapi-cms .
+   ```
 
-# Security settings
-JWT_SECRET_KEY="your-secret-key"
-JWT_ALGORITHM="HS256"
-JWT_ACCESS_TOKEN_EXPIRE_MINUTES=30
-
-# CORS settings
-CORS_ALLOW_ORIGINS_STR='["http://localhost:8000", "http://127.0.0.1:8000"]'
-
-# Database settings
-DATABASE_URL="sqlite:///db.sqlite3"
-
-# Admin user
-ADMIN_USERNAME="admin"
-ADMIN_EMAIL="admin@example.com"
-ADMIN_PASSWORD="admin"
-```
-
-For production deployments, you should change at least:
-
-- Set `DEBUG` to `false`
-- Set `ENV` to `production`
-- Generate a secure `JWT_SECRET_KEY`
-- Change the admin credentials
-
-## Project Structure
-
-- `app/`: Main application package
-  - `main.py`: FastAPI application entry point
-  - `models.py`: Database models using SQLModel
-  - `config.py`: Application configuration
-  - `database.py`: Database connection and session management
-  - `api/`: API router modules
-  - `auth/`: Authentication related modules
-  - `routers/`: Admin interface routers
-- `templates/`: Jinja2 templates
-  - `admin/`: Admin dashboard templates
-  - `index.html`: Homepage template
-- `static/`: Static files directory (CSS, JS, etc.)
-- `media/`: Media uploads directory
-- `.env`: Environment configuration
-- `requirements.txt`: Python dependencies
-
-## Admin Dashboard Features
-
-The admin dashboard provides a comprehensive interface for managing all aspects of your CMS:
-
-- **Dashboard**: Overview of site statistics and recent content
-- **Users Management**: Create, edit, and delete users with role assignment
-- **Categories Management**: Organize your content with categories
-- **Articles Management**: Create and manage articles with rich text content
-- **Comments Management**: Moderate user comments
+2. Run the container:
+   ```bash
+   docker run -p 8000:8000 -d fastapi-cms
+   ```
 
 ## API Endpoints
 
 ### Authentication
 
-- `POST /token`: Get JWT token
+- `POST /admin/login`: Login to get JWT token
+- `POST /admin/logout`: Logout and invalidate token
 
 ### Users
 
+- `GET /api/users/`: List all users
 - `POST /api/users/`: Create a new user
-- `GET /api/users/me`: Get current user info
+- `GET /api/users/{user_id}`: Get user details
+- `PUT /api/users/{user_id}`: Update user details
+- `DELETE /api/users/{user_id}`: Delete a user
 
 ### Categories
 
-- `POST /api/categories/`: Create a new category
 - `GET /api/categories/`: List all categories
-- `GET /api/categories/{category_id}`: Get a specific category
+- `POST /api/categories/`: Create a new category
+- `GET /api/categories/{category_id}`: Get category details
+- `PUT /api/categories/{category_id}`: Update category
+- `DELETE /api/categories/{category_id}`: Delete a category
 
 ### Articles
 
-- `POST /api/articles/`: Create a new article
 - `GET /api/articles/`: List all articles
-- `GET /api/articles/{article_id}`: Get a specific article
+- `POST /api/articles/`: Create a new article
+- `GET /api/articles/{article_id}`: Get article details
+- `PUT /api/articles/{article_id}`: Update article
+- `DELETE /api/articles/{article_id}`: Delete an article
 
 ### Comments
 
-- `POST /api/comments/`: Create a new comment
 - `GET /api/comments/`: List all comments
-- `GET /api/comments/{comment_id}`: Get a specific comment
+- `POST /api/comments/`: Create a new comment
+- `GET /api/comments/{comment_id}`: Get comment details
+- `PUT /api/comments/{comment_id}`: Update comment
+- `DELETE /api/comments/{comment_id}`: Delete a comment
 
-## Development
+### Tags
 
-To clear the database and start fresh:
+- `GET /api/tags/`: List all tags
+- `POST /api/tags/`: Create a new tag
+- `GET /api/tags/{tag_id}`: Get tag details
+- `PUT /api/tags/{tag_id}`: Update tag
+- `DELETE /api/tags/{tag_id}`: Delete a tag
 
-```
-rm -f db.sqlite3*
-```
+### Products
 
-The application will create a new database with the default admin user on startup.
+- `GET /api/products/`: List all products
+- `POST /api/products/`: Create a new product
+- `GET /api/products/{product_id}`: Get product details
+- `PUT /api/products/{product_id}`: Update product
+- `DELETE /api/products/{product_id}`: Delete a product
 
-## Database
+## API Documentation
 
-This application uses SQLModel (SQLAlchemy + Pydantic) for database models.
+The API documentation is automatically generated using Swagger UI and available at `/docs` endpoint.
 
-### Database Models
+## Contributing
 
-The application uses SQLModel to define models with the following structure:
-
-- User: Represents system users with authentication data
-- Category: Content categories for organizing articles
-- Article: The main content type with title, content, author relationship
-- Comment: User comments on articles
-
-Models are defined in `app/models.py`.
-
-### Database Migrations
-
-By default, the application creates all database tables on startup using SQLModel. If you need more sophisticated migrations, you can set up Alembic:
-
-1. Install Alembic:
-
-   ```bash
-   pip install alembic
-   ```
-
-2. Initialize Alembic:
-
-   ```bash
-   alembic init migrations
-   ```
-
-3. Configure Alembic to use your database by editing `alembic.ini` and `migrations/env.py`
-
-4. Create a migration:
-
-   ```bash
-   alembic revision --autogenerate -m "initial"
-   ```
-
-5. Run migrations:
-   ```bash
-   alembic upgrade head
-   ```
-
-The Docker setup includes support for running migrations via the entrypoint script.
-
-## Docker Deployment
-
-To run the application using Docker:
-
-```bash
-# Build the Docker image
-docker build -t fastapi-cms .
-
-# Run with default settings
-docker run -p 8000:8000 fastapi-cms
-
-# Or run with custom environment variables
-docker run -p 8000:8000 \
-  -e JWT_SECRET_KEY="your-secure-key" \
-  -e ADMIN_PASSWORD="secure-password" \
-  -e DEBUG=false \
-  -e ENV=production \
-  fastapi-cms
-```
-
-For persistent data, you can mount volumes:
-
-```bash
-docker run -p 8000:8000 \
-  -v ./data:/app/data \
-  -v ./static:/app/static \
-  -v ./media:/app/media \
-  fastapi-cms
-```
-
-The Docker entrypoint script (`docker-entrypoint.sh`) automatically:
-
-1. Creates necessary directories
-2. Can run database migrations before starting the app
-3. Starts the FastAPI application
+Contributions are welcome! Please feel free to submit a Pull Request.
 
 ## License
 
-MIT
+This project is licensed under the MIT License - see the LICENSE file for details.
