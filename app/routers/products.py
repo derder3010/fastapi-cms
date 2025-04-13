@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, Form, Request, UploadFile, File
 from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.templating import Jinja2Templates
-from sqlmodel import Session, select, func, or_
+from sqlmodel import Session, select, func, or_, delete
 import os
 from datetime import datetime
 import shutil
@@ -445,35 +445,69 @@ async def admin_delete_product(request: Request, product_id: int, db: Session = 
         # Get product
         product = db.get(Product, product_id)
         if not product:
-            return RedirectResponse(
-                url="/admin/products?message=Product not found",
-                status_code=303
-            )
+            return HTMLResponse("Product not found", status_code=404)
         
-        # Delete featured image if it exists
-        if product.featured_image:
-            image_path = os.path.join("media", product.featured_image)
-            if os.path.exists(image_path):
-                os.remove(image_path)
+        # Delete product-article links first
+        db.execute(delete(ProductArticleLink).where(ProductArticleLink.product_id == product_id))
+        db.commit()
+        
+        # Get product name before deletion for success message
+        product_name = product.name
         
         # Delete product
         db.delete(product)
         db.commit()
         
+        return RedirectResponse(url=f"/admin/products?message=Product '{product_name}' deleted successfully", status_code=303)
+    except Exception as e:
+        return HTMLResponse(f"Error: {str(e)}. <a href='/admin/products'>Try again</a>")
+
+@router.get("/delete-all", response_class=HTMLResponse)
+async def admin_delete_all_products_confirm(request: Request, db: Session = Depends(get_db)):
+    # Verify user is logged in and is an admin
+    user = await get_user_from_cookie(request, db)
+    if not user or not user.is_superuser:
+        return RedirectResponse(url="/admin/login", status_code=303)
+    
+    # Count products
+    product_count = db.execute(select(Product)).all()
+    count = len(product_count)
+    
+    # Render confirmation page
+    return templates.TemplateResponse(
+        "admin/confirm_delete_all.html",
+        {
+            "request": request,
+            "user": user,
+            "count": count,
+            "item_type": "products",
+            "back_url": "/admin/products",
+            "confirm_url": "/admin/products/delete-all-confirm"
+        }
+    )
+
+@router.get("/delete-all-confirm")
+async def admin_delete_all_products(request: Request, db: Session = Depends(get_db)):
+    # Verify user is logged in and is an admin
+    user = await get_user_from_cookie(request, db)
+    if not user or not user.is_superuser:
+        return RedirectResponse(url="/admin/login", status_code=303)
+    
+    try:
+        # Delete all product-article links first
+        db.execute(delete(ProductArticleLink))
+        db.commit()
+        
+        # Delete all products
+        db.execute(delete(Product))
+        db.commit()
+        
         return RedirectResponse(
-            url="/admin/products?message=Product deleted successfully",
+            url="/admin/products?message=All products have been deleted successfully",
             status_code=303
         )
     except Exception as e:
-        return templates.TemplateResponse(
-            "admin/products/list.html",
-            {
-                "request": request,
-                "user": user,
-                "products": db.execute(select(Product)).scalars().all(),
-                "error": f"Error deleting product: {str(e)}"
-            }
-        )
+        return HTMLResponse(f"Error deleting all products: {str(e)}. <a href='/admin/products'>Go back</a>", status_code=500)
 
 @router.get("/{product_id}/articles", response_class=HTMLResponse)
 async def admin_product_articles(request: Request, product_id: int, db: Session = Depends(get_db)):
