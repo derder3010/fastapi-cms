@@ -133,19 +133,26 @@ async def admin_products(
         )
 
 @router.get("/add", response_class=HTMLResponse)
-async def admin_add_product_form(request: Request, db: Session = Depends(get_db)):
+async def admin_add_product_form(request: Request, q: Optional[str] = None, db: Session = Depends(get_db)):
     # Verify user is logged in and is an admin
     user = await get_user_from_cookie(request, db)
     if not user or not user.is_superuser:
         return RedirectResponse(url="/admin/login", status_code=303)
     
-    # Get articles for selection
-    articles = db.execute(select(Article)).scalars().all()
+    # Get articles for selection, filtered if search query is provided
+    if q:
+        # Filter articles by title containing the search query
+        search_term = f"%{q}%"
+        articles_query = select(Article).where(Article.title.ilike(search_term))
+        articles = db.execute(articles_query).scalars().all()
+    else:
+        # Get all articles if no search query
+        articles = db.execute(select(Article)).scalars().all()
     
     # Render the add product form
     return templates.TemplateResponse(
         "admin/products/add.html",
-        {"request": request, "user": user, "articles": articles}
+        {"request": request, "user": user, "articles": articles, "search_query": q}
     )
 
 @router.post("/add")
@@ -247,7 +254,7 @@ async def admin_add_product(
         )
 
 @router.get("/{product_id}/edit", response_class=HTMLResponse)
-async def admin_edit_product_form(request: Request, product_id: int, db: Session = Depends(get_db)):
+async def admin_edit_product_form(request: Request, product_id: int, q: Optional[str] = None, db: Session = Depends(get_db)):
     # Verify user is logged in and is an admin
     user = await get_user_from_cookie(request, db)
     if not user or not user.is_superuser:
@@ -262,8 +269,15 @@ async def admin_edit_product_form(request: Request, product_id: int, db: Session
                 status_code=303
             )
         
-        # Get all articles
-        articles = db.execute(select(Article)).scalars().all()
+        # Get articles, filtered if search query is provided
+        if q:
+            # Filter articles by title containing the search query
+            search_term = f"%{q}%"
+            articles_query = select(Article).where(Article.title.ilike(search_term))
+            articles = db.execute(articles_query).scalars().all()
+        else:
+            # Get all articles if no search query
+            articles = db.execute(select(Article)).scalars().all()
         
         # Get the articles associated with this product
         associated_article_ids = [article.id for article in product.articles]
@@ -276,7 +290,8 @@ async def admin_edit_product_form(request: Request, product_id: int, db: Session
                 "user": user, 
                 "product": product,
                 "articles": articles,
-                "associated_article_ids": associated_article_ids
+                "associated_article_ids": associated_article_ids,
+                "search_query": q
             }
         )
     except Exception as e:
@@ -510,7 +525,12 @@ async def admin_delete_all_products(request: Request, db: Session = Depends(get_
         return HTMLResponse(f"Error deleting all products: {str(e)}. <a href='/admin/products'>Go back</a>", status_code=500)
 
 @router.get("/{product_id}/articles", response_class=HTMLResponse)
-async def admin_product_articles(request: Request, product_id: int, db: Session = Depends(get_db)):
+async def admin_product_articles(
+    request: Request, 
+    product_id: int, 
+    q: Optional[str] = None,
+    db: Session = Depends(get_db)
+):
     # Verify user is logged in and is an admin
     user = await get_user_from_cookie(request, db)
     if not user or not user.is_superuser:
@@ -525,8 +545,15 @@ async def admin_product_articles(request: Request, product_id: int, db: Session 
                 status_code=303
             )
         
-        # Get all articles
-        all_articles = db.execute(select(Article)).scalars().all()
+        # Get all articles, filtered by search query if provided
+        if q:
+            # Filter articles by title containing the search query
+            search_term = f"%{q}%"
+            articles_query = select(Article).where(Article.title.ilike(search_term))
+            all_articles = db.execute(articles_query).scalars().all()
+        else:
+            # Get all articles if no search query
+            all_articles = db.execute(select(Article)).scalars().all()
         
         # Get associated articles
         associated_articles = product.articles
@@ -538,7 +565,8 @@ async def admin_product_articles(request: Request, product_id: int, db: Session 
                 "user": user,
                 "product": product,
                 "associated_articles": associated_articles,
-                "all_articles": all_articles
+                "all_articles": all_articles,
+                "search_query": q
             }
         )
     except Exception as e:

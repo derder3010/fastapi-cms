@@ -73,6 +73,39 @@ product.name }}{% endblock %} {% block content %}
           <h6 class="m-0 font-weight-bold text-primary">Associated Articles</h6>
         </div>
         <div class="card-body">
+          <!-- Search form - moved outside the main form -->
+          <form
+            action="/admin/products/{{ product.id }}/articles"
+            method="get"
+            class="mb-3"
+          >
+            <div class="input-group">
+              <input
+                type="text"
+                id="article-search"
+                name="q"
+                class="form-control"
+                placeholder="Search articles by title..."
+                value="{{ search_query or '' }}"
+                aria-label="Search articles"
+              />
+              <div class="input-group-append">
+                <button class="btn btn-primary" type="submit">
+                  <i class="fas fa-search"></i> Search
+                </button>
+                {% if search_query %}
+                <a
+                  href="/admin/products/{{ product.id }}/articles"
+                  class="btn btn-outline-secondary"
+                >
+                  <i class="fas fa-times"></i> Clear
+                </a>
+                {% endif %}
+              </div>
+            </div>
+          </form>
+
+          <!-- Main product edit form -->
           <form
             action="/admin/products/{{ product.id }}/edit"
             method="post"
@@ -193,10 +226,23 @@ product.name }}{% endblock %} {% block content %}
 {% endblock %} {% block scripts %}
 <script>
   $(document).ready(function () {
+    // Initialize Select2 with search capabilities
     $(".select2").select2({
       placeholder: "Select articles to associate",
       width: "100%",
+      allowClear: true,
     });
+
+    // Prevent form submission when enter is pressed in the main form
+    // (but allow it in the search form)
+    $("form")
+      .not("[action$='/articles']")
+      .on("keydown", function (event) {
+        if (event.key === "Enter" && event.target.type !== "submit") {
+          event.preventDefault();
+          return false;
+        }
+      });
   });
 </script>
 {% endblock %}

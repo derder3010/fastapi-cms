@@ -1,6 +1,20 @@
 {% extends "admin/base.html" %} {% block title %}Add Product - FastAPI CMS{%
 endblock %} {% block header_title %}Add New Product{% endblock %} {% block
-content %}
+additional_css %}
+<!-- Ensure Toast UI Editor CSS is loaded -->
+<link
+  rel="stylesheet"
+  href="https://uicdn.toast.com/editor/latest/toastui-editor.min.css"
+/>
+<link
+  rel="stylesheet"
+  href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css"
+/>
+<link
+  rel="stylesheet"
+  href="https://cdn.jsdelivr.net/npm/select2-bootstrap-5-theme@1.3.0/dist/select2-bootstrap-5-theme.min.css"
+/>
+{% endblock %} {% block content %}
 <div class="container-fluid mt-4">
   <div class="row">
     <div class="col-12">
@@ -28,9 +42,16 @@ content %}
             action="/admin/products/add"
             method="post"
             enctype="multipart/form-data"
+            id="product-add-form"
           >
-            <div class="row">
-              <div class="col-md-6">
+            <!-- Make all sections vertical, full width -->
+
+            <!-- Basic Information -->
+            <div class="card mb-4">
+              <div class="card-header bg-light">
+                <h6 class="m-0 font-weight-bold">Basic Information</h6>
+              </div>
+              <div class="card-body">
                 <div class="mb-3">
                   <label for="name" class="form-label"
                     >Product Name <span class="text-danger">*</span></label
@@ -67,85 +88,98 @@ content %}
                     Will be generated from name if left empty.
                   </div>
                 </div>
+              </div>
+            </div>
 
+            <!-- Featured Image (moved below Basic Information) -->
+            <div class="card mb-4">
+              <div class="card-header bg-light">
+                <h6 class="m-0 font-weight-bold">Featured Image</h6>
+              </div>
+              <div class="card-body">
                 <div class="mb-3">
-                  <label for="description" class="form-label"
-                    >Description</label
-                  >
-                  <div id="editor"></div>
+                  <div class="form-check form-check-inline">
+                    <input
+                      class="form-check-input"
+                      type="radio"
+                      name="image_source"
+                      id="image_url_option"
+                      value="url"
+                      onclick="document.getElementById('url_input_section').classList.remove('d-none'); document.getElementById('file_upload_section').classList.add('d-none');"
+                    />
+                    <label class="form-check-label" for="image_url_option"
+                      >Use URL</label
+                    >
+                  </div>
+                  <div class="form-check form-check-inline">
+                    <input
+                      class="form-check-input"
+                      type="radio"
+                      name="image_source"
+                      id="image_upload_option"
+                      value="upload"
+                      checked
+                      onclick="document.getElementById('file_upload_section').classList.remove('d-none'); document.getElementById('url_input_section').classList.add('d-none');"
+                    />
+                    <label class="form-check-label" for="image_upload_option"
+                      >Upload File</label
+                    >
+                  </div>
+                </div>
+
+                <div id="url_input_section" class="mb-2 d-none">
                   <input
-                    type="hidden"
-                    name="description"
-                    id="description-input"
+                    type="url"
+                    class="form-control"
+                    id="featured_image_url"
+                    name="featured_image_url"
+                    value=""
+                    placeholder="https://example.com/image.jpg"
                   />
                 </div>
 
-                <div class="mb-3">
-                  <label for="featured_image" class="form-label"
-                    >Featured Image</label
-                  >
-                  <div class="card p-3">
-                    <div class="mb-3">
-                      <div class="form-check form-check-inline">
-                        <input
-                          class="form-check-input"
-                          type="radio"
-                          name="image_source"
-                          id="image_url_option"
-                          value="url"
-                        />
-                        <label class="form-check-label" for="image_url_option"
-                          >Use URL</label
-                        >
-                      </div>
-                      <div class="form-check form-check-inline">
-                        <input
-                          class="form-check-input"
-                          type="radio"
-                          name="image_source"
-                          id="image_upload_option"
-                          value="upload"
-                          checked
-                        />
-                        <label
-                          class="form-check-label"
-                          for="image_upload_option"
-                          >Upload File</label
-                        >
-                      </div>
-                    </div>
+                <div id="file_upload_section" class="mb-2">
+                  <input
+                    type="file"
+                    class="form-control"
+                    id="featured_image_file"
+                    name="featured_image"
+                    accept="image/*"
+                  />
+                </div>
 
-                    <div id="url_input_section" class="mb-2 d-none">
-                      <input
-                        type="url"
-                        class="form-control"
-                        id="featured_image_url"
-                        name="featured_image_url"
-                        value=""
-                        placeholder="https://example.com/image.jpg"
-                      />
-                    </div>
-
-                    <div id="file_upload_section" class="mb-2">
-                      <input
-                        type="file"
-                        class="form-control"
-                        id="featured_image_file"
-                        name="featured_image"
-                        accept="image/*"
-                      />
-                    </div>
-
-                    <div class="form-text mt-2">
-                      Choose an option above. You can either provide a URL to an
-                      online image or upload a local file.
-                    </div>
-                  </div>
+                <div class="form-text mt-2">
+                  Choose an option above. You can either provide a URL to an
+                  online image or upload a local file.
                 </div>
               </div>
+            </div>
 
-              <div class="col-md-6">
-                <h5 class="mb-3">Social Links</h5>
+            <!-- Description -->
+            <div class="card mb-4">
+              <div class="card-header bg-light">
+                <h6 class="m-0 font-weight-bold">Description</h6>
+              </div>
+              <div class="card-body">
+                <div id="editor" style="width: 100%; min-height: 500px"></div>
+                <input
+                  type="hidden"
+                  name="description"
+                  id="description-input"
+                />
+              </div>
+            </div>
+
+            <!-- Social Links -->
+            <div class="card mb-4">
+              <div class="card-header bg-light">
+                <h6 class="m-0 font-weight-bold">Social Links</h6>
+              </div>
+              <div class="card-body">
+                <p class="text-muted small mb-3">
+                  Add links to this product on e-commerce platforms or social
+                  media.
+                </p>
 
                 <div id="social-links-container">
                   <!-- Dynamic social links will be added here -->
@@ -177,299 +211,431 @@ content %}
                   </div>
                 </div>
 
-                <div class="mb-3">
+                <div class="mt-3">
                   <button
                     type="button"
                     id="add-social-link"
-                    class="btn btn-sm btn-secondary"
+                    class="btn btn-sm btn-outline-primary"
                   >
                     <i class="bi bi-plus-circle me-1"></i> Add Another Link
                   </button>
                 </div>
+              </div>
+            </div>
 
-                <!-- Hidden input to store the final JSON -->
-                <input type="hidden" id="social_links" name="social_links" />
+            <!-- Hidden input to store the final JSON -->
+            <input type="hidden" id="social_links" name="social_links" />
+
+            <!-- Associated Articles Card -->
+            <div class="card mb-4" id="articles-section">
+              <div class="card-header bg-light">
+                <h6 class="m-0 font-weight-bold">Associated Articles</h6>
+              </div>
+              <div class="card-body">
+                <p class="text-muted mb-3">
+                  Search for and select articles to associate with this product.
+                </p>
+
+                <select
+                  class="form-select select2"
+                  id="article_ids"
+                  name="article_ids"
+                  multiple
+                  data-placeholder="Select articles to associate"
+                >
+                  {% for article in articles %}
+                  <option value="{{ article.id }}">{{ article.title }}</option>
+                  {% endfor %}
+                </select>
+                <div class="form-text mt-2">
+                  <small
+                    >Select the articles that should be associated with this
+                    product. Use the search feature to quickly find
+                    articles.</small
+                  >
+                </div>
               </div>
             </div>
 
             <div class="d-flex justify-content-between mt-3">
-              <a href="/admin/products" class="btn btn-secondary">Cancel</a>
+              <a href="/admin/products" class="btn btn-secondary">
+                <i class="bi bi-arrow-left"></i> Back to Products
+              </a>
               <button type="submit" class="btn btn-primary">
-                Save Product
+                <i class="bi bi-save"></i> Save Product
               </button>
             </div>
           </form>
+
+          <!-- Hidden input in main form to store selected articles -->
+          <script>
+            document.addEventListener("DOMContentLoaded", function () {
+              const form = document.getElementById("product-add-form");
+              const hiddenInput = document.createElement("input");
+              hiddenInput.type = "hidden";
+              hiddenInput.name = "article_ids";
+              hiddenInput.id = "article_ids_hidden";
+              form.appendChild(hiddenInput);
+
+              // Add direct image toggle functionality here
+              const urlOption = document.getElementById("image_url_option");
+              const uploadOption = document.getElementById(
+                "image_upload_option"
+              );
+              const urlSection = document.getElementById("url_input_section");
+              const fileSection = document.getElementById(
+                "file_upload_section"
+              );
+
+              if (urlOption && uploadOption && urlSection && fileSection) {
+                // Direct click handlers
+                urlOption.onclick = function () {
+                  urlSection.classList.remove("d-none");
+                  fileSection.classList.add("d-none");
+                };
+
+                uploadOption.onclick = function () {
+                  fileSection.classList.remove("d-none");
+                  urlSection.classList.add("d-none");
+                };
+
+                // Force initial state
+                if (urlOption.checked) {
+                  urlSection.classList.remove("d-none");
+                  fileSection.classList.add("d-none");
+                } else {
+                  fileSection.classList.remove("d-none");
+                  urlSection.classList.add("d-none");
+                }
+              }
+
+              const addButton = document.getElementById("add-social-link");
+              if (addButton) {
+                // Remove any existing handlers by cloning and replacing
+                const newAddButton = addButton.cloneNode(true);
+                addButton.parentNode.replaceChild(newAddButton, addButton);
+
+                // Add direct click handler - this is guaranteed to work
+                newAddButton.onclick = function (e) {
+                  e.preventDefault();
+
+                  const container = document.getElementById(
+                    "social-links-container"
+                  );
+                  if (!container) return;
+
+                  // Create a new social link row
+                  const newRow = document.createElement("div");
+                  newRow.className = "mb-3 social-link-row";
+                  newRow.innerHTML = `
+                    <div class="input-group">
+                      <select class="form-select platform-select" style="max-width: 120px;">
+                        <option value="">Select</option>
+                        <option value="shopee">Shopee</option>
+                        <option value="lazada">Lazada</option>
+                        <option value="amazon">Amazon</option>
+                        <option value="tiki">Tiki</option>
+                        <option value="facebook">Facebook</option>
+                        <option value="instagram">Instagram</option>
+                        <option value="twitter">Twitter</option>
+                        <option value="other">Other</option>
+                      </select>
+                      <input type="url" class="form-control link-input" placeholder="Enter URL" value="" />
+                      <button type="button" class="btn btn-danger remove-link">
+                        <i class="bi bi-x"></i>
+                      </button>
+                    </div>
+                  `;
+
+                  container.appendChild(newRow);
+
+                  // Add remove button functionality
+                  const removeBtn = newRow.querySelector(".remove-link");
+                  if (removeBtn) {
+                    removeBtn.onclick = function () {
+                      if (
+                        container.querySelectorAll(".social-link-row").length >
+                        1
+                      ) {
+                        newRow.remove();
+                      }
+                    };
+                  }
+
+                  return false;
+                };
+              }
+            });
+          </script>
         </div>
       </div>
     </div>
   </div>
 </div>
 {% endblock %} {% block additional_js %}
+<!-- Make sure jQuery is loaded -->
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+<script src="https://uicdn.toast.com/editor/latest/toastui-editor-all.min.js"></script>
 <script>
-  document.addEventListener("DOMContentLoaded", function () {
-    // Initialize Toast UI Editor
-    const editor = new toastui.Editor({
-      el: document.querySelector("#editor"),
-      height: "300px",
-      initialEditType: "wysiwyg",
-      previewStyle: "vertical",
-      toolbarItems: [
-        ["heading", "bold", "italic", "strike"],
-        ["hr", "quote"],
-        ["ul", "ol", "task", "indent", "outdent"],
-        ["table", "image", "link"],
-        ["code", "codeblock"],
-      ],
-      hooks: {
-        addImageBlobHook: async (blob, callback) => {
-          const formData = new FormData();
-          formData.append("file", blob);
+  $(document).ready(function () {
+    // Check if Toast UI Editor is loaded
+    if (
+      typeof toastui === "undefined" ||
+      typeof toastui.Editor === "undefined"
+    ) {
+      const script = document.createElement("script");
+      script.src =
+        "https://uicdn.toast.com/editor/latest/toastui-editor-all.min.js";
+      script.onload = initializeEditor;
+      document.head.appendChild(script);
+    } else {
+      initializeEditor();
+    }
 
-          try {
-            const response = await fetch("/api/upload/image/web", {
-              method: "POST",
-              body: formData,
+    function initializeEditor() {
+      // Get the forms
+      const productForm = document.getElementById("product-add-form");
+
+      // Find social links elements early
+      const container = document.getElementById("social-links-container");
+      const addButton = document.getElementById("add-social-link");
+      const hiddenInput = document.getElementById("social_links");
+
+      // Initialize Toast UI Editor
+      const editor = (window.editor = new toastui.Editor({
+        el: document.querySelector("#editor"),
+        height: "500px",
+        initialEditType: "wysiwyg",
+        previewStyle: "vertical",
+        toolbarItems: [
+          ["heading", "bold", "italic", "strike"],
+          ["hr", "quote"],
+          ["ul", "ol", "task", "indent", "outdent"],
+          ["table", "image", "link"],
+          ["code", "codeblock"],
+        ],
+        hooks: {
+          addImageBlobHook: async (blob, callback) => {
+            const formData = new FormData();
+            formData.append("file", blob);
+
+            try {
+              const response = await fetch("/api/upload/image/web", {
+                method: "POST",
+                body: formData,
+              });
+
+              if (!response.ok) {
+                throw new Error("Image upload failed");
+              }
+
+              const data = await response.json();
+              callback(data.url);
+            } catch (error) {
+              alert("Failed to upload image. Please try again.");
+            }
+          },
+        },
+      }));
+
+      // Handle form submission to capture editor content
+      if (productForm) {
+        productForm.addEventListener("submit", function (e) {
+          e.preventDefault();
+
+          // Get HTML content from editor and set it to the hidden input
+          const htmlContent = editor.getHTML();
+          document.getElementById("description-input").value = htmlContent;
+
+          // Collect social links data
+          const container = document.getElementById("social-links-container");
+          const hiddenInput = document.getElementById("social_links");
+
+          if (container && hiddenInput) {
+            const socialLinks = {};
+            container.querySelectorAll(".social-link-row").forEach((row) => {
+              const platform = row.querySelector(".platform-select")?.value;
+              const link = row.querySelector(".link-input")?.value;
+
+              if (platform && link) {
+                socialLinks[platform] = link;
+              }
             });
 
-            if (!response.ok) {
-              throw new Error("Image upload failed");
-            }
-
-            const data = await response.json();
-            callback(data.url);
-          } catch (error) {
-            console.error("Error uploading image:", error);
-            alert("Failed to upload image. Please try again.");
+            hiddenInput.value = JSON.stringify(socialLinks);
           }
-        },
-      },
-    });
 
-    const container = document.getElementById("social-links-container");
-    const addButton = document.getElementById("add-social-link");
-    const hiddenInput = document.getElementById("social_links");
+          // Submit the form
+          this.submit();
+        });
+      }
 
-    // Handle form submission to capture editor content
-    const form = document.querySelector("form");
-    form.addEventListener("submit", function (e) {
-      e.preventDefault();
+      // Initialize the Select2 for article selection
+      $(".select2").select2({
+        placeholder: "Select articles to associate",
+        width: "100%",
+        allowClear: true,
+        theme: "bootstrap-5",
+      });
 
-      // Get HTML content from editor and set it to the hidden input
-      const htmlContent = editor.getHTML();
-      document.getElementById("description-input").value = htmlContent;
+      // Update selected articles when the select changes
+      $("#article_ids").on("change", function () {
+        const selected = Array.from($(this).find("option:selected")).map(
+          (option) => option.value
+        );
+        $("#article_ids_hidden").val(selected.join(","));
+      });
 
-      // Submit the form
-      this.submit();
-    });
+      // Handle featured image source toggle
+      const urlOption = document.getElementById("image_url_option");
+      const uploadOption = document.getElementById("image_upload_option");
+      const urlSection = document.getElementById("url_input_section");
+      const fileSection = document.getElementById("file_upload_section");
 
-    // Handle featured image source toggle
-    const urlOption = document.getElementById("image_url_option");
-    const uploadOption = document.getElementById("image_upload_option");
-    const urlSection = document.getElementById("url_input_section");
-    const fileSection = document.getElementById("file_upload_section");
-
-    urlOption.addEventListener("change", function () {
-      if (this.checked) {
+      // Add direct click and change event handlers for image source radio buttons
+      // This ensures they work when clicked regardless of other event handlers
+      urlOption.addEventListener("click", function () {
         urlSection.classList.remove("d-none");
         fileSection.classList.add("d-none");
-      }
-    });
+      });
 
-    uploadOption.addEventListener("change", function () {
-      if (this.checked) {
+      uploadOption.addEventListener("click", function () {
+        fileSection.classList.remove("d-none");
+        urlSection.classList.add("d-none");
+      });
+
+      // Also add regular change event for programmatic changes
+      urlOption.addEventListener("change", function () {
+        if (this.checked) {
+          urlSection.classList.remove("d-none");
+          fileSection.classList.add("d-none");
+        }
+      });
+
+      uploadOption.addEventListener("change", function () {
+        if (this.checked) {
+          fileSection.classList.remove("d-none");
+          urlSection.classList.add("d-none");
+        }
+      });
+
+      // Set initial state based on which option is checked
+      if (urlOption.checked) {
+        urlSection.classList.remove("d-none");
+        fileSection.classList.add("d-none");
+      } else {
         fileSection.classList.remove("d-none");
         urlSection.classList.add("d-none");
       }
-    });
 
-    // Function to create a row with proper event listeners
-    function createRow(platformValue = "", linkValue = "", customName = "") {
-      const newRow = document.createElement("div");
-      newRow.className = "mb-3 social-link-row";
-      newRow.innerHTML = `
-        <div class="input-group ${platformValue === "other" ? "mb-1" : ""}">
-          <select class="form-select platform-select" style="max-width: 120px;">
-            <option value="">Select</option>
-            <option value="shopee" ${
-              platformValue === "shopee" ? "selected" : ""
-            }>Shopee</option>
-            <option value="lazada" ${
-              platformValue === "lazada" ? "selected" : ""
-            }>Lazada</option>
-            <option value="amazon" ${
-              platformValue === "amazon" ? "selected" : ""
-            }>Amazon</option>
-            <option value="tiki" ${
-              platformValue === "tiki" ? "selected" : ""
-            }>Tiki</option>
-            <option value="facebook" ${
-              platformValue === "facebook" ? "selected" : ""
-            }>Facebook</option>
-            <option value="instagram" ${
-              platformValue === "instagram" ? "selected" : ""
-            }>Instagram</option>
-            <option value="twitter" ${
-              platformValue === "twitter" ? "selected" : ""
-            }>Twitter</option>
-            <option value="other" ${
-              platformValue === "other" ? "selected" : ""
-            }>Other</option>
-          </select>
-          <input type="url" class="form-control link-input" placeholder="Enter URL" value="${linkValue}" />
-          <button type="button" class="btn btn-danger remove-link">
-            <i class="bi bi-x"></i>
-          </button>
-        </div>
-        ${
-          platformValue === "other"
-            ? `<div class="custom-platform-name-container">
-                <input type="text" class="form-control custom-platform-name" placeholder="Enter platform name" value="${customName}" />
-              </div>`
-            : ""
-        }
-      `;
-
-      // Add event listeners
-      const platformSelect = newRow.querySelector(".platform-select");
-      platformSelect.addEventListener("change", function () {
-        const isOther = this.value === "other";
-        let customContainer = newRow.querySelector(
-          ".custom-platform-name-container"
-        );
-
-        if (isOther && !customContainer) {
-          // Add custom name input if "other" is selected
-          const inputGroup = this.closest(".input-group");
-          inputGroup.classList.add("mb-1");
-
-          customContainer = document.createElement("div");
-          customContainer.className = "custom-platform-name-container";
-          customContainer.innerHTML = `<input type="text" class="form-control custom-platform-name" placeholder="Enter platform name" />`;
-
-          inputGroup.insertAdjacentElement("afterend", customContainer);
-
-          // Add event listener to the new input
-          customContainer
-            .querySelector("input")
-            .addEventListener("input", updateHiddenInput);
-        } else if (!isOther && customContainer) {
-          // Remove custom name input if another option is selected
-          this.closest(".input-group").classList.remove("mb-1");
-          customContainer.remove();
+      // Initialize social links functionality
+      if (container && addButton && hiddenInput) {
+        // Create a social link row
+        function createSocialLinkRow(platform = "", link = "") {
+          const newRow = document.createElement("div");
+          newRow.className = "mb-3 social-link-row";
+          newRow.innerHTML = `
+            <div class="input-group">
+              <select class="form-select platform-select" style="max-width: 120px;">
+                <option value="">Select</option>
+                <option value="shopee" ${
+                  platform === "shopee" ? "selected" : ""
+                }>Shopee</option>
+                <option value="lazada" ${
+                  platform === "lazada" ? "selected" : ""
+                }>Lazada</option>
+                <option value="amazon" ${
+                  platform === "amazon" ? "selected" : ""
+                }>Amazon</option>
+                <option value="tiki" ${
+                  platform === "tiki" ? "selected" : ""
+                }>Tiki</option>
+                <option value="facebook" ${
+                  platform === "facebook" ? "selected" : ""
+                }>Facebook</option>
+                <option value="instagram" ${
+                  platform === "instagram" ? "selected" : ""
+                }>Instagram</option>
+                <option value="twitter" ${
+                  platform === "twitter" ? "selected" : ""
+                }>Twitter</option>
+                <option value="other">Other</option>
+              </select>
+              <input type="url" class="form-control link-input" placeholder="Enter URL" value="${link}" />
+              <button type="button" class="btn btn-danger remove-link">
+                <i class="bi bi-x"></i>
+              </button>
+            </div>
+          `;
+          return newRow;
         }
 
-        updateHiddenInput();
-      });
+        // Update hidden input with JSON data
+        function updateSocialLinks() {
+          const data = {};
+          container.querySelectorAll(".social-link-row").forEach((row) => {
+            const platform = row.querySelector(".platform-select")?.value;
+            const link = row.querySelector(".link-input")?.value;
 
-      // Add remove button event listener
-      newRow
-        .querySelector(".remove-link")
-        .addEventListener("click", function () {
-          if (container.children.length > 1) {
-            newRow.remove();
-            updateHiddenInput();
-          }
-        });
-
-      // Add event listeners to input fields
-      newRow.querySelectorAll("input.link-input").forEach((el) => {
-        el.addEventListener("input", updateHiddenInput);
-      });
-
-      return newRow;
-    }
-
-    // Add new link row
-    addButton.addEventListener("click", function () {
-      const newRow = createRow();
-      container.appendChild(newRow);
-    });
-
-    // Remove link row - delegated event handled by row creation now
-
-    // Update hidden input with JSON data
-    function updateHiddenInput() {
-      const data = {};
-      container.querySelectorAll(".social-link-row").forEach((row) => {
-        const platformSelect = row.querySelector(".platform-select");
-        const platform = platformSelect.value;
-        const link = row.querySelector(".link-input").value;
-
-        if (platform && link) {
-          if (platform === "other") {
-            const customName = row
-              .querySelector(".custom-platform-name")
-              ?.value.trim();
-            if (customName) {
-              data[customName] = link;
-            } else {
-              data["other"] = link;
-            }
-          } else {
-            data[platform] = link;
-          }
-        }
-      });
-
-      hiddenInput.value = JSON.stringify(data);
-    }
-
-    // Initialize with a empty row
-    if (container.children.length === 0) {
-      container.appendChild(createRow());
-    } else {
-      // Add event listeners to existing rows
-      container.querySelectorAll(".social-link-row").forEach((row) => {
-        const platformSelect = row.querySelector(".platform-select");
-        platformSelect.addEventListener("change", function () {
-          const isOther = this.value === "other";
-          let customContainer = row.querySelector(
-            ".custom-platform-name-container"
-          );
-
-          if (isOther && !customContainer) {
-            // Add custom name input if "other" is selected
-            const inputGroup = this.closest(".input-group");
-            inputGroup.classList.add("mb-1");
-
-            customContainer = document.createElement("div");
-            customContainer.className = "custom-platform-name-container";
-            customContainer.innerHTML = `<input type="text" class="form-control custom-platform-name" placeholder="Enter platform name" />`;
-
-            inputGroup.insertAdjacentElement("afterend", customContainer);
-
-            // Add event listener to the new input
-            customContainer
-              .querySelector("input")
-              .addEventListener("input", updateHiddenInput);
-          } else if (!isOther && customContainer) {
-            // Remove custom name input if another option is selected
-            this.closest(".input-group").classList.remove("mb-1");
-            customContainer.remove();
-          }
-
-          updateHiddenInput();
-        });
-
-        // Add remove button event listener
-        row
-          .querySelector(".remove-link")
-          .addEventListener("click", function () {
-            if (container.children.length > 1) {
-              row.remove();
-              updateHiddenInput();
+            if (platform && link) {
+              data[platform] = link;
             }
           });
 
-        // Add event listeners to input fields
-        row.querySelectorAll("input").forEach((el) => {
-          el.addEventListener("input", updateHiddenInput);
-        });
-      });
-    }
+          hiddenInput.value = JSON.stringify(data);
+        }
 
-    // Initialize
-    updateHiddenInput();
+        // Attach event listeners to a row
+        function attachEventListeners(row) {
+          if (!row) return;
+
+          // For platform select dropdown
+          const select = row.querySelector(".platform-select");
+          const input = row.querySelector(".link-input");
+          const removeBtn = row.querySelector(".remove-link");
+
+          if (select) select.addEventListener("change", updateSocialLinks);
+          if (input) input.addEventListener("input", updateSocialLinks);
+
+          // For remove button
+          if (removeBtn) {
+            removeBtn.addEventListener("click", function () {
+              if (container.querySelectorAll(".social-link-row").length > 1) {
+                row.remove();
+                updateSocialLinks();
+              }
+            });
+          }
+        }
+
+        // Handle existing rows
+        const existingRows = container.querySelectorAll(".social-link-row");
+
+        // If we don't have any rows yet, create one
+        if (existingRows.length === 0) {
+          const newRow = createSocialLinkRow();
+          container.appendChild(newRow);
+          attachEventListeners(newRow);
+        } else {
+          // Otherwise attach event listeners to existing rows
+          existingRows.forEach((row) => {
+            attachEventListeners(row);
+          });
+        }
+
+        // Add button click event listener
+        addButton.addEventListener("click", function () {
+          const newRow = createSocialLinkRow();
+          container.appendChild(newRow);
+          attachEventListeners(newRow);
+          updateSocialLinks();
+        });
+
+        // Initialize hidden input
+        updateSocialLinks();
+      }
+    }
   });
 </script>
 {% endblock %}

@@ -1,12 +1,28 @@
 {% extends "admin/base.html" %} {% block title %}Edit Product - FastAPI CMS{%
-endblock %} {% block header_title %}Edit Product{% endblock %} {% block content
-%}
+endblock %} {% block header_title %}Edit Product{% endblock %} {% block
+additional_css %}
+<!-- Ensure Toast UI Editor CSS is loaded -->
+<link
+  rel="stylesheet"
+  href="https://uicdn.toast.com/editor/latest/toastui-editor.min.css"
+/>
+<link
+  rel="stylesheet"
+  href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css"
+/>
+<link
+  rel="stylesheet"
+  href="https://cdn.jsdelivr.net/npm/select2-bootstrap-5-theme@1.3.0/dist/select2-bootstrap-5-theme.min.css"
+/>
+{% endblock %} {% block content %}
 <div class="container-fluid mt-4">
   <div class="row">
     <div class="col-12">
       <div class="card">
-        <div class="card-header">
-          <h5 class="card-title">Edit Product: {{ product.name }}</h5>
+        <div
+          class="card-header d-flex justify-content-between align-items-center"
+        >
+          <h5 class="card-title mb-0">Edit Product: {{ product.name }}</h5>
         </div>
         <div class="card-body">
           {% if error %}
@@ -24,13 +40,21 @@ endblock %} {% block header_title %}Edit Product{% endblock %} {% block content
           </div>
           {% endif %}
 
+          <!-- Main Product Form -->
           <form
             action="/admin/products/{{ product.id }}/edit"
             method="post"
             enctype="multipart/form-data"
+            id="product-edit-form"
           >
-            <div class="row">
-              <div class="col-md-6">
+            <!-- Make all sections vertical, full width -->
+
+            <!-- Basic Information -->
+            <div class="card mb-4">
+              <div class="card-header bg-light">
+                <h6 class="m-0 font-weight-bold">Basic Information</h6>
+              </div>
+              <div class="card-body">
                 <div class="mb-3">
                   <label for="name" class="form-label"
                     >Product Name <span class="text-danger">*</span></label
@@ -69,157 +93,199 @@ endblock %} {% block header_title %}Edit Product{% endblock %} {% block content
                     Will be generated from name if left empty.
                   </div>
                 </div>
+              </div>
+            </div>
 
+            <!-- Featured Image -->
+            <div class="card mb-4">
+              <div class="card-header bg-light">
+                <h6 class="m-0 font-weight-bold">Featured Image</h6>
+              </div>
+              <div class="card-body">
                 <div class="mb-3">
-                  <label for="description" class="form-label"
-                    >Description</label
-                  >
-                  <div id="editor"></div>
+                  <div class="form-check form-check-inline">
+                    <input
+                      class="form-check-input"
+                      type="radio"
+                      name="image_source"
+                      id="image_url_option"
+                      value="url"
+                      onclick="document.getElementById('url_input_section').classList.remove('d-none'); document.getElementById('file_upload_section').classList.add('d-none');"
+                    />
+                    <label class="form-check-label" for="image_url_option"
+                      >Use URL</label
+                    >
+                  </div>
+                  <div class="form-check form-check-inline">
+                    <input
+                      class="form-check-input"
+                      type="radio"
+                      name="image_source"
+                      id="image_upload_option"
+                      value="upload"
+                      checked
+                      onclick="document.getElementById('file_upload_section').classList.remove('d-none'); document.getElementById('url_input_section').classList.add('d-none');"
+                    />
+                    <label class="form-check-label" for="image_upload_option"
+                      >Upload File</label
+                    >
+                  </div>
+                </div>
+
+                <div id="url_input_section" class="mb-2 d-none">
                   <input
-                    type="hidden"
-                    name="description"
-                    id="description-input"
+                    type="url"
+                    class="form-control"
+                    id="featured_image_url"
+                    name="featured_image_url"
+                    value=""
+                    placeholder="https://example.com/image.jpg"
                   />
                 </div>
 
-                <div class="mb-3">
-                  <label for="featured_image" class="form-label"
-                    >Featured Image</label
-                  >
-                  <div class="card p-3">
-                    <div class="mb-3">
-                      <div class="form-check form-check-inline">
-                        <input
-                          class="form-check-input"
-                          type="radio"
-                          name="image_source"
-                          id="image_url_option"
-                          value="url"
-                        />
-                        <label class="form-check-label" for="image_url_option"
-                          >Use URL</label
-                        >
-                      </div>
-                      <div class="form-check form-check-inline">
-                        <input
-                          class="form-check-input"
-                          type="radio"
-                          name="image_source"
-                          id="image_upload_option"
-                          value="upload"
-                          checked
-                        />
-                        <label
-                          class="form-check-label"
-                          for="image_upload_option"
-                          >Upload File</label
-                        >
-                      </div>
-                    </div>
+                <div id="file_upload_section" class="mb-2">
+                  <input
+                    type="file"
+                    class="form-control"
+                    id="featured_image_file"
+                    name="featured_image"
+                    accept="image/*"
+                  />
+                </div>
 
-                    <div id="url_input_section" class="mb-2 d-none">
-                      <input
-                        type="url"
-                        class="form-control"
-                        id="featured_image_url"
-                        name="featured_image_url"
-                        value=""
-                        placeholder="https://example.com/image.jpg"
-                      />
-                    </div>
+                {% if product.featured_image %}
+                <div class="mt-2">
+                  <p class="mb-1">Current image:</p>
+                  <img
+                    src="/media/{{ product.featured_image }}"
+                    alt="{{ product.name }}"
+                    class="img-thumbnail"
+                    style="max-height: 150px"
+                  />
+                </div>
+                {% endif %}
 
-                    <div id="file_upload_section" class="mb-2">
-                      <input
-                        type="file"
-                        class="form-control"
-                        id="featured_image_file"
-                        name="featured_image"
-                        accept="image/*"
-                      />
-                    </div>
-
-                    {% if product.featured_image %}
-                    <div class="mt-2">
-                      <p class="mb-1">Current image:</p>
-                      <img
-                        src="/media/{{ product.featured_image }}"
-                        alt="{{ product.name }}"
-                        class="img-thumbnail"
-                        style="max-height: 150px"
-                      />
-                    </div>
-                    {% endif %}
-
-                    <div class="form-text mt-2">
-                      Choose an option above. You can either provide a URL to an
-                      online image or upload a local file.
-                    </div>
-                  </div>
+                <div class="form-text mt-2">
+                  Choose an option above. You can either provide a URL to an
+                  online image or upload a local file.
                 </div>
               </div>
+            </div>
 
-              <div class="col-md-6">
-                <h5 class="mb-3">Social Links</h5>
+            <!-- Description -->
+            <div class="card mb-4">
+              <div class="card-header bg-light">
+                <h6 class="m-0 font-weight-bold">Description</h6>
+              </div>
+              <div class="card-body">
+                <!-- Editor container with border to make it visible -->
+                <div
+                  id="editor"
+                  style="
+                    width: 100%;
+                    min-height: 500px;
+                    border: 1px solid #dee2e6;
+                  "
+                ></div>
+                <!-- Debug info for editor -->
+                <div id="editor-debug" class="mt-2 small text-muted"></div>
+                <input
+                  type="hidden"
+                  name="description"
+                  id="description-input"
+                  value="{{ product.description|safe }}"
+                />
+              </div>
+            </div>
 
-                <div id="social-links-container">
+            <!-- Social Links -->
+            <div class="card mb-4">
+              <div class="card-header bg-light">
+                <h6 class="m-0 font-weight-bold">Social Links</h6>
+              </div>
+              <div class="card-body">
+                <p class="text-muted small mb-3">
+                  Add links to this product on e-commerce platforms or social
+                  media.
+                </p>
+
+                <div id="social-links-container" class="border-top pt-3">
                   <!-- Dynamic social links will be added here -->
+                  <div
+                    id="social-links-debug"
+                    class="text-muted small mb-2"
+                  ></div>
                 </div>
 
-                <div class="mb-3">
+                <div class="mt-3">
                   <button
                     type="button"
                     id="add-social-link"
-                    class="btn btn-sm btn-secondary"
+                    class="btn btn-sm btn-outline-primary"
                   >
                     <i class="bi bi-plus-circle me-1"></i> Add Another Link
                   </button>
                 </div>
+              </div>
+            </div>
 
-                <!-- Hidden input to store the final JSON -->
-                <input
-                  type="hidden"
-                  id="social_links"
-                  name="social_links"
-                  value="{{ product.social_links }}"
-                />
+            <!-- Hidden input to store the final JSON -->
+            <input
+              type="hidden"
+              id="social_links"
+              name="social_links"
+              value="{{ product.social_links }}"
+            />
 
-                <div class="mb-3">
-                  <label for="article_ids" class="form-label"
-                    >Associated Articles</label
+            <!-- Associated Articles Card -->
+            <div class="card mb-4" id="articles-section">
+              <div class="card-header bg-light">
+                <h6 class="m-0 font-weight-bold">Associated Articles</h6>
+              </div>
+              <div class="card-body">
+                <p class="text-muted mb-3">
+                  Search for and select articles to associate with this product.
+                </p>
+
+                <select
+                  class="form-select select2"
+                  id="article_ids"
+                  name="article_ids"
+                  multiple
+                  data-placeholder="Select articles to associate"
+                >
+                  {% for article in articles %}
+                  <option
+                    value="{{ article.id }}"
+                    {%
+                    if
+                    article.id
+                    in
+                    associated_article_ids
+                    %}selected{%
+                    endif
+                    %}
                   >
-                  <select
-                    class="form-select"
-                    id="article_ids"
-                    name="article_ids"
-                    multiple
+                    {{ article.title }}
+                  </option>
+                  {% endfor %}
+                </select>
+                <div class="form-text mt-2">
+                  <small
+                    >Select the articles that should be associated with this
+                    product. Use the search feature to quickly find
+                    articles.</small
                   >
-                    {% for article in articles %}
-                    <option
-                      value="{{ article.id }}"
-                      {%
-                      if
-                      article.id
-                      in
-                      associated_article_ids
-                      %}selected{%
-                      endif
-                      %}
-                    >
-                      {{ article.title }}
-                    </option>
-                    {% endfor %}
-                  </select>
-                  <div class="form-text">
-                    Articles where this product should appear.
-                  </div>
                 </div>
               </div>
             </div>
 
             <div class="d-flex justify-content-between mt-3">
-              <a href="/admin/products" class="btn btn-secondary">Cancel</a>
+              <a href="/admin/products" class="btn btn-secondary">
+                <i class="bi bi-arrow-left"></i> Back to Products
+              </a>
               <button type="submit" class="btn btn-primary">
-                Update Product
+                <i class="bi bi-save"></i> Update Product
               </button>
             </div>
           </form>
@@ -229,266 +295,399 @@ endblock %} {% block header_title %}Edit Product{% endblock %} {% block content
   </div>
 </div>
 {% endblock %} {% block additional_js %}
+<!-- Load all required scripts in the correct order -->
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+<script src="https://uicdn.toast.com/editor/latest/toastui-editor-all.min.js"></script>
 <script>
-  document.addEventListener("DOMContentLoaded", function () {
-    // Get initial content from the product description
-    const initialContent = `{{ product.description|safe }}`;
+  $(document).ready(function () {
+    console.log("Document ready for product edit page");
 
-    // Initialize Toast UI Editor with existing content
-    const editor = new toastui.Editor({
-      el: document.querySelector("#editor"),
-      height: "300px",
-      initialEditType: "wysiwyg",
-      initialValue: initialContent,
-      previewStyle: "vertical",
-      toolbarItems: [
-        ["heading", "bold", "italic", "strike"],
-        ["hr", "quote"],
-        ["ul", "ol", "task", "indent", "outdent"],
-        ["table", "image", "link"],
-        ["code", "codeblock"],
-      ],
-      hooks: {
-        addImageBlobHook: async (blob, callback) => {
-          const formData = new FormData();
-          formData.append("file", blob);
-
-          try {
-            const response = await fetch("/api/upload/image/web", {
-              method: "POST",
-              body: formData,
-            });
-
-            if (!response.ok) {
-              throw new Error("Image upload failed");
-            }
-
-            const data = await response.json();
-            callback(data.url);
-          } catch (error) {
-            console.error("Error uploading image:", error);
-            alert("Failed to upload image. Please try again.");
-          }
-        },
-      },
-    });
-
-    // Handle form submission to capture editor content
-    const form = document.querySelector("form");
-    const originalSubmit = form.onsubmit;
-    form.onsubmit = function (e) {
-      // Get HTML content from editor and set it to the hidden input
-      const htmlContent = editor.getHTML();
-      document.getElementById("description-input").value = htmlContent;
-
-      // Continue with the form submission
-      return originalSubmit ? originalSubmit.call(this, e) : true;
-    };
-
-    // Initialize multiple select for articles if available
-    const articleSelect = document.getElementById("article_ids");
-    if (articleSelect) {
-      // You can add JS for enhanced select functionality here if needed
-    }
-
-    // Social links functionality
-    const container = document.getElementById("social-links-container");
-    const addButton = document.getElementById("add-social-link");
-    const hiddenInput = document.getElementById("social_links");
-
-    // Create a social link row
-    function createSocialLinkRow(platform = "", link = "") {
-      // Check if it's a custom platform (not in our predefined list)
-      const isPredefinedPlatform = [
-        "shopee",
-        "lazada",
-        "amazon",
-        "tiki",
-        "facebook",
-        "instagram",
-        "twitter",
-        "",
-      ].includes(platform);
-      const customName = !isPredefinedPlatform ? platform : "";
-      const actualPlatform = isPredefinedPlatform ? platform : "other";
-
-      const newRow = document.createElement("div");
-      newRow.className = "mb-3 social-link-row";
-      newRow.innerHTML = `
-        <div class="input-group ${actualPlatform === "other" ? "mb-1" : ""}">
-          <select class="form-select platform-select" style="max-width: 120px;">
-            <option value="">Select</option>
-            <option value="shopee" ${
-              actualPlatform === "shopee" ? "selected" : ""
-            }>Shopee</option>
-            <option value="lazada" ${
-              actualPlatform === "lazada" ? "selected" : ""
-            }>Lazada</option>
-            <option value="amazon" ${
-              actualPlatform === "amazon" ? "selected" : ""
-            }>Amazon</option>
-            <option value="tiki" ${
-              actualPlatform === "tiki" ? "selected" : ""
-            }>Tiki</option>
-            <option value="facebook" ${
-              actualPlatform === "facebook" ? "selected" : ""
-            }>Facebook</option>
-            <option value="instagram" ${
-              actualPlatform === "instagram" ? "selected" : ""
-            }>Instagram</option>
-            <option value="twitter" ${
-              actualPlatform === "twitter" ? "selected" : ""
-            }>Twitter</option>
-            <option value="other" ${
-              actualPlatform === "other" ? "selected" : ""
-            }>Other</option>
-          </select>
-          <input type="url" class="form-control link-input" placeholder="Enter URL" value="${link}" />
-          <button type="button" class="btn btn-danger remove-link">
-            <i class="bi bi-x"></i>
-          </button>
-        </div>
-        ${
-          actualPlatform === "other"
-            ? `<div class="custom-platform-name-container">
-                <input type="text" class="form-control custom-platform-name" placeholder="Enter platform name" value="${customName}" />
-              </div>`
-            : ""
-        }
-      `;
-
-      return newRow;
-    }
-
-    // Add new link row
-    addButton.addEventListener("click", function () {
-      const newRow = createSocialLinkRow();
-      container.appendChild(newRow);
-      attachEventListeners(newRow);
-    });
-
-    // Attach event listeners to a row
-    function attachEventListeners(row) {
-      // For platform select dropdown
-      const platformSelect = row.querySelector(".platform-select");
-      platformSelect.addEventListener("change", function () {
-        const isOther = this.value === "other";
-        let customContainer = row.querySelector(
-          ".custom-platform-name-container"
-        );
-
-        if (isOther && !customContainer) {
-          // Add custom name input if "other" is selected
-          const inputGroup = this.closest(".input-group");
-          inputGroup.classList.add("mb-1");
-
-          customContainer = document.createElement("div");
-          customContainer.className = "custom-platform-name-container";
-          customContainer.innerHTML = `<input type="text" class="form-control custom-platform-name" placeholder="Enter platform name" />`;
-
-          inputGroup.insertAdjacentElement("afterend", customContainer);
-
-          // Add event listener to the new input
-          customContainer
-            .querySelector("input")
-            .addEventListener("input", updateHiddenInput);
-        } else if (!isOther && customContainer) {
-          // Remove custom name input if another option is selected
-          this.closest(".input-group").classList.remove("mb-1");
-          customContainer.remove();
-        }
-
-        updateHiddenInput();
-      });
-
-      // For remove button
-      row.querySelector(".remove-link")?.addEventListener("click", function () {
-        if (container.children.length > 1) {
-          row.remove();
-          updateHiddenInput();
-        }
-      });
-
-      // For select and input fields
-      row.querySelectorAll("select, input").forEach((el) => {
-        el.addEventListener("change", updateHiddenInput);
-        el.addEventListener("input", updateHiddenInput);
-      });
-    }
-
-    // Update hidden input with JSON data
-    function updateHiddenInput() {
-      const data = {};
-      container.querySelectorAll(".social-link-row").forEach((row) => {
-        const platform = row.querySelector(".platform-select").value;
-        const link = row.querySelector(".link-input").value;
-
-        if (platform && link) {
-          if (platform === "other") {
-            const customName = row
-              .querySelector(".custom-platform-name")
-              ?.value.trim();
-            if (customName) {
-              data[customName] = link;
-            } else {
-              data["other"] = link;
-            }
-          } else {
-            data[platform] = link;
-          }
-        }
-      });
-
-      hiddenInput.value = JSON.stringify(data);
-    }
-
-    // Load existing social links if any
-    let existingLinks = {};
-    try {
-      const socialLinksValue = hiddenInput.value.trim();
-      if (socialLinksValue) {
-        existingLinks = JSON.parse(socialLinksValue);
-      }
-    } catch (e) {
-      console.error("Error parsing social links JSON:", e);
-    }
-
-    // If we have existing links, create rows for them
-    if (Object.keys(existingLinks).length > 0) {
-      for (const [platform, link] of Object.entries(existingLinks)) {
-        const row = createSocialLinkRow(platform, link);
-        container.appendChild(row);
-        attachEventListeners(row);
-      }
+    // Check if Toast UI Editor is loaded
+    if (
+      typeof toastui === "undefined" ||
+      typeof toastui.Editor === "undefined"
+    ) {
+      console.error("Toast UI Editor not loaded. Adding script tag");
+      $("#editor-debug").html(
+        '<div class="alert alert-danger">Editor library not loaded. Please refresh the page.</div>'
+      );
+      const script = document.createElement("script");
+      script.src =
+        "https://uicdn.toast.com/editor/latest/toastui-editor-all.min.js";
+      script.onload = initializeEditor;
+      document.head.appendChild(script);
     } else {
-      // Add an empty row if no existing links
-      const emptyRow = createSocialLinkRow();
-      container.appendChild(emptyRow);
-      attachEventListeners(emptyRow);
+      console.log("Toast UI Editor is loaded, initializing");
+      initializeEditor();
     }
 
-    // Initialize
-    updateHiddenInput();
+    function initializeEditor() {
+      console.log("Starting editor initialization");
+      $("#editor-debug").html(
+        '<div class="text-info">Editor initializing...</div>'
+      );
 
-    // Handle featured image source toggle
-    const urlOption = document.getElementById("image_url_option");
-    const uploadOption = document.getElementById("image_upload_option");
-    const urlSection = document.getElementById("url_input_section");
-    const fileSection = document.getElementById("file_upload_section");
+      // Initialize the Select2 for article selection
+      $(".select2").select2({
+        placeholder: "Select articles to associate",
+        width: "100%",
+        allowClear: true,
+        theme: "bootstrap-5",
+      });
 
-    urlOption.addEventListener("change", function () {
-      if (this.checked) {
+      // Get references to the forms
+      const productForm = document.getElementById("product-edit-form");
+      console.log("Product form found:", !!productForm);
+
+      // Handle the main product form submission
+      productForm.addEventListener("submit", function (e) {
+        e.preventDefault();
+
+        // Get editor content and set it to hidden input
+        if (window.editor) {
+          const editorContent = window.editor.getHTML();
+          document.getElementById("description-input").value = editorContent;
+          console.log("Editor content saved to hidden input");
+        } else {
+          console.error("Editor not initialized when submitting");
+          $("#editor-debug").html(
+            '<div class="alert alert-danger">Editor not initialized. Please refresh and try again.</div>'
+          );
+        }
+
+        // Process social links
+        updateHiddenInput();
+
+        // Submit the form
+        this.submit();
+      });
+
+      // Toggle for local image vs URL
+      const urlOption = document.getElementById("image_url_option");
+      const uploadOption = document.getElementById("image_upload_option");
+      const urlSection = document.getElementById("url_input_section");
+      const fileSection = document.getElementById("file_upload_section");
+
+      // Direct click handlers for more reliable triggering
+      urlOption.onclick = function () {
         urlSection.classList.remove("d-none");
         fileSection.classList.add("d-none");
-      }
-    });
+      };
 
-    uploadOption.addEventListener("change", function () {
-      if (this.checked) {
+      uploadOption.onclick = function () {
+        fileSection.classList.remove("d-none");
+        urlSection.classList.add("d-none");
+      };
+
+      // Initial display based on current selection
+      if (urlOption.checked) {
+        urlSection.classList.remove("d-none");
+        fileSection.classList.add("d-none");
+      } else {
         fileSection.classList.remove("d-none");
         urlSection.classList.add("d-none");
       }
-    });
+
+      // Old toggle for backward compatibility
+      $("#image-source-toggle input").on("change", function () {
+        const selectedOption = $(this).val();
+        if (selectedOption === "local") {
+          $("#local-image-group").show();
+          $("#image-url-group").hide();
+        } else {
+          $("#local-image-group").hide();
+          $("#image-url-group").show();
+        }
+      });
+
+      // Prevent main form submission on Enter key in inputs
+      // This is now simplified since the search form is outside
+      $("#product-edit-form input, #product-edit-form select").on(
+        "keydown",
+        function (e) {
+          if (
+            e.key === "Enter" &&
+            !$(this).is("textarea") &&
+            !$(this).is(":submit")
+          ) {
+            e.preventDefault();
+            return false;
+          }
+        }
+      );
+
+      // Trigger the change event to show the appropriate image source input initially
+      // $("#image-source-toggle input:checked").trigger("change");
+
+      // Get initial content from the product description
+      const initialContent = document.getElementById("description-input").value;
+      console.log(
+        "Initial content length:",
+        initialContent ? initialContent.length : 0
+      );
+
+      // Initialize Toast UI Editor with existing content
+      try {
+        console.log("Creating editor instance");
+        const editorElement = document.querySelector("#editor");
+        console.log("Editor element found:", !!editorElement);
+
+        // Create the editor with the content from the hidden input
+        window.editor = new toastui.Editor({
+          el: editorElement,
+          height: "500px",
+          initialEditType: "wysiwyg",
+          initialValue: initialContent,
+          previewStyle: "vertical",
+          toolbarItems: [
+            ["heading", "bold", "italic", "strike"],
+            ["hr", "quote"],
+            ["ul", "ol", "task", "indent", "outdent"],
+            ["table", "image", "link"],
+            ["code", "codeblock"],
+          ],
+          hooks: {
+            addImageBlobHook: async (blob, callback) => {
+              const formData = new FormData();
+              formData.append("file", blob);
+
+              try {
+                const response = await fetch("/api/upload/image/web", {
+                  method: "POST",
+                  body: formData,
+                });
+
+                if (!response.ok) {
+                  throw new Error("Image upload failed");
+                }
+
+                const data = await response.json();
+                callback(data.url);
+              } catch (error) {
+                console.error("Error uploading image:", error);
+                alert("Failed to upload image. Please try again.");
+              }
+            },
+          },
+        });
+        console.log("Editor created successfully");
+        $("#editor-debug").html(
+          '<div class="text-success">Editor loaded successfully</div>'
+        );
+
+        // Force a refresh
+        setTimeout(() => {
+          if (window.editor) {
+            window.editor.focus();
+          }
+        }, 100);
+      } catch (err) {
+        console.error("Error creating editor:", err);
+        $("#editor-debug").html(
+          `<div class="alert alert-danger">Error creating editor: ${err.message}</div>`
+        );
+      }
+
+      // Social links functionality
+      const container = document.getElementById("social-links-container");
+      const addButton = document.getElementById("add-social-link");
+      const hiddenInput = document.getElementById("social_links");
+
+      console.log("Social links container:", !!container);
+      console.log("Add button:", !!addButton);
+      console.log("Hidden input:", !!hiddenInput);
+      console.log("Social links value:", hiddenInput?.value);
+
+      $("#social-links-debug").html(
+        `Social links: ${hiddenInput?.value || "None"}`
+      );
+
+      // Create a social link row
+      function createSocialLinkRow(platform = "", link = "") {
+        console.log("Creating social link row:", platform, link);
+        // Check if it's a custom platform (not in our predefined list)
+        const isPredefinedPlatform = [
+          "shopee",
+          "lazada",
+          "amazon",
+          "tiki",
+          "facebook",
+          "instagram",
+          "twitter",
+          "",
+        ].includes(platform);
+        const customName = !isPredefinedPlatform ? platform : "";
+        const actualPlatform = isPredefinedPlatform ? platform : "other";
+
+        const newRow = document.createElement("div");
+        newRow.className = "mb-3 social-link-row";
+        newRow.innerHTML = `
+          <div class="input-group ${actualPlatform === "other" ? "mb-1" : ""}">
+            <select class="form-select platform-select" style="max-width: 120px;">
+              <option value="">Select</option>
+              <option value="shopee" ${
+                actualPlatform === "shopee" ? "selected" : ""
+              }>Shopee</option>
+              <option value="lazada" ${
+                actualPlatform === "lazada" ? "selected" : ""
+              }>Lazada</option>
+              <option value="amazon" ${
+                actualPlatform === "amazon" ? "selected" : ""
+              }>Amazon</option>
+              <option value="tiki" ${
+                actualPlatform === "tiki" ? "selected" : ""
+              }>Tiki</option>
+              <option value="facebook" ${
+                actualPlatform === "facebook" ? "selected" : ""
+              }>Facebook</option>
+              <option value="instagram" ${
+                actualPlatform === "instagram" ? "selected" : ""
+              }>Instagram</option>
+              <option value="twitter" ${
+                actualPlatform === "twitter" ? "selected" : ""
+              }>Twitter</option>
+              <option value="other" ${
+                actualPlatform === "other" ? "selected" : ""
+              }>Other</option>
+            </select>
+            <input type="url" class="form-control link-input" placeholder="Enter URL" value="${link}" />
+            <button type="button" class="btn btn-danger remove-link">
+              <i class="bi bi-x"></i>
+            </button>
+          </div>
+          ${
+            actualPlatform === "other"
+              ? `<div class="custom-platform-name-container">
+                  <input type="text" class="form-control custom-platform-name" placeholder="Enter platform name" value="${customName}" />
+                </div>`
+              : ""
+          }
+        `;
+
+        return newRow;
+      }
+
+      // Add new link row
+      addButton.addEventListener("click", function () {
+        console.log("Add button clicked");
+        const newRow = createSocialLinkRow();
+        container.appendChild(newRow);
+        attachEventListeners(newRow);
+      });
+
+      // Attach event listeners to a row
+      function attachEventListeners(row) {
+        // For platform select dropdown
+        const platformSelect = row.querySelector(".platform-select");
+        platformSelect.addEventListener("change", function () {
+          const isOther = this.value === "other";
+          let customContainer = row.querySelector(
+            ".custom-platform-name-container"
+          );
+
+          if (isOther && !customContainer) {
+            // Add custom name input if "other" is selected
+            const inputGroup = this.closest(".input-group");
+            inputGroup.classList.add("mb-1");
+
+            customContainer = document.createElement("div");
+            customContainer.className = "custom-platform-name-container";
+            customContainer.innerHTML = `<input type="text" class="form-control custom-platform-name" placeholder="Enter platform name" />`;
+
+            inputGroup.insertAdjacentElement("afterend", customContainer);
+
+            // Add event listener to the new input
+            customContainer
+              .querySelector("input")
+              .addEventListener("input", updateHiddenInput);
+          } else if (!isOther && customContainer) {
+            // Remove custom name input if another option is selected
+            this.closest(".input-group").classList.remove("mb-1");
+            customContainer.remove();
+          }
+
+          updateHiddenInput();
+        });
+
+        // For remove button
+        row
+          .querySelector(".remove-link")
+          ?.addEventListener("click", function () {
+            if (container.children.length > 1) {
+              row.remove();
+              updateHiddenInput();
+            }
+          });
+
+        // For select and input fields
+        row.querySelectorAll("select, input").forEach((el) => {
+          el.addEventListener("change", updateHiddenInput);
+          el.addEventListener("input", updateHiddenInput);
+        });
+      }
+
+      // Update hidden input with JSON data
+      function updateHiddenInput() {
+        const data = {};
+        container.querySelectorAll(".social-link-row").forEach((row) => {
+          const platform = row.querySelector(".platform-select").value;
+          const link = row.querySelector(".link-input").value;
+
+          if (platform && link) {
+            if (platform === "other") {
+              const customName = row
+                .querySelector(".custom-platform-name")
+                ?.value.trim();
+              if (customName) {
+                data[customName] = link;
+              } else {
+                data["other"] = link;
+              }
+            } else {
+              data[platform] = link;
+            }
+          }
+        });
+
+        hiddenInput.value = JSON.stringify(data);
+        console.log("Updated hidden input:", hiddenInput.value);
+      }
+
+      // Load existing social links if any
+      let existingLinks = {};
+      try {
+        const socialLinksValue = hiddenInput.value.trim();
+        console.log("Social links value from hidden input:", socialLinksValue);
+        if (socialLinksValue) {
+          existingLinks = JSON.parse(socialLinksValue);
+          console.log("Parsed social links:", existingLinks);
+        }
+      } catch (e) {
+        console.error("Error parsing social links JSON:", e);
+      }
+
+      // If we have existing links, create rows for them
+      if (Object.keys(existingLinks).length > 0) {
+        console.log("Creating rows for existing links");
+        for (const [platform, link] of Object.entries(existingLinks)) {
+          console.log("Creating row for:", platform, link);
+          const row = createSocialLinkRow(platform, link);
+          container.appendChild(row);
+          attachEventListeners(row);
+        }
+      } else {
+        console.log("No existing links found, creating empty row");
+        // Add an empty row if no existing links
+        const emptyRow = createSocialLinkRow();
+        container.appendChild(emptyRow);
+        attachEventListeners(emptyRow);
+      }
+
+      // Initialize
+      updateHiddenInput();
+      console.log("Initialization complete");
+    }
   });
 </script>
 {% endblock %}
