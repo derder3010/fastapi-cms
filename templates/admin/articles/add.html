@@ -92,19 +92,93 @@ block content %}
             </div>
 
             <div class="mb-3">
-              <label for="featured_image" class="form-label"
-                >Featured Image URL</label
-              >
-              <input
-                type="url"
+              <label for="excerpt" class="form-label">Excerpt</label>
+              <textarea
                 class="form-control"
-                id="featured_image"
-                name="featured_image"
-                value=""
-                placeholder="https://example.com/image.jpg"
-              />
+                id="excerpt"
+                name="excerpt"
+                rows="3"
+              ></textarea>
               <div class="form-text">
-                Leave empty if no featured image is needed
+                A short summary of the article that appears on listing pages.
+                Leave empty to use the beginning of the content.
+              </div>
+            </div>
+
+            <div class="mb-3">
+              <label for="footer_content" class="form-label"
+                >Footer Content</label
+              >
+              <textarea
+                class="form-control"
+                id="footer_content"
+                name="footer_content"
+                rows="3"
+              ></textarea>
+              <div class="form-text">
+                Additional content to display at the end of the article
+                (disclaimers, source attributions, etc.)
+              </div>
+            </div>
+
+            <div class="mb-3">
+              <label for="featured_image" class="form-label"
+                >Featured Image</label
+              >
+              <div class="card p-3">
+                <div class="mb-3">
+                  <div class="form-check form-check-inline">
+                    <input
+                      class="form-check-input"
+                      type="radio"
+                      name="image_source"
+                      id="image_url_option"
+                      value="url"
+                      checked
+                    />
+                    <label class="form-check-label" for="image_url_option"
+                      >Use URL</label
+                    >
+                  </div>
+                  <div class="form-check form-check-inline">
+                    <input
+                      class="form-check-input"
+                      type="radio"
+                      name="image_source"
+                      id="image_upload_option"
+                      value="upload"
+                    />
+                    <label class="form-check-label" for="image_upload_option"
+                      >Upload File</label
+                    >
+                  </div>
+                </div>
+
+                <div id="url_input_section" class="mb-2">
+                  <input
+                    type="url"
+                    class="form-control"
+                    id="featured_image_url"
+                    name="featured_image_url"
+                    value=""
+                    placeholder="https://example.com/image.jpg"
+                  />
+                </div>
+
+                <div id="file_upload_section" class="mb-2 d-none">
+                  <input
+                    type="file"
+                    class="form-control"
+                    id="featured_image_file"
+                    name="featured_image_file"
+                    accept="image/*"
+                  />
+                </div>
+
+                <div class="form-text mt-2">
+                  Choose an option above. You can either provide a URL to an
+                  online image or upload a local file.
+                </div>
               </div>
             </div>
 
@@ -185,6 +259,26 @@ block content %}
 
       // Submit the form
       this.submit();
+    });
+
+    // Handle featured image source toggle
+    const urlOption = document.getElementById("image_url_option");
+    const uploadOption = document.getElementById("image_upload_option");
+    const urlSection = document.getElementById("url_input_section");
+    const fileSection = document.getElementById("file_upload_section");
+
+    urlOption.addEventListener("change", function () {
+      if (this.checked) {
+        urlSection.classList.remove("d-none");
+        fileSection.classList.add("d-none");
+      }
+    });
+
+    uploadOption.addEventListener("change", function () {
+      if (this.checked) {
+        fileSection.classList.remove("d-none");
+        urlSection.classList.add("d-none");
+      }
     });
   });
 </script>

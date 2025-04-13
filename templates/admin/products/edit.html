@@ -86,26 +86,74 @@ endblock %} {% block header_title %}Edit Product{% endblock %} {% block content
                   <label for="featured_image" class="form-label"
                     >Featured Image</label
                   >
-                  {% if product.featured_image %}
-                  <div class="mb-2">
-                    <img
-                      src="/media/{{ product.featured_image }}"
-                      alt="{{ product.name }}"
-                      class="img-thumbnail"
-                      style="max-height: 150px"
-                    />
-                    <p class="small text-muted mt-1">Current image</p>
-                  </div>
-                  {% endif %}
-                  <input
-                    type="file"
-                    class="form-control"
-                    id="featured_image"
-                    name="featured_image"
-                    accept="image/*"
-                  />
-                  <div class="form-text">
-                    Upload a new image to replace the current one (optional).
+                  <div class="card p-3">
+                    <div class="mb-3">
+                      <div class="form-check form-check-inline">
+                        <input
+                          class="form-check-input"
+                          type="radio"
+                          name="image_source"
+                          id="image_url_option"
+                          value="url"
+                        />
+                        <label class="form-check-label" for="image_url_option"
+                          >Use URL</label
+                        >
+                      </div>
+                      <div class="form-check form-check-inline">
+                        <input
+                          class="form-check-input"
+                          type="radio"
+                          name="image_source"
+                          id="image_upload_option"
+                          value="upload"
+                          checked
+                        />
+                        <label
+                          class="form-check-label"
+                          for="image_upload_option"
+                          >Upload File</label
+                        >
+                      </div>
+                    </div>
+
+                    <div id="url_input_section" class="mb-2 d-none">
+                      <input
+                        type="url"
+                        class="form-control"
+                        id="featured_image_url"
+                        name="featured_image_url"
+                        value=""
+                        placeholder="https://example.com/image.jpg"
+                      />
+                    </div>
+
+                    <div id="file_upload_section" class="mb-2">
+                      <input
+                        type="file"
+                        class="form-control"
+                        id="featured_image_file"
+                        name="featured_image"
+                        accept="image/*"
+                      />
+                    </div>
+
+                    {% if product.featured_image %}
+                    <div class="mt-2">
+                      <p class="mb-1">Current image:</p>
+                      <img
+                        src="/media/{{ product.featured_image }}"
+                        alt="{{ product.name }}"
+                        class="img-thumbnail"
+                        style="max-height: 150px"
+                      />
+                    </div>
+                    {% endif %}
+
+                    <div class="form-text mt-2">
+                      Choose an option above. You can either provide a URL to an
+                      online image or upload a local file.
+                    </div>
                   </div>
                 </div>
               </div>
@@ -421,6 +469,26 @@ endblock %} {% block header_title %}Edit Product{% endblock %} {% block content
 
     // Initialize
     updateHiddenInput();
+
+    // Handle featured image source toggle
+    const urlOption = document.getElementById("image_url_option");
+    const uploadOption = document.getElementById("image_upload_option");
+    const urlSection = document.getElementById("url_input_section");
+    const fileSection = document.getElementById("file_upload_section");
+
+    urlOption.addEventListener("change", function () {
+      if (this.checked) {
+        urlSection.classList.remove("d-none");
+        fileSection.classList.add("d-none");
+      }
+    });
+
+    uploadOption.addEventListener("change", function () {
+      if (this.checked) {
+        fileSection.classList.remove("d-none");
+        urlSection.classList.add("d-none");
+      }
+    });
   });
 </script>
 {% endblock %}

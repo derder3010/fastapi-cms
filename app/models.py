@@ -81,6 +81,8 @@ class ArticleBase(SQLModel):
     content: str
     published: bool = Field(default=False)
     featured_image: Optional[str] = Field(default=None, max_length=500)
+    excerpt: Optional[str] = None
+    footer_content: Optional[str] = None
     views: int = Field(default=0)
     category_id: int = Field(foreign_key="category.id")
     author_id: int = Field(foreign_key="user.id")
@@ -133,6 +135,8 @@ class ArticleUpdate(SQLModel):
     content: Optional[str] = None
     published: Optional[bool] = None
     featured_image: Optional[str] = None
+    excerpt: Optional[str] = None
+    footer_content: Optional[str] = None
     category_id: Optional[int] = None
     slug: Optional[str] = None
 
