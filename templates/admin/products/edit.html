@@ -74,14 +74,12 @@ endblock %} {% block header_title %}Edit Product{% endblock %} {% block content
                   <label for="description" class="form-label"
                     >Description</label
                   >
-                  <textarea
-                    class="form-control"
-                    id="description"
+                  <div id="editor"></div>
+                  <input
+                    type="hidden"
                     name="description"
-                    rows="4"
-                  >
-{{ product.description }}</textarea
-                  >
+                    id="description-input"
+                  />
                 </div>
 
                 <div class="mb-3">
@@ -185,6 +183,60 @@ endblock %} {% block header_title %}Edit Product{% endblock %} {% block content
 {% endblock %} {% block additional_js %}
 <script>
   document.addEventListener("DOMContentLoaded", function () {
+    // Get initial content from the product description
+    const initialContent = `{{ product.description|safe }}`;
+
+    // Initialize Toast UI Editor with existing content
+    const editor = new toastui.Editor({
+      el: document.querySelector("#editor"),
+      height: "300px",
+      initialEditType: "wysiwyg",
+      initialValue: initialContent,
+      previewStyle: "vertical",
+      toolbarItems: [
+        ["heading", "bold", "italic", "strike"],
+        ["hr", "quote"],
+        ["ul", "ol", "task", "indent", "outdent"],
+        ["table", "image", "link"],
+        ["code", "codeblock"],
+      ],
+      hooks: {
+        addImageBlobHook: async (blob, callback) => {
+          const formData = new FormData();
+          formData.append("file", blob);
+
+          try {
+            const response = await fetch("/api/upload/image/web", {
+              method: "POST",
+              body: formData,
+            });
+
+            if (!response.ok) {
+              throw new Error("Image upload failed");
+            }
+
+            const data = await response.json();
+            callback(data.url);
+          } catch (error) {
+            console.error("Error uploading image:", error);
+            alert("Failed to upload image. Please try again.");
+          }
+        },
+      },
+    });
+
+    // Handle form submission to capture editor content
+    const form = document.querySelector("form");
+    const originalSubmit = form.onsubmit;
+    form.onsubmit = function (e) {
+      // Get HTML content from editor and set it to the hidden input
+      const htmlContent = editor.getHTML();
+      document.getElementById("description-input").value = htmlContent;
+
+      // Continue with the form submission
+      return originalSubmit ? originalSubmit.call(this, e) : true;
+    };
+
     // Initialize multiple select for articles if available
     const articleSelect = document.getElementById("article_ids");
     if (articleSelect) {

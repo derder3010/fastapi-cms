@@ -103,7 +103,30 @@
                 ['ul', 'ol', 'task', 'indent', 'outdent'],
                 ['table', 'image', 'link'],
                 ['code', 'codeblock']
-            ]
+            ],
+            hooks: {
+                addImageBlobHook: async (blob, callback) => {
+                    const formData = new FormData();
+                    formData.append('file', blob);
+                    
+                    try {
+                        const response = await fetch('/api/upload/image/web', {
+                            method: 'POST',
+                            body: formData
+                        });
+                        
+                        if (!response.ok) {
+                            throw new Error('Image upload failed');
+                        }
+                        
+                        const data = await response.json();
+                        callback(data.url);
+                    } catch (error) {
+                        console.error('Error uploading image:', error);
+                        alert('Failed to upload image. Please try again.');
+                    }
+                }
+            }
         });
         
         // Handle form submission to capture editor content
