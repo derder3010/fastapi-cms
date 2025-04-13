@@ -94,7 +94,7 @@ content %}
                 <tr>
                   <th>ID</th>
                   <th>Title</th>
-                  <th class="description-column">Slug</th>
+                  <th>Views</th>
                   <th>Category</th>
                   <th>Tags</th>
                   <th>Status</th>
@@ -116,14 +116,8 @@ content %}
                       {{ article.title }}
                     </span>
                   </td>
-                  <td data-label="Slug" class="td-description">
-                    <span
-                      class="text-truncate d-inline-block"
-                      style="max-width: 180px"
-                      title="{{ article.slug }}"
-                    >
-                      {{ article.slug or '-' }}
-                    </span>
+                  <td data-label="Views">
+                    <span class="badge bg-secondary">{{ article.views }}</span>
                   </td>
                   <td data-label="Category">{{ article.category.name }}</td>
                   <td data-label="Tags">

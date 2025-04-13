@@ -1,5 +1,8 @@
 {% extends "admin/base.html" %} {% block title %}Dashboard - FastAPI CMS{%
-endblock %} {% block header_title %}Dashboard{% endblock %} {% block content %}
+endblock %} {% block header_title %}Dashboard{% endblock %} {% block
+head_scripts %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+{% endblock %} {% block content %}
 <div class="container-fluid mt-4">
   <div class="row">
     <div class="col-12">
@@ -10,7 +13,152 @@ endblock %} {% block header_title %}Dashboard{% endblock %} {% block content %}
     </div>
   </div>
 
+  <!-- Chart moved to appear right below the welcome message -->
   <div class="row mt-3">
+    <div class="col-12">
+      <div class="card shadow-sm">
+        <div
+          class="card-header bg-white d-flex justify-content-between align-items-center"
+        >
+          <h5 class="card-title mb-0 text-primary">
+            <i class="bi bi-bar-chart-line me-2"></i>Article Performance
+          </h5>
+          <a href="/admin/articles" class="btn btn-sm btn-outline-primary"
+            >View All Articles</a
+          >
+        </div>
+        <div class="card-body">
+          {% if article_chart_data and article_chart_data.views %}
+          <div style="height: 350px">
+            <canvas id="articleViewsChart"></canvas>
+          </div>
+          <div class="mt-3 text-center small text-muted">
+            <i class="bi bi-info-circle me-1"></i>Click on any bar to edit the
+            corresponding article
+          </div>
+          <script>
+            document.addEventListener('DOMContentLoaded', function() {
+              const ctx = document.getElementById('articleViewsChart').getContext('2d');
+              const articleIds = {{ article_chart_data.ids|tojson }};
+              const chart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                  labels: {{ article_chart_data.labels|tojson }},
+                  datasets: [{
+                    label: 'Article Views',
+                    data: {{ article_chart_data.views|tojson }},
+                    backgroundColor: [
+                      'rgba(75, 192, 192, 0.7)',
+                      'rgba(54, 162, 235, 0.7)',
+                      'rgba(153, 102, 255, 0.7)',
+                      'rgba(255, 206, 86, 0.7)',
+                      'rgba(255, 159, 64, 0.7)',
+                      'rgba(255, 99, 132, 0.7)',
+                      'rgba(199, 199, 199, 0.7)',
+                      'rgba(83, 102, 255, 0.7)',
+                      'rgba(78, 205, 196, 0.7)',
+                      'rgba(240, 98, 146, 0.7)'
+                    ],
+                    borderColor: [
+                      'rgba(75, 192, 192, 1)',
+                      'rgba(54, 162, 235, 1)',
+                      'rgba(153, 102, 255, 1)',
+                      'rgba(255, 206, 86, 1)',
+                      'rgba(255, 159, 64, 1)',
+                      'rgba(255, 99, 132, 1)',
+                      'rgba(199, 199, 199, 1)',
+                      'rgba(83, 102, 255, 1)',
+                      'rgba(78, 205, 196, 1)',
+                      'rgba(240, 98, 146, 1)'
+                    ],
+                    borderWidth: 1,
+                    borderRadius: 6,
+                    maxBarThickness: 70
+                  }]
+                },
+                options: {
+                  responsive: true,
+                  maintainAspectRatio: false,
+                  plugins: {
+                    legend: {
+                      display: false
+                    },
+                    tooltip: {
+                      backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                      padding: 12,
+                      titleFont: {
+                        size: 14
+                      },
+                      bodyFont: {
+                        size: 13
+                      },
+                      callbacks: {
+                        label: function(context) {
+                          return `Views: ${context.raw}`;
+                        },
+                        footer: function(tooltipItems) {
+                          const index = tooltipItems[0].dataIndex;
+                          return 'Category: ' + {{ article_chart_data.categories|tojson }}[index];
+                        }
+                      }
+                    }
+                  },
+                  scales: {
+                    y: {
+                      beginAtZero: true,
+                      title: {
+                        display: true,
+                        text: 'Number of Views',
+                        font: {
+                          weight: 'bold'
+                        }
+                      },
+                      grid: {
+                        color: 'rgba(0, 0, 0, 0.05)'
+                      },
+                      ticks: {
+                        precision: 0
+                      }
+                    },
+                    x: {
+                      title: {
+                        display: true,
+                        text: 'Articles',
+                        font: {
+                          weight: 'bold'
+                        }
+                      },
+                      grid: {
+                        display: false
+                      }
+                    }
+                  },
+                  onClick: function(event, elements) {
+                    if (elements.length > 0) {
+                      const index = elements[0].index;
+                      const articleId = articleIds[index];
+                      window.location.href = `/admin/articles/${articleId}/edit`;
+                    }
+                  },
+                }
+              });
+            });
+          </script>
+          {% else %}
+          <div class="alert alert-info d-flex align-items-center">
+            <i class="bi bi-info-circle-fill me-2 fs-4"></i>
+            <div>
+              No article view data available. Publish some articles to see view
+              statistics.
+            </div>
+          </div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="row mt-4">
     <div class="col-md-4 col-lg-2 mb-4">
       <div class="card h-100">
         <div class="card-body text-center">

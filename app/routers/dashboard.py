@@ -48,6 +48,21 @@ async def admin_dashboard(request: Request, db: Session = Depends(get_db)):
         select(Product).order_by(desc(Product.created_at)).limit(5)
     ).scalars().all()
     
+    # Get top 10 articles by views for the chart
+    top_articles_by_views = db.execute(
+        select(Article).options(
+            selectinload(Article.category)
+        ).order_by(desc(Article.views)).limit(10)
+    ).unique().scalars().all()
+    
+    # Prepare data for the chart
+    article_chart_data = {
+        'labels': [article.title[:20] + '...' if len(article.title) > 20 else article.title for article in top_articles_by_views],
+        'views': [article.views for article in top_articles_by_views],
+        'categories': [article.category.name for article in top_articles_by_views],
+        'ids': [article.id for article in top_articles_by_views]
+    }
+    
     return templates.TemplateResponse(
         "admin/dashboard.html",
         {
@@ -61,7 +76,8 @@ async def admin_dashboard(request: Request, db: Session = Depends(get_db)):
             "products_count": products_count,
             "recent_articles": recent_articles,
             "recent_comments": recent_comments,
-            "recent_products": recent_products
+            "recent_products": recent_products,
+            "article_chart_data": article_chart_data
         }
     )
 
