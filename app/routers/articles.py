@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, Form, Request
+from fastapi import APIRouter, Depends, Form, Request, UploadFile
 from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.templating import Jinja2Templates
 from sqlmodel import Session, select, desc, delete, func
@@ -9,6 +9,7 @@ from app.database import get_db
 from app.models import Article, Category, Comment, Tag, ArticleTagLink
 from app.auth.utils import get_user_from_cookie
 from app.utils.text import generate_unique_slug
+from app.utils.media import save_upload
 
 router = APIRouter(prefix="/articles")
 
@@ -180,8 +181,12 @@ async def admin_add_article(
     title: str = Form(...),
     category_id: int = Form(...),
     content: str = Form(...),
-    featured_image: str = Form(None),
     slug: Optional[str] = Form(None),
+    excerpt: Optional[str] = Form(None),
+    footer_content: Optional[str] = Form(None),
+    image_source: Optional[str] = Form(None),
+    featured_image_url: Optional[str] = Form(None),
+    featured_image_file: Optional[UploadFile] = None,
     published: bool = Form(False),
     tag_ids: List[int] = Form([]),
     db: Session = Depends(get_db)
@@ -214,6 +219,14 @@ async def admin_add_article(
             existing_slugs = db.execute(select(Article.slug)).scalars().all()
             slug = generate_unique_slug(title, existing_slugs)
         
+        # Handle featured image
+        featured_image = None
+        if image_source == "url" and featured_image_url:
+            featured_image = featured_image_url
+        elif image_source == "upload" and featured_image_file:
+            # Save uploaded file
+            featured_image = await save_upload(featured_image_file, folder="articles")
+        
         # Create new article
         article = Article(
             title=title,
@@ -221,8 +234,10 @@ async def admin_add_article(
             category_id=category_id,
             author_id=user.id,
             published=published,
-            featured_image=featured_image if featured_image and featured_image.strip() else None,
-            slug=slug
+            featured_image=featured_image,
+            slug=slug,
+            excerpt=excerpt if excerpt and excerpt.strip() else None,
+            footer_content=footer_content if footer_content and footer_content.strip() else None
         )
         db.add(article)
         db.commit()
@@ -293,8 +308,12 @@ async def admin_edit_article(
     title: str = Form(...),
     category_id: int = Form(...),
     content: str = Form(...),
-    featured_image: str = Form(None),
     slug: Optional[str] = Form(None),
+    excerpt: Optional[str] = Form(None),
+    footer_content: Optional[str] = Form(None),
+    image_source: Optional[str] = Form(None),
+    featured_image_url: Optional[str] = Form(None),
+    featured_image_file: Optional[UploadFile] = None,
     published: bool = Form(False),
     tag_ids: List[int] = Form([]),
     db: Session = Depends(get_db)
@@ -333,13 +352,23 @@ async def admin_edit_article(
             existing_slugs = db.execute(select(Article.slug).where(Article.id != article_id)).scalars().all()
             slug = generate_unique_slug(title, existing_slugs)
         
+        # Handle featured image
+        featured_image = article.featured_image  # Default to current value
+        if image_source == "url" and featured_image_url:
+            featured_image = featured_image_url
+        elif image_source == "upload" and featured_image_file:
+            # Save uploaded file
+            featured_image = await save_upload(featured_image_file, folder="articles")
+        
         # Update article
         article.title = title
         article.content = content
         article.category_id = category_id
         article.published = published
-        article.featured_image = featured_image if featured_image and featured_image.strip() else None
+        article.featured_image = featured_image
         article.slug = slug
+        article.excerpt = excerpt if excerpt and excerpt.strip() else None
+        article.footer_content = footer_content if footer_content and footer_content.strip() else None
         
         db.add(article)
         db.commit()

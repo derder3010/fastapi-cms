@@ -1,11 +1,13 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Form, UploadFile, File
 from sqlmodel import Session, select
-from typing import List
+from typing import List, Optional
+import json
 
 from app.database import get_db
 from app.models import Article, ArticleCreate, ArticleRead, ArticleUpdate
 from app.auth.deps import get_current_active_user
 from app.utils.text import generate_unique_slug
+from app.utils.media import save_upload
 
 router = APIRouter(prefix="/articles", tags=["articles"])
 
@@ -28,6 +30,47 @@ async def create_article(
     db.commit()
     db.refresh(article_obj)
     return article_obj
+
+@router.post("/upload", response_model=ArticleRead)
+async def create_article_with_file(
+    title: str = Form(...),
+    content: str = Form(...),
+    category_id: int = Form(...),
+    featured_image: Optional[UploadFile] = File(None),
+    excerpt: Optional[str] = Form(None),
+    footer_content: Optional[str] = Form(None),
+    slug: Optional[str] = Form(None),
+    published: bool = Form(False),
+    current_user = Depends(get_current_active_user),
+    db: Session = Depends(get_db)
+):
+    # Handle file upload
+    featured_image_path = None
+    if featured_image:
+        featured_image_path = await save_upload(featured_image, folder="articles")
+    
+    # Generate slug from title if not provided
+    if not slug or not slug.strip():
+        existing_slugs = db.execute(select(Article.slug)).scalars().all()
+        slug = generate_unique_slug(title, existing_slugs)
+    
+    # Create article
+    article = Article(
+        title=title,
+        content=content,
+        category_id=category_id,
+        author_id=current_user.id,
+        featured_image=featured_image_path,
+        slug=slug,
+        excerpt=excerpt if excerpt and excerpt.strip() else None,
+        footer_content=footer_content if footer_content and footer_content.strip() else None,
+        published=published
+    )
+    
+    db.add(article)
+    db.commit()
+    db.refresh(article)
+    return article
 
 @router.get("/", response_model=List[ArticleRead])
 async def get_articles(db: Session = Depends(get_db)):
@@ -66,6 +109,51 @@ async def update_article(
     
     for key, value in article_data.items():
         setattr(article, key, value)
+    
+    db.add(article)
+    db.commit()
+    db.refresh(article)
+    return article
+
+@router.put("/{article_id}/upload", response_model=ArticleRead)
+async def update_article_with_file(
+    article_id: int,
+    title: str = Form(...),
+    content: str = Form(...),
+    category_id: int = Form(...),
+    featured_image: Optional[UploadFile] = File(None),
+    excerpt: Optional[str] = Form(None),
+    footer_content: Optional[str] = Form(None),
+    slug: Optional[str] = Form(None),
+    published: bool = Form(False),
+    current_user = Depends(get_current_active_user),
+    db: Session = Depends(get_db)
+):
+    article = db.get(Article, article_id)
+    if not article:
+        raise HTTPException(status_code=404, detail="Article not found")
+    
+    # Only allow the author or superuser to update the article
+    if article.author_id != current_user.id and not current_user.is_superuser:
+        raise HTTPException(status_code=403, detail="Not authorized to update this article")
+    
+    # Handle file upload
+    if featured_image:
+        article.featured_image = await save_upload(featured_image, folder="articles")
+    
+    # Generate slug from title if not provided
+    if not slug or not slug.strip():
+        existing_slugs = db.execute(select(Article.slug).where(Article.id != article_id)).scalars().all()
+        slug = generate_unique_slug(title, existing_slugs)
+    
+    # Update article fields
+    article.title = title
+    article.content = content
+    article.category_id = category_id
+    article.slug = slug
+    article.excerpt = excerpt if excerpt and excerpt.strip() else None
+    article.footer_content = footer_content if footer_content and footer_content.strip() else None
+    article.published = published
     
     db.add(article)
     db.commit()
