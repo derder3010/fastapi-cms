@@ -1,215 +1,239 @@
-{% extends "admin/base.html" %} {% block title %}Edit Product{% endblock %} {%
-block content %}
-<div class="container-fluid">
-  <h1 class="h3 mb-2 text-gray-800">Edit Product</h1>
-  <p class="mb-4">Update product information.</p>
+{% extends "admin/base.html" %} {% block title %}Edit Product - FastAPI CMS{%
+endblock %} {% block header_title %}Edit Product{% endblock %} {% block content
+%}
+<div class="container-fluid mt-4">
+  <div class="row">
+    <div class="col-12">
+      <div class="card">
+        <div class="card-header">
+          <h5 class="card-title">Edit Product: {{ product.name }}</h5>
+        </div>
+        <div class="card-body">
+          {% if error %}
+          <div
+            class="alert alert-danger alert-dismissible fade show"
+            role="alert"
+          >
+            {{ error }}
+            <button
+              type="button"
+              class="btn-close"
+              data-bs-dismiss="alert"
+              aria-label="Close"
+            ></button>
+          </div>
+          {% endif %}
 
-  {% if error %}
-  <div class="alert alert-danger alert-dismissible fade show" role="alert">
-    {{ error }}
-    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-      <span aria-hidden="true">&times;</span>
-    </button>
-  </div>
-  {% endif %}
+          <form
+            action="/admin/products/{{ product.id }}/edit"
+            method="post"
+            enctype="multipart/form-data"
+          >
+            <div class="row">
+              <div class="col-md-6">
+                <div class="mb-3">
+                  <label for="name" class="form-label"
+                    >Product Name <span class="text-danger">*</span></label
+                  >
+                  <input
+                    type="text"
+                    class="form-control"
+                    id="name"
+                    name="name"
+                    value="{{ product.name }}"
+                    required
+                  />
+                </div>
 
-  <div class="card shadow mb-4">
-    <div class="card-header py-3">
-      <h6 class="m-0 font-weight-bold text-primary">Product Information</h6>
-    </div>
-    <div class="card-body">
-      <form
-        action="/admin/products/{{ product.id }}/edit"
-        method="post"
-        enctype="multipart/form-data"
-      >
-        <div class="row">
-          <div class="col-md-6">
-            <div class="form-group">
-              <label for="name">Product Name *</label>
-              <input
-                type="text"
-                class="form-control"
-                id="name"
-                name="name"
-                value="{{ product.name }}"
-                required
-              />
-            </div>
+                <div class="mb-3">
+                  <label for="price" class="form-label">Price</label>
+                  <input
+                    type="number"
+                    class="form-control"
+                    id="price"
+                    name="price"
+                    step="0.01"
+                    value="{{ product.price }}"
+                  />
+                </div>
 
-            <div class="form-group">
-              <label for="price">Price</label>
-              <input
-                type="number"
-                class="form-control"
-                id="price"
-                name="price"
-                step="0.01"
-                value="{{ product.price }}"
-              />
-            </div>
+                <div class="mb-3">
+                  <label for="slug" class="form-label">Slug</label>
+                  <input
+                    type="text"
+                    class="form-control"
+                    id="slug"
+                    name="slug"
+                    value="{{ product.slug }}"
+                  />
+                  <div class="form-text">
+                    Will be generated from name if left empty.
+                  </div>
+                </div>
 
-            <div class="form-group">
-              <label for="slug">Slug</label>
-              <input
-                type="text"
-                class="form-control"
-                id="slug"
-                name="slug"
-                value="{{ product.slug }}"
-              />
-            </div>
-
-            <div class="form-group">
-              <label for="description">Description</label>
-              <textarea
-                class="form-control"
-                id="description"
-                name="description"
-                rows="4"
-              >
+                <div class="mb-3">
+                  <label for="description" class="form-label"
+                    >Description</label
+                  >
+                  <textarea
+                    class="form-control"
+                    id="description"
+                    name="description"
+                    rows="4"
+                  >
 {{ product.description }}</textarea
-              >
-            </div>
+                  >
+                </div>
 
-            <div class="form-group">
-              <label for="featured_image">Featured Image</label>
-              {% if product.featured_image %}
-              <div class="mb-2">
-                <img
-                  src="/media/{{ product.featured_image }}"
-                  alt="{{ product.name }}"
-                  class="img-thumbnail"
-                  style="max-height: 150px"
-                />
-                <p class="small text-muted mt-1">Current image</p>
+                <div class="mb-3">
+                  <label for="featured_image" class="form-label"
+                    >Featured Image</label
+                  >
+                  {% if product.featured_image %}
+                  <div class="mb-2">
+                    <img
+                      src="/media/{{ product.featured_image }}"
+                      alt="{{ product.name }}"
+                      class="img-thumbnail"
+                      style="max-height: 150px"
+                    />
+                    <p class="small text-muted mt-1">Current image</p>
+                  </div>
+                  {% endif %}
+                  <input
+                    type="file"
+                    class="form-control"
+                    id="featured_image"
+                    name="featured_image"
+                    accept="image/*"
+                  />
+                  <div class="form-text">
+                    Upload a new image to replace the current one (optional).
+                  </div>
+                </div>
               </div>
-              {% endif %}
-              <input
-                type="file"
-                class="form-control-file"
-                id="featured_image"
-                name="featured_image"
-                accept="image/*"
-              />
-              <small class="form-text text-muted"
-                >Upload a new image to replace the current one
-                (optional).</small
-              >
-            </div>
-          </div>
 
-          <div class="col-md-6">
-            <h5 class="mb-3">Affiliate Links</h5>
+              <div class="col-md-6">
+                <h5 class="mb-3">Affiliate Links</h5>
 
-            <div class="form-group">
-              <label for="shopee_link">Shopee Link</label>
-              <input
-                type="url"
-                class="form-control"
-                id="shopee_link"
-                name="shopee_link"
-                value="{{ product.shopee_link }}"
-              />
-            </div>
+                <div class="mb-3">
+                  <label for="shopee_link" class="form-label"
+                    >Shopee Link</label
+                  >
+                  <input
+                    type="url"
+                    class="form-control"
+                    id="shopee_link"
+                    name="shopee_link"
+                    value="{{ product.shopee_link }}"
+                  />
+                </div>
 
-            <div class="form-group">
-              <label for="lazada_link">Lazada Link</label>
-              <input
-                type="url"
-                class="form-control"
-                id="lazada_link"
-                name="lazada_link"
-                value="{{ product.lazada_link }}"
-              />
-            </div>
+                <div class="mb-3">
+                  <label for="lazada_link" class="form-label"
+                    >Lazada Link</label
+                  >
+                  <input
+                    type="url"
+                    class="form-control"
+                    id="lazada_link"
+                    name="lazada_link"
+                    value="{{ product.lazada_link }}"
+                  />
+                </div>
 
-            <div class="form-group">
-              <label for="amazon_link">Amazon Link</label>
-              <input
-                type="url"
-                class="form-control"
-                id="amazon_link"
-                name="amazon_link"
-                value="{{ product.amazon_link }}"
-              />
-            </div>
+                <div class="mb-3">
+                  <label for="amazon_link" class="form-label"
+                    >Amazon Link</label
+                  >
+                  <input
+                    type="url"
+                    class="form-control"
+                    id="amazon_link"
+                    name="amazon_link"
+                    value="{{ product.amazon_link }}"
+                  />
+                </div>
 
-            <div class="form-group">
-              <label for="tiki_link">Tiki Link</label>
-              <input
-                type="url"
-                class="form-control"
-                id="tiki_link"
-                name="tiki_link"
-                value="{{ product.tiki_link }}"
-              />
-            </div>
+                <div class="mb-3">
+                  <label for="tiki_link" class="form-label">Tiki Link</label>
+                  <input
+                    type="url"
+                    class="form-control"
+                    id="tiki_link"
+                    name="tiki_link"
+                    value="{{ product.tiki_link }}"
+                  />
+                </div>
 
-            <div class="form-group">
-              <label for="other_links">Other Links</label>
-              <textarea
-                class="form-control"
-                id="other_links"
-                name="other_links"
-                rows="3"
-                placeholder="Enter additional links, one per line"
-              >
+                <div class="mb-3">
+                  <label for="other_links" class="form-label"
+                    >Other Links</label
+                  >
+                  <textarea
+                    class="form-control"
+                    id="other_links"
+                    name="other_links"
+                    rows="3"
+                    placeholder="Enter additional links, one per line"
+                  >
 {{ product.other_links }}</textarea
-              >
+                  >
+                </div>
+
+                <div class="mb-3">
+                  <label for="article_ids" class="form-label"
+                    >Associated Articles</label
+                  >
+                  <select
+                    class="form-select"
+                    id="article_ids"
+                    name="article_ids"
+                    multiple
+                  >
+                    {% for article in articles %}
+                    <option
+                      value="{{ article.id }}"
+                      {%
+                      if
+                      article.id
+                      in
+                      associated_article_ids
+                      %}selected{%
+                      endif
+                      %}
+                    >
+                      {{ article.title }}
+                    </option>
+                    {% endfor %}
+                  </select>
+                  <div class="form-text">
+                    Articles where this product should appear.
+                  </div>
+                </div>
+              </div>
             </div>
 
-            <h5 class="mt-4 mb-3">Associated Articles</h5>
-            <div class="form-group">
-              <label>Select Articles to Associate with this Product</label>
-              <select
-                class="form-control select2"
-                id="article_ids"
-                name="article_ids"
-                multiple
-              >
-                {% for article in articles %}
-                <option
-                  value="{{ article.id }}"
-                  {%
-                  if
-                  article.id
-                  in
-                  associated_article_ids
-                  %}selected{%
-                  endif
-                  %}
-                >
-                  {{ article.title }}
-                </option>
-                {% endfor %}
-              </select>
-              <small class="form-text text-muted"
-                >Articles where this product should appear.</small
-              >
+            <div class="d-flex justify-content-between mt-3">
+              <a href="/admin/products" class="btn btn-secondary">Cancel</a>
+              <button type="submit" class="btn btn-primary">
+                Update Product
+              </button>
             </div>
-          </div>
+          </form>
         </div>
-
-        <div class="row mt-3">
-          <div class="col-12">
-            <button type="submit" class="btn btn-primary">
-              Update Product
-            </button>
-            <a href="/admin/products" class="btn btn-secondary">Cancel</a>
-          </div>
-        </div>
-      </form>
+      </div>
     </div>
   </div>
 </div>
-{% endblock %} {% block scripts %}
+{% endblock %} {% block additional_js %}
 <script>
-  $(document).ready(function () {
-    $(".select2").select2({
-      placeholder: "Select articles",
-      width: "100%",
-    });
+  document.addEventListener("DOMContentLoaded", function () {
+    // Initialize multiple select for articles if available
+    const articleSelect = document.getElementById("article_ids");
+    if (articleSelect) {
+      // You can add JS for enhanced select functionality here if needed
+    }
   });
 </script>
 {% endblock %}

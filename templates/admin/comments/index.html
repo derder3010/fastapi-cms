@@ -6,9 +6,11 @@ content %}
     <div class="col-12 d-flex justify-content-between align-items-center">
       <h5>All Comments</h5>
       {% if comments and comments|length > 0 %}
-      <a href="/admin/comments/delete-all" class="btn btn-danger">
-        <i class="bi bi-trash"></i> Delete All Comments
-      </a>
+      <div class="d-flex gap-2">
+        <a href="/admin/comments/delete-all" class="btn btn-danger btn-sm">
+          <i class="bi bi-trash me-1"></i><span>Delete All</span>
+        </a>
+      </div>
       {% endif %}
     </div>
   </div>
@@ -81,16 +83,22 @@ content %}
                       <a
                         href="/admin/comments/{{ comment.id }}/edit"
                         class="btn btn-sm btn-primary"
+                        title="Edit"
                       >
                         <i class="bi bi-pencil-square"></i>
+                        <span class="d-none d-md-inline-block ms-1">Edit</span>
                       </a>
                       <button
                         type="button"
                         class="btn btn-sm btn-danger"
                         data-bs-toggle="modal"
                         data-bs-target="#deleteModal{{ comment.id }}"
+                        title="Delete"
                       >
                         <i class="bi bi-trash"></i>
+                        <span class="d-none d-md-inline-block ms-1"
+                          >Delete</span
+                        >
                       </button>
                     </div>
 

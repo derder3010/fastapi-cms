@@ -1,119 +1,190 @@
-{% extends "admin/base.html" %} {% block title %}Products Management{% endblock
-%} {% block content %}
-<div class="container-fluid">
-  <h1 class="h3 mb-2 text-gray-800">Products Management</h1>
-  <p class="mb-4">Manage your products in the CMS.</p>
+{% extends "admin/base.html" %} {% block title %}Product Management - FastAPI
+CMS{% endblock %} {% block header_title %}Product Management{% endblock %} {%
+block content %}
+<div class="container-fluid mt-4">
+  <div class="row mb-3">
+    <div
+      class="col-12 d-flex justify-content-between align-items-center flex-wrap"
+    >
+      <h5 class="mb-2 mb-md-0">All Products</h5>
+      <div class="d-flex gap-2">
+        <a href="/admin/products/add" class="btn btn-primary btn-sm">
+          <i class="bi bi-plus-circle me-1"></i><span>Add</span>
+        </a>
+      </div>
+    </div>
+  </div>
 
   {% if message %}
-  <div class="alert alert-success alert-dismissible fade show" role="alert">
-    {{ message }}
-    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-      <span aria-hidden="true">&times;</span>
-    </button>
+  <div class="row">
+    <div class="col-12">
+      <div class="alert alert-success alert-dismissible fade show" role="alert">
+        {{ message }}
+        <button
+          type="button"
+          class="btn-close"
+          data-bs-dismiss="alert"
+          aria-label="Close"
+        ></button>
+      </div>
+    </div>
   </div>
   {% endif %} {% if error %}
-  <div class="alert alert-danger alert-dismissible fade show" role="alert">
-    {{ error }}
-    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-      <span aria-hidden="true">&times;</span>
-    </button>
+  <div class="row">
+    <div class="col-12">
+      <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        {{ error }}
+        <button
+          type="button"
+          class="btn-close"
+          data-bs-dismiss="alert"
+          aria-label="Close"
+        ></button>
+      </div>
+    </div>
   </div>
   {% endif %}
 
-  <div class="card shadow mb-4">
-    <div class="card-header py-3">
-      <div class="row no-gutters align-items-center">
-        <div class="col">
-          <h6 class="m-0 font-weight-bold text-primary">Products List</h6>
+  <div class="row">
+    <div class="col-12">
+      <div class="card">
+        <div class="card-body">
+          {% if products %}
+          <div class="table-responsive">
+            <table class="table table-striped table-hover">
+              <thead>
+                <tr>
+                  <th>ID</th>
+                  <th>Image</th>
+                  <th>Name</th>
+                  <th>Price</th>
+                  <th>Description</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for product in products %}
+                <tr>
+                  <td>{{ product.id }}</td>
+                  <td>
+                    {% if product.featured_image %}
+                    <img
+                      src="/media/{{ product.featured_image }}"
+                      alt="{{ product.name }}"
+                      width="50"
+                      class="img-thumbnail"
+                    />
+                    {% else %}
+                    <span class="text-muted">No image</span>
+                    {% endif %}
+                  </td>
+                  <td>{{ product.name }}</td>
+                  <td>${{ "%.2f"|format(product.price) }}</td>
+                  <td>
+                    <span
+                      class="text-truncate d-inline-block"
+                      style="max-width: 200px"
+                      title="{{ product.description }}"
+                    >
+                      {{ product.description|truncate(50) }}
+                    </span>
+                  </td>
+                  <td>
+                    <div class="d-flex gap-2">
+                      <a
+                        href="/admin/products/{{ product.id }}/edit"
+                        class="btn btn-sm btn-primary"
+                        title="Edit"
+                      >
+                        <i class="bi bi-pencil-square"></i>
+                        <span class="d-none d-md-inline-block ms-1">Edit</span>
+                      </a>
+                      <a
+                        href="/admin/products/{{ product.id }}/articles"
+                        class="btn btn-sm btn-info"
+                        title="Linked Articles"
+                      >
+                        <i class="bi bi-link"></i>
+                        <span class="d-none d-md-inline-block ms-1"
+                          >Articles</span
+                        >
+                      </a>
+                      <button
+                        type="button"
+                        class="btn btn-sm btn-danger"
+                        data-bs-toggle="modal"
+                        data-bs-target="#deleteModal{{ product.id }}"
+                        title="Delete"
+                      >
+                        <i class="bi bi-trash"></i>
+                        <span class="d-none d-md-inline-block ms-1"
+                          >Delete</span
+                        >
+                      </button>
+                    </div>
+
+                    <!-- Delete Confirmation Modal -->
+                    <div
+                      class="modal fade"
+                      id="deleteModal{{ product.id }}"
+                      tabindex="-1"
+                      aria-labelledby="deleteModalLabel{{ product.id }}"
+                      aria-hidden="true"
+                    >
+                      <div class="modal-dialog">
+                        <div class="modal-content">
+                          <div class="modal-header">
+                            <h5
+                              class="modal-title"
+                              id="deleteModalLabel{{ product.id }}"
+                            >
+                              Confirm Delete
+                            </h5>
+                            <button
+                              type="button"
+                              class="btn-close"
+                              data-bs-dismiss="modal"
+                              aria-label="Close"
+                            ></button>
+                          </div>
+                          <div class="modal-body">
+                            Are you sure you want to delete the product "{{
+                            product.name }}"? This action cannot be undone.
+                          </div>
+                          <div class="modal-footer">
+                            <button
+                              type="button"
+                              class="btn btn-secondary"
+                              data-bs-dismiss="modal"
+                            >
+                              Cancel
+                            </button>
+                            <a
+                              href="/admin/products/{{ product.id }}/delete"
+                              class="btn btn-danger"
+                              >Delete</a
+                            >
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+          {% else %}
+          <div class="alert alert-info mb-0" role="alert">
+            No products found.
+            <a href="/admin/products/add" class="alert-link"
+              >Create your first product</a
+            >.
+          </div>
+          {% endif %}
         </div>
-        <div class="col-auto">
-          <a href="/admin/products/add" class="btn btn-primary btn-sm">
-            <i class="fas fa-plus fa-sm"></i> Add Product
-          </a>
-        </div>
-      </div>
-    </div>
-    <div class="card-body">
-      <div class="table-responsive">
-        <table
-          class="table table-bordered"
-          id="dataTable"
-          width="100%"
-          cellspacing="0"
-        >
-          <thead>
-            <tr>
-              <th>ID</th>
-              <th>Image</th>
-              <th>Name</th>
-              <th>Price</th>
-              <th>Slug</th>
-              <th>Description</th>
-              <th>Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {% for product in products %}
-            <tr>
-              <td>{{ product.id }}</td>
-              <td>
-                {% if product.featured_image %}
-                <img
-                  src="/media/{{ product.featured_image }}"
-                  alt="{{ product.name }}"
-                  width="50"
-                  class="img-thumbnail"
-                />
-                {% else %}
-                <span class="text-muted">No image</span>
-                {% endif %}
-              </td>
-              <td>{{ product.name }}</td>
-              <td>${{ "%.2f"|format(product.price) }}</td>
-              <td>{{ product.slug }}</td>
-              <td>{{ product.description|truncate(50) }}</td>
-              <td>
-                <div class="btn-group">
-                  <a
-                    href="/admin/products/{{ product.id }}/edit"
-                    class="btn btn-info btn-sm"
-                  >
-                    <i class="fas fa-edit fa-sm"></i> Edit
-                  </a>
-                  <a
-                    href="/admin/products/{{ product.id }}/articles"
-                    class="btn btn-primary btn-sm"
-                  >
-                    <i class="fas fa-link fa-sm"></i> Articles
-                  </a>
-                  <a
-                    href="/admin/products/{{ product.id }}/delete"
-                    class="btn btn-danger btn-sm"
-                    onclick="return confirm('Are you sure you want to delete this product?');"
-                  >
-                    <i class="fas fa-trash fa-sm"></i> Delete
-                  </a>
-                </div>
-              </td>
-            </tr>
-            {% else %}
-            <tr>
-              <td colspan="7" class="text-center">
-                No products found.
-                <a href="/admin/products/add">Add your first product</a>.
-              </td>
-            </tr>
-            {% endfor %}
-          </tbody>
-        </table>
       </div>
     </div>
   </div>
 </div>
-{% endblock %} {% block scripts %}
-<script>
-  $(document).ready(function () {
-    $("#dataTable").DataTable();
-  });
-</script>
 {% endblock %}

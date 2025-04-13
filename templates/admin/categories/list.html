@@ -3,15 +3,17 @@ CMS{% endblock %} {% block header_title %}Category Management{% endblock %} {%
 block content %}
 <div class="container-fluid mt-4">
   <div class="row mb-3">
-    <div class="col-12 d-flex justify-content-between align-items-center">
-      <h5>All Categories</h5>
-      <div class="btn-group">
-        <a href="/admin/categories/add" class="btn btn-primary">
-          <i class="bi bi-plus-circle"></i> Add New Category
+    <div
+      class="col-12 d-flex justify-content-between align-items-center flex-wrap"
+    >
+      <h5 class="mb-2 mb-md-0">All Categories</h5>
+      <div class="d-flex gap-2">
+        <a href="/admin/categories/add" class="btn btn-primary btn-sm">
+          <i class="bi bi-plus-circle me-1"></i><span>Add</span>
         </a>
         {% if categories and categories|length > 0 %}
-        <a href="/admin/categories/delete-all" class="btn btn-danger">
-          <i class="bi bi-trash"></i> Delete All
+        <a href="/admin/categories/delete-all" class="btn btn-danger btn-sm">
+          <i class="bi bi-trash me-1"></i><span>Delete All</span>
         </a>
         {% endif %}
       </div>
@@ -72,16 +74,22 @@ block content %}
                       <a
                         href="/admin/categories/{{ category.id }}/edit"
                         class="btn btn-sm btn-primary"
+                        title="Edit"
                       >
                         <i class="bi bi-pencil-square"></i>
+                        <span class="d-none d-md-inline-block ms-1">Edit</span>
                       </a>
                       <button
                         type="button"
                         class="btn btn-sm btn-danger"
                         data-bs-toggle="modal"
                         data-bs-target="#deleteModal{{ category.id }}"
+                        title="Delete"
                       >
                         <i class="bi bi-trash"></i>
+                        <span class="d-none d-md-inline-block ms-1"
+                          >Delete</span
+                        >
                       </button>
                     </div>
 

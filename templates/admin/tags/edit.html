@@ -1,49 +1,53 @@
-{% extends "admin/base.html" %} {% block title %}Edit Tag{% endblock %} {% block
-content %}
-<div class="container-fluid px-4">
-  <h1 class="mt-4">Edit Tag</h1>
-  <ol class="breadcrumb mb-4">
-    <li class="breadcrumb-item"><a href="/admin/dashboard">Dashboard</a></li>
-    <li class="breadcrumb-item"><a href="/admin/tags">Tags</a></li>
-    <li class="breadcrumb-item active">Edit Tag</li>
-  </ol>
-
-  {% if error %}
-  <div class="alert alert-danger alert-dismissible fade show" role="alert">
-    {{ error }}
-    <button
-      type="button"
-      class="btn-close"
-      data-bs-dismiss="alert"
-      aria-label="Close"
-    ></button>
-  </div>
-  {% endif %}
-
-  <div class="card mb-4">
-    <div class="card-header">
-      <i class="fas fa-edit me-1"></i>
-      Edit Tag
-    </div>
-    <div class="card-body">
-      <form action="/admin/tags/{{ tag.id }}/edit" method="post">
-        <div class="mb-3">
-          <label for="name" class="form-label">Tag Name</label>
-          <input
-            type="text"
-            class="form-control"
-            id="name"
-            name="name"
-            value="{{ tag.name }}"
-            required
-          />
+{% extends "admin/base.html" %} {% block title %}Edit Tag - FastAPI CMS{%
+endblock %} {% block header_title %}Edit Tag{% endblock %} {% block content %}
+<div class="container-fluid mt-4">
+  <div class="row">
+    <div class="col-12">
+      <div class="card">
+        <div class="card-header">
+          <h5 class="card-title">Edit Tag: {{ tag.name }}</h5>
         </div>
+        <div class="card-body">
+          {% if error %}
+          <div
+            class="alert alert-danger alert-dismissible fade show"
+            role="alert"
+          >
+            {{ error }}
+            <button
+              type="button"
+              class="btn-close"
+              data-bs-dismiss="alert"
+              aria-label="Close"
+            ></button>
+          </div>
+          {% endif %}
 
-        <div class="d-flex justify-content-between">
-          <a href="/admin/tags" class="btn btn-secondary">Cancel</a>
-          <button type="submit" class="btn btn-primary">Update Tag</button>
+          <form action="/admin/tags/{{ tag.id }}/edit" method="post">
+            <div class="mb-3">
+              <label for="name" class="form-label"
+                >Tag Name <span class="text-danger">*</span></label
+              >
+              <input
+                type="text"
+                class="form-control"
+                id="name"
+                name="name"
+                value="{{ tag.name }}"
+                required
+              />
+              <div class="form-text">
+                Enter a unique tag name that will help categorize content.
+              </div>
+            </div>
+
+            <div class="d-flex justify-content-between">
+              <a href="/admin/tags" class="btn btn-secondary">Cancel</a>
+              <button type="submit" class="btn btn-primary">Update Tag</button>
+            </div>
+          </form>
         </div>
-      </form>
+      </div>
     </div>
   </div>
 </div>
