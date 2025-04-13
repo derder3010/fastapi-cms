@@ -1,4 +1,15 @@
-{% if pagination and pagination.total_pages > 1 %}
+{% if pagination and pagination.total_pages > 1 %} {# Define a macro to generate
+query parameters for pagination links #} {% macro query_params(page_num) %}
+page={{ page_num }}&page_size={{ pagination.page_size }} {%- if query %}&q={{
+query }}{% endif %} {%- if filter_category_id %}&category_id={{
+filter_category_id }}{% endif %} {%- if filter_author_id %}&author_id={{
+filter_author_id }}{% endif %} {%- if filter_tag_id %}&tag_id={{ filter_tag_id
+}}{% endif %} {%- if filter_status %}&status={{ filter_status }}{% endif %} {%-
+if filter_date_from %}&date_from={{ filter_date_from }}{% endif %} {%- if
+filter_date_to %}&date_to={{ filter_date_to }}{% endif %} {%- if
+filter_price_min %}&price_min={{ filter_price_min }}{% endif %} {%- if
+filter_price_max %}&price_max={{ filter_price_max }}{% endif %} {% endmacro %}
+
 <div class="card-footer">
   <nav aria-label="Page navigation">
     <ul class="pagination justify-content-center mb-0">
@@ -6,7 +17,7 @@
       <li class="page-item {% if not pagination.has_prev %}disabled{% endif %}">
         <a
           class="page-link"
-          href="{{ url_path }}?page={{ pagination.page - 1 }}&page_size={{ pagination.page_size }}{% if query %}&q={{ query }}{% endif %}"
+          href="{{ url_path }}?{{ query_params(pagination.page - 1) }}"
           aria-label="Previous"
         >
           <span aria-hidden="true">&laquo;</span>
@@ -18,11 +29,7 @@
       [pagination.total_pages, start_page + 4]|min %} {% set start_page = [1,
       end_page - 4]|max %} {% if start_page > 1 %}
       <li class="page-item">
-        <a
-          class="page-link"
-          href="{{ url_path }}?page=1&page_size={{ pagination.page_size }}{% if query %}&q={{ query }}{% endif %}"
-          >1</a
-        >
+        <a class="page-link" href="{{ url_path }}?{{ query_params(1) }}">1</a>
       </li>
       {% if start_page > 2 %}
       <li class="page-item disabled">
@@ -30,9 +37,7 @@
       </li>
       {% endif %} {% endif %} {% for p in range(start_page, end_page + 1) %}
       <li class="page-item {% if p == pagination.page %}active{% endif %}">
-        <a
-          class="page-link"
-          href="{{ url_path }}?page={{ p }}&page_size={{ pagination.page_size }}{% if query %}&q={{ query }}{% endif %}"
+        <a class="page-link" href="{{ url_path }}?{{ query_params(p) }}"
           >{{ p }}</a
         >
       </li>
@@ -45,7 +50,7 @@
       <li class="page-item">
         <a
           class="page-link"
-          href="{{ url_path }}?page={{ pagination.total_pages }}&page_size={{ pagination.page_size }}{% if query %}&q={{ query }}{% endif %}"
+          href="{{ url_path }}?{{ query_params(pagination.total_pages) }}"
           >{{ pagination.total_pages }}</a
         >
       </li>
@@ -55,7 +60,7 @@
       <li class="page-item {% if not pagination.has_next %}disabled{% endif %}">
         <a
           class="page-link"
-          href="{{ url_path }}?page={{ pagination.page + 1 }}&page_size={{ pagination.page_size }}{% if query %}&q={{ query }}{% endif %}"
+          href="{{ url_path }}?{{ query_params(pagination.page + 1) }}"
           aria-label="Next"
         >
           <span aria-hidden="true">&raquo;</span>

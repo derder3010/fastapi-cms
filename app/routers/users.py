@@ -2,6 +2,8 @@ from fastapi import APIRouter, Depends, Form, Request
 from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.templating import Jinja2Templates
 from sqlmodel import Session, select, delete, or_, func, desc
+from typing import Optional
+from datetime import datetime
 
 from app.database import get_db
 from app.models import User, Article, Comment
@@ -17,7 +19,10 @@ async def admin_users(
     request: Request, 
     q: str = None, 
     page: int = 1, 
-    page_size: int = 10, 
+    page_size: int = 10,
+    status: Optional[str] = None,
+    date_from: Optional[str] = None,
+    date_to: Optional[str] = None,
     db: Session = Depends(get_db)
 ):
     # Verify user is logged in and is an admin
@@ -27,6 +32,9 @@ async def admin_users(
     
     # Create base query
     query = select(User)
+    
+    # Track applied filters
+    applied_filters = 0
     
     # Apply search filter if query parameter is provided
     if q:
@@ -39,6 +47,34 @@ async def admin_users(
                 User.last_name.ilike(search_term)
             )
         )
+    
+    # Apply status filter
+    if status:
+        if status == 'published':  # We'll use 'published' for active users to be consistent with article status
+            query = query.where(User.is_active == True)
+            applied_filters += 1
+        elif status == 'draft':    # We'll use 'draft' for inactive users
+            query = query.where(User.is_active == False)
+            applied_filters += 1
+    
+    # Apply date range filters
+    if date_from:
+        try:
+            from_date = datetime.strptime(date_from, '%Y-%m-%d')
+            query = query.where(User.created_at >= from_date)
+            applied_filters += 1
+        except ValueError:
+            pass
+    
+    if date_to:
+        try:
+            to_date = datetime.strptime(date_to, '%Y-%m-%d')
+            # Set time to end of day
+            to_date = to_date.replace(hour=23, minute=59, second=59)
+            query = query.where(User.created_at <= to_date)
+            applied_filters += 1
+        except ValueError:
+            pass
     
     # Count total records for pagination
     count_query = select(func.count()).select_from(query.subquery())
@@ -71,7 +107,12 @@ async def admin_users(
                 "total_records": total_records,
                 "has_prev": page > 1,
                 "has_next": page < total_pages
-            }
+            },
+            # Filter variables
+            "filter_status": status,
+            "filter_date_from": date_from,
+            "filter_date_to": date_to,
+            "applied_filters": applied_filters
         }
     )
 

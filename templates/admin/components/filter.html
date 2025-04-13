@@ -1,0 +1,157 @@
+{% set filter_id = filter_id|default('filter-panel') %}
+{% set entity_type = entity_type|default('items') %}
+{% set show_category = show_category|default(false) %}
+{% set show_tags = show_tags|default(false) %}
+{% set show_author = show_author|default(false) %}
+{% set show_date_range = show_date_range|default(true) %}
+{% set show_status = show_status|default(false) %}
+{% set show_price_range = show_price_range|default(false) %}
+
+<div class="card mb-4">
+  <div class="card-header bg-light">
+    <div class="d-flex justify-content-between align-items-center">
+      <button
+        class="btn btn-sm btn-link text-body p-0"
+        type="button"
+        data-bs-toggle="collapse"
+        data-bs-target="#{{ filter_id }}"
+        aria-expanded="false"
+        aria-controls="{{ filter_id }}"
+      >
+        <i class="bi bi-funnel me-1"></i> Advanced Filters
+      </button>
+      {% if applied_filters %}
+      <span class="badge bg-primary">{{ applied_filters }} filters applied</span>
+      {% endif %}
+    </div>
+  </div>
+  <div class="collapse" id="{{ filter_id }}">
+    <div class="card-body">
+      <form action="{{ url_path }}" method="get" id="filter-form">
+        <input type="hidden" name="page_size" value="{{ pagination.page_size if pagination else 10 }}" />
+        {% if query %}
+        <input type="hidden" name="q" value="{{ query }}" />
+        {% endif %}
+        
+        <div class="row g-3">
+          {% if show_category and categories %}
+          <div class="col-md-4">
+            <label for="category" class="form-label">Category</label>
+            <select name="category_id" id="category" class="form-select">
+              <option value="">All Categories</option>
+              {% for category in categories %}
+              <option value="{{ category.id }}" {% if filter_category_id == category.id|string %}selected{% endif %}>
+                {{ category.name }}
+              </option>
+              {% endfor %}
+            </select>
+          </div>
+          {% endif %}
+
+          {% if show_author and authors %}
+          <div class="col-md-4">
+            <label for="author" class="form-label">Author</label>
+            <select name="author_id" id="author" class="form-select">
+              <option value="">All Authors</option>
+              {% for author in authors %}
+              <option value="{{ author.id }}" {% if filter_author_id == author.id|string %}selected{% endif %}>
+                {{ author.username }}
+              </option>
+              {% endfor %}
+            </select>
+          </div>
+          {% endif %}
+
+          {% if show_status %}
+          <div class="col-md-4">
+            <label for="status" class="form-label">Status</label>
+            <select name="status" id="status" class="form-select">
+              <option value="">All Statuses</option>
+              {% if entity_type == 'users' %}
+              <option value="published" {% if filter_status == 'published' %}selected{% endif %}>Active</option>
+              <option value="draft" {% if filter_status == 'draft' %}selected{% endif %}>Inactive</option>
+              {% else %}
+              <option value="published" {% if filter_status == 'published' %}selected{% endif %}>Published</option>
+              <option value="draft" {% if filter_status == 'draft' %}selected{% endif %}>Draft</option>
+              {% endif %}
+            </select>
+          </div>
+          {% endif %}
+
+          {% if show_tags and tags %}
+          <div class="col-md-4">
+            <label for="tag" class="form-label">Tag</label>
+            <select name="tag_id" id="tag" class="form-select">
+              <option value="">All Tags</option>
+              {% for tag in tags %}
+              <option value="{{ tag.id }}" {% if filter_tag_id == tag.id|string %}selected{% endif %}>
+                {{ tag.name }}
+              </option>
+              {% endfor %}
+            </select>
+          </div>
+          {% endif %}
+
+          {% if show_date_range %}
+          <div class="col-md-4">
+            <label for="date_from" class="form-label">Date From</label>
+            <input 
+              type="date" 
+              name="date_from" 
+              id="date_from" 
+              class="form-control" 
+              value="{{ filter_date_from }}"
+            />
+          </div>
+
+          <div class="col-md-4">
+            <label for="date_to" class="form-label">Date To</label>
+            <input 
+              type="date" 
+              name="date_to" 
+              id="date_to" 
+              class="form-control" 
+              value="{{ filter_date_to }}"
+            />
+          </div>
+          {% endif %}
+
+          {% if show_price_range %}
+          <div class="col-md-4">
+            <label for="price_min" class="form-label">Min Price</label>
+            <input 
+              type="number" 
+              name="price_min" 
+              id="price_min" 
+              class="form-control" 
+              placeholder="Min"
+              value="{{ filter_price_min }}"
+            />
+          </div>
+
+          <div class="col-md-4">
+            <label for="price_max" class="form-label">Max Price</label>
+            <input 
+              type="number" 
+              name="price_max" 
+              id="price_max" 
+              class="form-control" 
+              placeholder="Max"
+              value="{{ filter_price_max }}"
+            />
+          </div>
+          {% endif %}
+
+          <div class="col-12 d-flex justify-content-end gap-2 mt-4">
+            <a href="{{ url_path }}?page_size={{ pagination.page_size if pagination else 10 }}{% if query %}&q={{ query }}{% endif %}" class="btn btn-outline-secondary">
+              <i class="bi bi-x-circle me-1"></i> Clear Filters
+            </a>
+            <button type="submit" class="btn btn-primary">
+              <i class="bi bi-funnel me-1"></i> Apply Filters
+            </button>
+          </div>
+        </div>
+      </form>
+    </div>
+  </div>
+</div> 

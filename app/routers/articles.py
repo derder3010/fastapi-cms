@@ -20,7 +20,13 @@ async def admin_articles(
     request: Request, 
     q: str = None, 
     page: int = 1, 
-    page_size: int = 10, 
+    page_size: int = 10,
+    category_id: Optional[str] = None,
+    author_id: Optional[str] = None,
+    tag_id: Optional[str] = None,
+    status: Optional[str] = None,
+    date_from: Optional[str] = None,
+    date_to: Optional[str] = None, 
     db: Session = Depends(get_db)
 ):
     # Verify user is logged in and is an admin
@@ -35,6 +41,9 @@ async def admin_articles(
         selectinload(Article.tags)
     )
     
+    # Track applied filters
+    applied_filters = 0
+    
     # Apply search filter if query parameter is provided
     if q:
         search_term = f"%{q}%"
@@ -42,6 +51,51 @@ async def admin_articles(
             Article.title.ilike(search_term) | 
             Article.content.ilike(search_term)
         )
+    
+    # Apply category filter
+    if category_id and category_id.isdigit():
+        query = query.where(Article.category_id == int(category_id))
+        applied_filters += 1
+    
+    # Apply author filter
+    if author_id and author_id.isdigit():
+        query = query.where(Article.author_id == int(author_id))
+        applied_filters += 1
+    
+    # Apply tag filter
+    if tag_id and tag_id.isdigit():
+        tag_id_int = int(tag_id)
+        query = query.join(ArticleTagLink).where(ArticleTagLink.tag_id == tag_id_int)
+        applied_filters += 1
+    
+    # Apply status filter
+    if status:
+        if status == 'published':
+            query = query.where(Article.published == True)
+            applied_filters += 1
+        elif status == 'draft':
+            query = query.where(Article.published == False)
+            applied_filters += 1
+    
+    # Apply date range filters
+    from datetime import datetime
+    if date_from:
+        try:
+            from_date = datetime.strptime(date_from, '%Y-%m-%d')
+            query = query.where(Article.created_at >= from_date)
+            applied_filters += 1
+        except ValueError:
+            pass
+    
+    if date_to:
+        try:
+            to_date = datetime.strptime(date_to, '%Y-%m-%d')
+            # Set time to end of day
+            to_date = to_date.replace(hour=23, minute=59, second=59)
+            query = query.where(Article.created_at <= to_date)
+            applied_filters += 1
+        except ValueError:
+            pass
     
     # Count total records for pagination
     count_query = select(func.count()).select_from(query.subquery())
@@ -60,6 +114,16 @@ async def admin_articles(
         paginated_query
     ).unique().scalars().all()
     
+    # Get all categories for the filter dropdown
+    categories = db.execute(select(Category)).scalars().all()
+    
+    # Get all authors for the filter dropdown
+    from app.models import User
+    authors = db.execute(select(User)).scalars().all()
+    
+    # Get all tags for the filter dropdown
+    tags = db.execute(select(Tag)).scalars().all()
+    
     # Render the admin articles template
     return templates.TemplateResponse(
         "admin/articles/index.html",
@@ -76,7 +140,18 @@ async def admin_articles(
                 "total_records": total_records,
                 "has_prev": page > 1,
                 "has_next": page < total_pages
-            }
+            },
+            # Filter variables
+            "categories": categories,
+            "authors": authors,
+            "tags": tags,
+            "filter_category_id": category_id,
+            "filter_author_id": author_id,
+            "filter_tag_id": tag_id,
+            "filter_status": status,
+            "filter_date_from": date_from,
+            "filter_date_to": date_to,
+            "applied_filters": applied_filters
         }
     )
 

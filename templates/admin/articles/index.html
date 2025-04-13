@@ -71,6 +71,11 @@ content %}
     %}
   </div>
 
+  {% set url_path = '/admin/articles' %} {% set filter_id = 'article-filters' %}
+  {% set entity_type = 'articles' %} {% set show_category = true %} {% set
+  show_tags = true %} {% set show_author = true %} {% set show_status = true %}
+  {% set show_date_range = true %} {% include "admin/components/filter.html" %}
+
   <div class="row">
     <div class="col-12">
       <div class="card">

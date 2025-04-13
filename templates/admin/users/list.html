@@ -70,6 +70,10 @@ content %}
     "admin/components/pagination_info.html" %}
   </div>
 
+  {% set url_path = '/admin/users' %} {% set filter_id = 'user-filters' %} {%
+  set entity_type = 'users' %} {% set show_date_range = true %} {% set
+  show_status = true %} {% include "admin/components/filter.html" %}
+
   <div class="row">
     <div class="col-12">
       <div class="card">

@@ -79,6 +79,10 @@ block content %}
     "admin/components/pagination_info.html" %}
   </div>
 
+  {% set url_path = '/admin/products' %} {% set filter_id = 'product-filters' %}
+  {% set entity_type = 'products' %} {% set show_date_range = true %} {% set
+  show_price_range = true %} {% include "admin/components/filter.html" %}
+
   <div class="row">
     <div class="col-12">
       <div class="card">

@@ -6,6 +6,7 @@ import os
 from datetime import datetime
 import shutil
 import json
+from typing import Optional
 
 from app.database import get_db
 from app.models import Product, Article, ProductArticleLink
@@ -23,7 +24,11 @@ async def admin_products(
     request: Request, 
     q: str = None, 
     page: int = 1, 
-    page_size: int = 10, 
+    page_size: int = 10,
+    price_min: Optional[str] = None,
+    price_max: Optional[str] = None,
+    date_from: Optional[str] = None,
+    date_to: Optional[str] = None,  
     db: Session = Depends(get_db)
 ):
     # Verify user is logged in and is an admin
@@ -35,6 +40,9 @@ async def admin_products(
         # Create base query
         query = select(Product)
         
+        # Track applied filters
+        applied_filters = 0
+        
         # Apply search filter if query parameter is provided
         if q:
             search_term = f"%{q}%"
@@ -44,6 +52,34 @@ async def admin_products(
                     Product.description.ilike(search_term)
                 )
             )
+        
+        # Apply price filters
+        if price_min and price_min.isdigit():
+            query = query.where(Product.price >= int(price_min))
+            applied_filters += 1
+            
+        if price_max and price_max.isdigit():
+            query = query.where(Product.price <= int(price_max))
+            applied_filters += 1
+        
+        # Apply date filters
+        if date_from:
+            try:
+                from_date = datetime.strptime(date_from, '%Y-%m-%d')
+                query = query.where(Product.created_at >= from_date)
+                applied_filters += 1
+            except ValueError:
+                pass
+        
+        if date_to:
+            try:
+                to_date = datetime.strptime(date_to, '%Y-%m-%d')
+                # Set time to end of day
+                to_date = to_date.replace(hour=23, minute=59, second=59)
+                query = query.where(Product.created_at <= to_date)
+                applied_filters += 1
+            except ValueError:
+                pass
         
         # Count total records for pagination
         count_query = select(func.count()).select_from(query.subquery())
@@ -76,7 +112,13 @@ async def admin_products(
                     "total_records": total_records,
                     "has_prev": page > 1,
                     "has_next": page < total_pages
-                }
+                },
+                # Filter variables
+                "filter_price_min": price_min,
+                "filter_price_max": price_max,
+                "filter_date_from": date_from,
+                "filter_date_to": date_to,
+                "applied_filters": applied_filters
             }
         )
     except Exception as e:
