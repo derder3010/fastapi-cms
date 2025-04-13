@@ -80,6 +80,15 @@ class ArticleBase(SQLModel):
     slug: Optional[str] = Field(default=None, max_length=200, index=True, unique=True)
 
 
+class ArticleTagLink(SQLModel, table=True):
+    article_id: Optional[int] = Field(
+        default=None, foreign_key="article.id", primary_key=True
+    )
+    tag_id: Optional[int] = Field(
+        default=None, foreign_key="tag.id", primary_key=True
+    )
+
+
 class Article(ArticleBase, table=True):
     id: Optional[int] = Field(default=None, primary_key=True)
     created_at: datetime = Field(default_factory=datetime.utcnow)
@@ -89,6 +98,7 @@ class Article(ArticleBase, table=True):
     category: Category = Relationship(back_populates="articles")
     author: User = Relationship(back_populates="articles")
     comments: List["Comment"] = Relationship(back_populates="article")
+    tags: List["Tag"] = Relationship(back_populates="articles", link_model=ArticleTagLink)
 
 
 class ArticleCreate(ArticleBase):
@@ -137,4 +147,31 @@ class CommentRead(CommentBase):
 
 
 class CommentUpdate(SQLModel):
-    content: Optional[str] = None 
+    content: Optional[str] = None
+
+
+class TagBase(SQLModel):
+    name: str = Field(max_length=50, index=True, unique=True)
+
+
+class Tag(TagBase, table=True):
+    id: Optional[int] = Field(default=None, primary_key=True)
+    created_at: datetime = Field(default_factory=datetime.utcnow)
+    updated_at: datetime = Field(default_factory=datetime.utcnow, sa_column_kwargs={"onupdate": datetime.utcnow})
+    
+    # Relationships
+    articles: List["Article"] = Relationship(back_populates="tags", link_model=ArticleTagLink)
+
+
+class TagCreate(TagBase):
+    pass
+
+
+class TagRead(TagBase):
+    id: int
+    created_at: datetime
+    updated_at: datetime
+
+
+class TagUpdate(SQLModel):
+    name: Optional[str] = None 

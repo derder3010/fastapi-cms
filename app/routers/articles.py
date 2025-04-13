@@ -1,12 +1,12 @@
 from fastapi import APIRouter, Depends, Form, Request
 from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.templating import Jinja2Templates
-from sqlmodel import Session, select, desc, delete
+from sqlmodel import Session, select, desc, delete, func
 from sqlalchemy.orm import selectinload
-from typing import Optional
+from typing import Optional, List
 
 from app.database import get_db
-from app.models import Article, Category, Comment
+from app.models import Article, Category, Comment, Tag, ArticleTagLink
 from app.auth.utils import get_user_from_cookie
 from app.utils.text import generate_unique_slug
 
@@ -21,19 +21,25 @@ async def admin_articles(request: Request, db: Session = Depends(get_db)):
     user = await get_user_from_cookie(request, db)
     if not user or not user.is_superuser:
         return RedirectResponse(url="/admin/login", status_code=303)
-
-    # Get all articles with their categories and authors
+    
+    # Get all articles with their categories, authors, and tags
     articles = db.execute(
         select(Article).options(
             selectinload(Article.category),
-            selectinload(Article.author)
+            selectinload(Article.author),
+            selectinload(Article.tags)
         ).order_by(desc(Article.created_at))
     ).unique().scalars().all()
     
     # Render the admin articles template
     return templates.TemplateResponse(
         "admin/articles/index.html",
-        {"request": request, "user": user, "articles": articles, "message": request.query_params.get("message")}
+        {
+            "request": request, 
+            "user": user, 
+            "articles": articles,
+            "message": request.query_params.get("message")
+        }
     )
 
 @router.get("/add", response_class=HTMLResponse)
@@ -43,13 +49,16 @@ async def admin_add_article_form(request: Request, db: Session = Depends(get_db)
     if not user or not user.is_superuser:
         return RedirectResponse(url="/admin/login", status_code=303)
 
-    # Get all categories for the dropdown
+    # Get categories for the form
     categories = db.execute(select(Category)).scalars().all()
+    
+    # Get tags for the form
+    tags = db.execute(select(Tag)).scalars().all()
     
     # Render the add article form
     return templates.TemplateResponse(
         "admin/articles/add.html",
-        {"request": request, "user": user, "categories": categories}
+        {"request": request, "user": user, "categories": categories, "tags": tags}
     )
 
 @router.post("/add")
@@ -61,6 +70,7 @@ async def admin_add_article(
     featured_image: str = Form(None),
     slug: Optional[str] = Form(None),
     published: bool = Form(False),
+    tag_ids: List[int] = Form([]),
     db: Session = Depends(get_db)
 ):
     # Verify user is logged in and is an admin
@@ -68,44 +78,67 @@ async def admin_add_article(
     if not user or not user.is_superuser:
         return RedirectResponse(url="/admin/login", status_code=303)
 
-    # Validate category exists
-    category = db.get(Category, category_id)
-    if not category:
-        categories = db.execute(select(Category)).all()
+    try:
+        # Validate category
+        category = db.get(Category, category_id)
+        if not category:
+            categories = db.execute(select(Category)).scalars().all()
+            tags = db.execute(select(Tag)).scalars().all()
+            return templates.TemplateResponse(
+                "admin/articles/add.html",
+                {
+                    "request": request, 
+                    "user": user, 
+                    "categories": categories, 
+                    "tags": tags,
+                    "error": "Invalid category selected."
+                },
+                status_code=400
+            )
+        
+        # Generate slug from title if not provided
+        if not slug or not slug.strip():
+            existing_slugs = db.execute(select(Article.slug)).scalars().all()
+            slug = generate_unique_slug(title, existing_slugs)
+        
+        # Create new article
+        article = Article(
+            title=title,
+            content=content,
+            category_id=category_id,
+            author_id=user.id,
+            published=published,
+            featured_image=featured_image if featured_image and featured_image.strip() else None,
+            slug=slug
+        )
+        db.add(article)
+        db.commit()
+        db.refresh(article)
+        
+        # Add tags to article
+        if tag_ids:
+            for tag_id in tag_ids:
+                tag = db.get(Tag, tag_id)
+                if tag:
+                    article_tag_link = ArticleTagLink(article_id=article.id, tag_id=tag_id)
+                    db.add(article_tag_link)
+            db.commit()
+        
+        return RedirectResponse(url=f"/admin/articles?message=Article '{title}' created successfully", status_code=303)
+    except Exception as e:
+        categories = db.execute(select(Category)).scalars().all()
+        tags = db.execute(select(Tag)).scalars().all()
         return templates.TemplateResponse(
             "admin/articles/add.html",
             {
                 "request": request, 
                 "user": user, 
-                "categories": categories,
-                "error": "Invalid category selected."
+                "categories": categories, 
+                "tags": tags,
+                "error": f"Error: {str(e)}."
             },
-            status_code=400
+            status_code=500
         )
-    
-    # Generate slug from title if not provided
-    if not slug or not slug.strip():
-        existing_slugs = db.execute(select(Article.slug)).scalars().all()
-        slug = generate_unique_slug(title, existing_slugs)
-    
-    # Create the article
-    article = Article(
-        title=title,
-        content=content,
-        category_id=category_id,
-        author_id=user.id,
-        published=published,
-        featured_image=featured_image if featured_image and featured_image.strip() else None,
-        slug=slug
-    )
-    db.add(article)
-    db.commit()
-    
-    # Redirect to articles list with success message
-    return RedirectResponse(
-        url=f"/admin/articles?message=Article '{title}' created successfully",
-        status_code=303
-    )
 
 @router.get("/{article_id}/edit", response_class=HTMLResponse)
 async def admin_edit_article_form(request: Request, article_id: int, db: Session = Depends(get_db)):
@@ -115,18 +148,16 @@ async def admin_edit_article_form(request: Request, article_id: int, db: Session
         return RedirectResponse(url="/admin/login", status_code=303)
     
     try:
-        # Get article with its category
-        article = db.execute(
-            select(Article).where(Article.id == article_id).options(
-                selectinload(Article.category)
-            )
-        ).unique().scalar_one_or_none()
-        
+        # Get article with relationships
+        article = db.get(Article, article_id)
         if not article:
             return HTMLResponse("Article not found", status_code=404)
         
-        # Get all categories for the dropdown
+        # Get categories for the form
         categories = db.execute(select(Category)).scalars().all()
+        
+        # Get tags for the form
+        tags = db.execute(select(Tag)).scalars().all()
         
         # Render the edit article template
         return templates.TemplateResponse(
@@ -135,7 +166,8 @@ async def admin_edit_article_form(request: Request, article_id: int, db: Session
                 "request": request, 
                 "user": user, 
                 "article": article,
-                "categories": categories
+                "categories": categories,
+                "tags": tags
             }
         )
     except Exception as e:
@@ -151,6 +183,7 @@ async def admin_edit_article(
     featured_image: str = Form(None),
     slug: Optional[str] = Form(None),
     published: bool = Form(False),
+    tag_ids: List[int] = Form([]),
     db: Session = Depends(get_db)
 ):
     # Verify user is logged in and is an admin
@@ -167,7 +200,8 @@ async def admin_edit_article(
         # Validate category
         category = db.get(Category, category_id)
         if not category:
-            categories = db.execute(select(Category)).all()
+            categories = db.execute(select(Category)).scalars().all()
+            tags = db.execute(select(Tag)).scalars().all()
             return templates.TemplateResponse(
                 "admin/articles/edit.html",
                 {
@@ -175,6 +209,7 @@ async def admin_edit_article(
                     "user": user, 
                     "article": article,
                     "categories": categories,
+                    "tags": tags,
                     "error": "Invalid category selected."
                 },
                 status_code=400
@@ -195,6 +230,20 @@ async def admin_edit_article(
         
         db.add(article)
         db.commit()
+        
+        # Update tags for article
+        # First, delete all existing article-tag relationships
+        db.execute(delete(ArticleTagLink).where(ArticleTagLink.article_id == article_id))
+        db.commit()
+        
+        # Then, add the new tag relationships
+        if tag_ids:
+            for tag_id in tag_ids:
+                tag = db.get(Tag, tag_id)
+                if tag:
+                    article_tag_link = ArticleTagLink(article_id=article.id, tag_id=tag_id)
+                    db.add(article_tag_link)
+            db.commit()
         
         return RedirectResponse(url=f"/admin/articles?message=Article '{title}' updated successfully", status_code=303)
     except Exception as e:

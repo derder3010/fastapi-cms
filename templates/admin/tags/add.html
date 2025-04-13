@@ -1,0 +1,49 @@
+{% extends "admin/base.html" %} {% block title %}Add Tag{% endblock %} {% block
+content %}
+<div class="container-fluid px-4">
+  <h1 class="mt-4">Add Tag</h1>
+  <ol class="breadcrumb mb-4">
+    <li class="breadcrumb-item"><a href="/admin/dashboard">Dashboard</a></li>
+    <li class="breadcrumb-item"><a href="/admin/tags">Tags</a></li>
+    <li class="breadcrumb-item active">Add Tag</li>
+  </ol>
+
+  {% if error %}
+  <div class="alert alert-danger alert-dismissible fade show" role="alert">
+    {{ error }}
+    <button
+      type="button"
+      class="btn-close"
+      data-bs-dismiss="alert"
+      aria-label="Close"
+    ></button>
+  </div>
+  {% endif %}
+
+  <div class="card mb-4">
+    <div class="card-header">
+      <i class="fas fa-plus me-1"></i>
+      Add New Tag
+    </div>
+    <div class="card-body">
+      <form action="/admin/tags/add" method="post">
+        <div class="mb-3">
+          <label for="name" class="form-label">Tag Name</label>
+          <input
+            type="text"
+            class="form-control"
+            id="name"
+            name="name"
+            required
+          />
+        </div>
+
+        <div class="d-flex justify-content-between">
+          <a href="/admin/tags" class="btn btn-secondary">Cancel</a>
+          <button type="submit" class="btn btn-primary">Save Tag</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}

@@ -16,7 +16,7 @@ def create_db_and_tables():
     """Create database tables from SQLModel models."""
     try:
         # Import all models here to ensure they're registered with SQLModel
-        from app.models import User, Category, Article, Comment
+        from app.models import User, Category, Article, Comment, Tag, ArticleTagLink
         
         # Create all tables
         SQLModel.metadata.create_all(engine)

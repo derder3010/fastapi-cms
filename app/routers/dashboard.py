@@ -5,7 +5,7 @@ from sqlmodel import Session, select, func, desc
 from sqlalchemy.orm import selectinload
 
 from app.database import get_db
-from app.models import User, Category, Article, Comment
+from app.models import User, Category, Article, Comment, Tag
 from app.auth.utils import get_user_from_cookie
 
 router = APIRouter(prefix="/dashboard")
@@ -25,6 +25,7 @@ async def admin_dashboard(request: Request, db: Session = Depends(get_db)):
     categories_count = db.execute(select(func.count()).select_from(Category)).scalar() or 0
     articles_count = db.execute(select(func.count()).select_from(Article)).scalar() or 0
     comments_count = db.execute(select(func.count()).select_from(Comment)).scalar() or 0
+    tags_count = db.execute(select(func.count()).select_from(Tag)).scalar() or 0
     
     # Get recent articles and comments
     recent_articles = db.execute(
@@ -50,6 +51,7 @@ async def admin_dashboard(request: Request, db: Session = Depends(get_db)):
             "categories_count": categories_count,
             "articles_count": articles_count,
             "comments_count": comments_count,
+            "tags_count": tags_count,
             "recent_articles": recent_articles,
             "recent_comments": recent_comments
         }

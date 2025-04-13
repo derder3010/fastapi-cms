@@ -9,6 +9,7 @@ from app.routers.users import router as users_router
 from app.routers.categories import router as categories_router
 from app.routers.articles import router as articles_router
 from app.routers.comments import router as comments_router
+from app.routers.tags import router as tags_router
 
 admin_router = APIRouter(prefix="/admin")
 
@@ -26,4 +27,5 @@ admin_router.include_router(dashboard_router)
 admin_router.include_router(users_router)
 admin_router.include_router(categories_router)
 admin_router.include_router(articles_router)
-admin_router.include_router(comments_router) 
+admin_router.include_router(comments_router)
+admin_router.include_router(tags_router) 

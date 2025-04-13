@@ -45,6 +45,18 @@
                         </div>
                         
                         <div class="mb-3">
+                            <label for="tags" class="form-label">Tags</label>
+                            <select class="form-select" id="tags" name="tag_ids" multiple>
+                                {% for tag in tags %}
+                                <option value="{{ tag.id }}" {% if tag in article.tags %}selected{% endif %}>
+                                    {{ tag.name }}
+                                </option>
+                                {% endfor %}
+                            </select>
+                            <div class="form-text">Hold Ctrl (Cmd on Mac) to select multiple tags</div>
+                        </div>
+                        
+                        <div class="mb-3">
                             <label for="content" class="form-label">Content <span class="text-danger">*</span></label>
                             <textarea class="form-control" id="content" name="content" rows="10" required>{{ article.content }}</textarea>
                         </div>

@@ -47,6 +47,7 @@ content %}
                   <th>Title</th>
                   <th>Slug</th>
                   <th>Category</th>
+                  <th>Tags</th>
                   <th>Status</th>
                   <th>Created</th>
                   <th>Updated</th>
@@ -76,6 +77,13 @@ content %}
                     </span>
                   </td>
                   <td>{{ article.category.name }}</td>
+                  <td>
+                    {% if article.tags %} {% for tag in article.tags %}
+                    <span class="badge bg-info">{{ tag.name }}</span>
+                    {% endfor %} {% else %}
+                    <span class="text-muted">-</span>
+                    {% endif %}
+                  </td>
                   <td>
                     {% if article.published %}
                     <span class="badge bg-success">Published</span>
