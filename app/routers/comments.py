@@ -14,24 +14,36 @@ router = APIRouter(prefix="/comments")
 templates = Jinja2Templates(directory="templates")
 
 @router.get("/", response_class=HTMLResponse)
-async def admin_comments(request: Request, db: Session = Depends(get_db)):
+async def admin_comments(request: Request, q: str = None, db: Session = Depends(get_db)):
     # Verify user is logged in and is an admin
     user = await get_user_from_cookie(request, db)
     if not user or not user.is_superuser:
         return RedirectResponse(url="/admin/login", status_code=303)
-
-    # Get all comments with related article and author
-    comments = db.execute(
-        select(Comment).options(
-            selectinload(Comment.article).selectinload(Article.author),
-            selectinload(Comment.author)
-        ).order_by(desc(Comment.created_at))
-    ).unique().scalars().all()
+    
+    # Create base query with relationships
+    query = select(Comment).options(
+        selectinload(Comment.article),
+        selectinload(Comment.author)
+    )
+    
+    # Apply search filter if query parameter is provided
+    if q:
+        search_term = f"%{q}%"
+        query = query.where(Comment.content.ilike(search_term))
+    
+    # Get comments
+    comments = db.execute(query).unique().scalars().all()
     
     # Render the admin comments template
     return templates.TemplateResponse(
         "admin/comments/index.html",
-        {"request": request, "user": user, "comments": comments, "message": request.query_params.get("message")}
+        {
+            "request": request,
+            "user": user,
+            "comments": comments,
+            "query": q,
+            "message": request.query_params.get("message")
+        }
     )
 
 @router.get("/{comment_id}/edit", response_class=HTMLResponse)

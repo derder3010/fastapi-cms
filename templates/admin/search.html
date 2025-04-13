@@ -1,0 +1,235 @@
+{% extends "admin/base.html" %} {% block title %}Search Results - FastAPI CMS{%
+endblock %} {% block header_title %}Search Results{% endblock %} {% block
+content %}
+<div class="container-fluid">
+  <div class="card mb-4">
+    <div class="card-header">
+      <h5 class="mb-0">Search Results for "{{ query }}"</h5>
+    </div>
+    <div class="card-body">
+      <form action="/admin/dashboard/search" method="get" class="mb-4">
+        <div class="input-group">
+          <input
+            type="text"
+            name="q"
+            class="form-control"
+            placeholder="Search..."
+            value="{{ query }}"
+            required
+          />
+          <button type="submit" class="btn btn-primary">
+            <i class="bi bi-search"></i> Search
+          </button>
+        </div>
+      </form>
+
+      {% if query %} {% if not results.users and not results.articles and not
+      results.categories and not results.tags and not results.products and not
+      results.comments %}
+      <div class="alert alert-info mb-4">
+        No results found for "{{ query }}".
+      </div>
+      {% else %}
+      <div class="row">
+        {% if results.users %}
+        <div class="col-12 mb-4">
+          <h3 class="h5 border-bottom pb-2 mb-3">
+            <i class="bi bi-people"></i> Users ({{ results.users|length }})
+          </h3>
+          <div class="list-group">
+            {% for user in results.users %}
+            <a
+              href="/admin/users/{{ user.id }}/edit"
+              class="list-group-item list-group-item-action"
+            >
+              <div class="d-flex w-100 justify-content-between">
+                <h6 class="mb-1">{{ user.username }}</h6>
+                <small>{{ user.email }}</small>
+              </div>
+              <small class="text-muted"
+                >Active: {{ "Yes" if user.is_active else "No" }} | Admin: {{
+                "Yes" if user.is_superuser else "No" }}</small
+              >
+            </a>
+            {% endfor %}
+          </div>
+          {% if results.users|length >= 5 %}
+          <div class="text-end mt-2">
+            <a
+              href="/admin/users?q={{ query }}"
+              class="btn btn-sm btn-outline-primary"
+            >
+              View all matching users
+            </a>
+          </div>
+          {% endif %}
+        </div>
+        {% endif %} {% if results.articles %}
+        <div class="col-12 mb-4">
+          <h3 class="h5 border-bottom pb-2 mb-3">
+            <i class="bi bi-file-text"></i> Articles ({{ results.articles|length
+            }})
+          </h3>
+          <div class="list-group">
+            {% for article in results.articles %}
+            <a
+              href="/admin/articles/{{ article.id }}/edit"
+              class="list-group-item list-group-item-action"
+            >
+              <div class="d-flex w-100 justify-content-between">
+                <h6 class="mb-1">{{ article.title }}</h6>
+                <small>{{ article.created_at.strftime('%Y-%m-%d') }}</small>
+              </div>
+              <small class="text-muted"
+                >By {{ article.author.username }} in {{ article.category.name
+                }}</small
+              >
+            </a>
+            {% endfor %}
+          </div>
+          {% if results.articles|length >= 5 %}
+          <div class="text-end mt-2">
+            <a
+              href="/admin/articles?q={{ query }}"
+              class="btn btn-sm btn-outline-primary"
+            >
+              View all matching articles
+            </a>
+          </div>
+          {% endif %}
+        </div>
+        {% endif %} {% if results.categories %}
+        <div class="col-12 mb-4">
+          <h3 class="h5 border-bottom pb-2 mb-3">
+            <i class="bi bi-tags"></i> Categories ({{ results.categories|length
+            }})
+          </h3>
+          <div class="list-group">
+            {% for category in results.categories %}
+            <a
+              href="/admin/categories/{{ category.id }}/edit"
+              class="list-group-item list-group-item-action"
+            >
+              <div class="d-flex w-100 justify-content-between">
+                <h6 class="mb-1">{{ category.name }}</h6>
+                <small>{{ category.slug }}</small>
+              </div>
+              <p class="mb-1 text-truncate">{{ category.description }}</p>
+            </a>
+            {% endfor %}
+          </div>
+          {% if results.categories|length >= 5 %}
+          <div class="text-end mt-2">
+            <a
+              href="/admin/categories?q={{ query }}"
+              class="btn btn-sm btn-outline-primary"
+            >
+              View all matching categories
+            </a>
+          </div>
+          {% endif %}
+        </div>
+        {% endif %} {% if results.tags %}
+        <div class="col-12 mb-4">
+          <h3 class="h5 border-bottom pb-2 mb-3">
+            <i class="bi bi-tag"></i> Tags ({{ results.tags|length }})
+          </h3>
+          <div class="list-group">
+            {% for tag in results.tags %}
+            <a
+              href="/admin/tags/{{ tag.id }}/edit"
+              class="list-group-item list-group-item-action"
+            >
+              <div class="d-flex w-100 justify-content-between">
+                <h6 class="mb-1">{{ tag.name }}</h6>
+                <small>{{ tag.slug }}</small>
+              </div>
+              <p class="mb-1 text-truncate">{{ tag.description }}</p>
+            </a>
+            {% endfor %}
+          </div>
+          {% if results.tags|length >= 5 %}
+          <div class="text-end mt-2">
+            <a
+              href="/admin/tags?q={{ query }}"
+              class="btn btn-sm btn-outline-primary"
+            >
+              View all matching tags
+            </a>
+          </div>
+          {% endif %}
+        </div>
+        {% endif %} {% if results.products %}
+        <div class="col-12 mb-4">
+          <h3 class="h5 border-bottom pb-2 mb-3">
+            <i class="bi bi-box"></i> Products ({{ results.products|length }})
+          </h3>
+          <div class="list-group">
+            {% for product in results.products %}
+            <a
+              href="/admin/products/{{ product.id }}/edit"
+              class="list-group-item list-group-item-action"
+            >
+              <div class="d-flex w-100 justify-content-between">
+                <h6 class="mb-1">{{ product.name }}</h6>
+                <small>{{ product.price }}</small>
+              </div>
+              <p class="mb-1 text-truncate">{{ product.description }}</p>
+            </a>
+            {% endfor %}
+          </div>
+          {% if results.products|length >= 5 %}
+          <div class="text-end mt-2">
+            <a
+              href="/admin/products?q={{ query }}"
+              class="btn btn-sm btn-outline-primary"
+            >
+              View all matching products
+            </a>
+          </div>
+          {% endif %}
+        </div>
+        {% endif %} {% if results.comments %}
+        <div class="col-12 mb-4">
+          <h3 class="h5 border-bottom pb-2 mb-3">
+            <i class="bi bi-chat-left-text"></i> Comments ({{
+            results.comments|length }})
+          </h3>
+          <div class="list-group">
+            {% for comment in results.comments %}
+            <a
+              href="/admin/comments/{{ comment.id }}/edit"
+              class="list-group-item list-group-item-action"
+            >
+              <div class="d-flex w-100 justify-content-between">
+                <h6 class="mb-1">On {{ comment.article.title }}</h6>
+                <small>{{ comment.created_at.strftime('%Y-%m-%d') }}</small>
+              </div>
+              <p class="mb-1 text-truncate">{{ comment.content }}</p>
+              <small class="text-muted">By {{ comment.author.username }}</small>
+            </a>
+            {% endfor %}
+          </div>
+          {% if results.comments|length >= 5 %}
+          <div class="text-end mt-2">
+            <a
+              href="/admin/comments?q={{ query }}"
+              class="btn btn-sm btn-outline-primary"
+            >
+              View all matching comments
+            </a>
+          </div>
+          {% endif %}
+        </div>
+        {% endif %}
+      </div>
+      {% endif %} {% else %}
+      <div class="alert alert-info mb-0">
+        Enter a search query to find users, articles, categories, tags,
+        products, or comments.
+      </div>
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% endblock %}

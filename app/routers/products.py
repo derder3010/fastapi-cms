@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, Form, Request, UploadFile, File
 from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.templating import Jinja2Templates
-from sqlmodel import Session, select, func
+from sqlmodel import Session, select, func, or_
 import os
 from datetime import datetime
 import shutil
@@ -19,14 +19,28 @@ router = APIRouter(prefix="/products")
 templates = Jinja2Templates(directory="templates")
 
 @router.get("/", response_class=HTMLResponse)
-async def admin_products(request: Request, db: Session = Depends(get_db)):
+async def admin_products(request: Request, q: str = None, db: Session = Depends(get_db)):
     # Verify user is logged in and is an admin
     user = await get_user_from_cookie(request, db)
     if not user or not user.is_superuser:
         return RedirectResponse(url="/admin/login", status_code=303)
     
-    # Get all products
-    products = db.execute(select(Product)).scalars().all()
+    # Create base query
+    query = select(Product)
+    
+    # Apply search filter if query parameter is provided
+    if q:
+        search_term = f"%{q}%"
+        query = query.where(
+            or_(
+                Product.name.ilike(search_term),
+                Product.description.ilike(search_term),
+                Product.slug.ilike(search_term)
+            )
+        )
+    
+    # Get products
+    products = db.execute(query).scalars().all()
     
     # Render the admin products template
     return templates.TemplateResponse(
@@ -35,6 +49,7 @@ async def admin_products(request: Request, db: Session = Depends(get_db)):
             "request": request,
             "user": user,
             "products": products,
+            "query": q,
             "message": request.query_params.get("message")
         }
     )

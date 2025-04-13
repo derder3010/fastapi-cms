@@ -16,19 +16,30 @@ router = APIRouter(prefix="/articles")
 templates = Jinja2Templates(directory="templates")
 
 @router.get("/", response_class=HTMLResponse)
-async def admin_articles(request: Request, db: Session = Depends(get_db)):
+async def admin_articles(request: Request, q: str = None, db: Session = Depends(get_db)):
     # Verify user is logged in and is an admin
     user = await get_user_from_cookie(request, db)
     if not user or not user.is_superuser:
         return RedirectResponse(url="/admin/login", status_code=303)
     
+    # Create base query
+    query = select(Article).options(
+        selectinload(Article.category),
+        selectinload(Article.author),
+        selectinload(Article.tags)
+    )
+    
+    # Apply search filter if query parameter is provided
+    if q:
+        search_term = f"%{q}%"
+        query = query.where(
+            Article.title.ilike(search_term) | 
+            Article.content.ilike(search_term)
+        )
+    
     # Get all articles with their categories, authors, and tags
     articles = db.execute(
-        select(Article).options(
-            selectinload(Article.category),
-            selectinload(Article.author),
-            selectinload(Article.tags)
-        ).order_by(desc(Article.created_at))
+        query.order_by(desc(Article.created_at))
     ).unique().scalars().all()
     
     # Render the admin articles template
@@ -38,6 +49,7 @@ async def admin_articles(request: Request, db: Session = Depends(get_db)):
             "request": request, 
             "user": user, 
             "articles": articles,
+            "query": q,
             "message": request.query_params.get("message")
         }
     )

@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, Form, Request
 from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.templating import Jinja2Templates
-from sqlmodel import Session, select, delete
+from sqlmodel import Session, select, delete, or_
 
 from app.database import get_db
 from app.models import User, Article, Comment
@@ -13,19 +13,38 @@ router = APIRouter(prefix="/users")
 templates = Jinja2Templates(directory="templates")
 
 @router.get("/", response_class=HTMLResponse)
-async def admin_users(request: Request, db: Session = Depends(get_db)):
+async def admin_users(request: Request, q: str = None, db: Session = Depends(get_db)):
     # Verify user is logged in and is an admin
     user = await get_user_from_cookie(request, db)
     if not user or not user.is_superuser:
         return RedirectResponse(url="/admin/login", status_code=303)
     
-    # Get all users
-    users = db.execute(select(User)).scalars().all()
+    # Create base query
+    query = select(User)
+    
+    # Apply search filter if query parameter is provided
+    if q:
+        search_term = f"%{q}%"
+        query = query.where(
+            or_(
+                User.username.ilike(search_term),
+                User.email.ilike(search_term)
+            )
+        )
+    
+    # Get users
+    users = db.execute(query).scalars().all()
     
     # Render the admin users template
     return templates.TemplateResponse(
         "admin/users/list.html",
-        {"request": request, "user": user, "users": users}
+        {
+            "request": request,
+            "user": user,
+            "users": users,
+            "query": q,
+            "message": request.query_params.get("message")
+        }
     )
 
 @router.get("/add", response_class=HTMLResponse)

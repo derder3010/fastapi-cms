@@ -50,9 +50,41 @@ content %}
   </div>
   {% endif %}
 
+  <div class="row mb-4">
+    <div class="col-md-6">
+      <form action="/admin/tags" method="get" class="d-flex">
+        <div class="input-group">
+          <input
+            type="text"
+            name="q"
+            class="form-control"
+            placeholder="Search tags..."
+            value="{{ query or '' }}"
+          />
+          <button class="btn btn-primary" type="submit">
+            <i class="bi bi-search"></i>
+          </button>
+          {% if query %}
+          <a href="/admin/tags" class="btn btn-outline-secondary">
+            <i class="bi bi-x-circle"></i> Clear
+          </a>
+          {% endif %}
+        </div>
+      </form>
+    </div>
+  </div>
+
   <div class="row">
     <div class="col-12">
       <div class="card">
+        {% if query %}
+        <div class="card-header bg-light">
+          <div class="d-flex justify-content-between align-items-center">
+            <span>Search results for: <strong>"{{ query }}"</strong></span>
+            <span class="badge bg-primary">{{ tags|length }} results</span>
+          </div>
+        </div>
+        {% endif %}
         <div class="card-body">
           {% if tags %}
           <div class="table-responsive">

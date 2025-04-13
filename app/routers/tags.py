@@ -13,14 +13,22 @@ router = APIRouter(prefix="/tags")
 templates = Jinja2Templates(directory="templates")
 
 @router.get("/", response_class=HTMLResponse)
-async def admin_tags(request: Request, db: Session = Depends(get_db)):
+async def admin_tags(request: Request, q: str = None, db: Session = Depends(get_db)):
     # Verify user is logged in and is an admin
     user = await get_user_from_cookie(request, db)
     if not user or not user.is_superuser:
         return RedirectResponse(url="/admin/login", status_code=303)
     
-    # Get all tags
-    tags = db.execute(select(Tag)).scalars().all()
+    # Create base query
+    query = select(Tag)
+    
+    # Apply search filter if query parameter is provided
+    if q:
+        search_term = f"%{q}%"
+        query = query.where(Tag.name.ilike(search_term))
+    
+    # Get tags
+    tags = db.execute(query).scalars().all()
     
     # Render the admin tags template
     return templates.TemplateResponse(
@@ -29,6 +37,7 @@ async def admin_tags(request: Request, db: Session = Depends(get_db)):
             "request": request,
             "user": user,
             "tags": tags,
+            "query": q,
             "message": request.query_params.get("message")
         }
     )
