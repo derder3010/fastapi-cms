@@ -48,17 +48,17 @@ block content %}
                   <th>ID</th>
                   <th>Name</th>
                   <th>Description</th>
-                  <th>Created At</th>
-                  <th>Updated At</th>
+                  <th class="description-column">Created At</th>
+                  <th class="description-column">Updated At</th>
                   <th>Actions</th>
                 </tr>
               </thead>
               <tbody>
                 {% for category in categories %}
                 <tr>
-                  <td>{{ category.id }}</td>
-                  <td>{{ category.name }}</td>
-                  <td>
+                  <td data-label="ID">{{ category.id }}</td>
+                  <td data-label="Name">{{ category.name }}</td>
+                  <td data-label="Description">
                     <span
                       class="text-truncate d-inline-block"
                       style="max-width: 250px"
@@ -67,9 +67,13 @@ block content %}
                       {{ category.description or '-' }}
                     </span>
                   </td>
-                  <td>{{ category.created_at.strftime('%Y-%m-%d %H:%M') }}</td>
-                  <td>{{ category.updated_at.strftime('%Y-%m-%d %H:%M') }}</td>
-                  <td>
+                  <td data-label="Created At" class="td-description">
+                    {{ category.created_at.strftime('%Y-%m-%d %H:%M') }}
+                  </td>
+                  <td data-label="Updated At" class="td-description">
+                    {{ category.updated_at.strftime('%Y-%m-%d %H:%M') }}
+                  </td>
+                  <td data-label="Actions">
                     <div class="d-flex gap-2">
                       <a
                         href="/admin/categories/{{ category.id }}/edit"

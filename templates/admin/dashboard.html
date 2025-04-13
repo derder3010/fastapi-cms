@@ -125,7 +125,6 @@ endblock %} {% block header_title %}Dashboard{% endblock %} {% block content %}
                 <h6 class="mb-1">{{ article.title }}</h6>
                 <small>{{ article.created_at.strftime('%Y-%m-%d') }}</small>
               </div>
-              <p class="mb-1 text-truncate">{{ article.content }}</p>
               <small class="text-muted"
                 >By {{ article.author.username }} in {{ article.category.name
                 }}</small

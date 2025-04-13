@@ -47,20 +47,20 @@ content %}
                 <tr>
                   <th>ID</th>
                   <th>Title</th>
-                  <th>Slug</th>
+                  <th class="description-column">Slug</th>
                   <th>Category</th>
                   <th>Tags</th>
                   <th>Status</th>
-                  <th>Created</th>
-                  <th>Updated</th>
+                  <th class="description-column">Created</th>
+                  <th class="description-column">Updated</th>
                   <th>Actions</th>
                 </tr>
               </thead>
               <tbody>
                 {% for article in articles %}
                 <tr>
-                  <td>{{ article.id }}</td>
-                  <td>
+                  <td data-label="ID">{{ article.id }}</td>
+                  <td data-label="Title">
                     <span
                       class="text-truncate d-inline-block"
                       style="max-width: 250px"
@@ -69,7 +69,7 @@ content %}
                       {{ article.title }}
                     </span>
                   </td>
-                  <td>
+                  <td data-label="Slug" class="td-description">
                     <span
                       class="text-truncate d-inline-block"
                       style="max-width: 180px"
@@ -78,24 +78,28 @@ content %}
                       {{ article.slug or '-' }}
                     </span>
                   </td>
-                  <td>{{ article.category.name }}</td>
-                  <td>
+                  <td data-label="Category">{{ article.category.name }}</td>
+                  <td data-label="Tags">
                     {% if article.tags %} {% for tag in article.tags %}
                     <span class="badge bg-info">{{ tag.name }}</span>
                     {% endfor %} {% else %}
                     <span class="text-muted">-</span>
                     {% endif %}
                   </td>
-                  <td>
+                  <td data-label="Status">
                     {% if article.published %}
                     <span class="badge bg-success">Published</span>
                     {% else %}
                     <span class="badge bg-warning text-dark">Draft</span>
                     {% endif %}
                   </td>
-                  <td>{{ article.created_at.strftime('%Y-%m-%d %H:%M') }}</td>
-                  <td>{{ article.updated_at.strftime('%Y-%m-%d %H:%M') }}</td>
-                  <td>
+                  <td data-label="Created" class="td-description">
+                    {{ article.created_at.strftime('%Y-%m-%d %H:%M') }}
+                  </td>
+                  <td data-label="Updated" class="td-description">
+                    {{ article.updated_at.strftime('%Y-%m-%d %H:%M') }}
+                  </td>
+                  <td data-label="Actions">
                     <div class="d-flex gap-2">
                       <a
                         href="/admin/articles/{{ article.id }}/edit"

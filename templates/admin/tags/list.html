@@ -61,19 +61,23 @@ content %}
                 <tr>
                   <th>ID</th>
                   <th>Name</th>
-                  <th>Created At</th>
-                  <th>Updated At</th>
+                  <th class="description-column">Created At</th>
+                  <th class="description-column">Updated At</th>
                   <th>Actions</th>
                 </tr>
               </thead>
               <tbody>
                 {% for tag in tags %}
                 <tr>
-                  <td>{{ tag.id }}</td>
-                  <td>{{ tag.name }}</td>
-                  <td>{{ tag.created_at.strftime('%Y-%m-%d %H:%M') }}</td>
-                  <td>{{ tag.updated_at.strftime('%Y-%m-%d %H:%M') }}</td>
-                  <td>
+                  <td data-label="ID">{{ tag.id }}</td>
+                  <td data-label="Name">{{ tag.name }}</td>
+                  <td data-label="Created At" class="td-description">
+                    {{ tag.created_at.strftime('%Y-%m-%d %H:%M') }}
+                  </td>
+                  <td data-label="Updated At" class="td-description">
+                    {{ tag.updated_at.strftime('%Y-%m-%d %H:%M') }}
+                  </td>
+                  <td data-label="Actions">
                     <div class="d-flex gap-2">
                       <a
                         href="/admin/tags/{{ tag.id }}/edit"

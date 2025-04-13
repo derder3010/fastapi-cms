@@ -58,15 +58,15 @@ block content %}
                   <th>Image</th>
                   <th>Name</th>
                   <th>Price</th>
-                  <th>Description</th>
+                  <th class="description-column">Description</th>
                   <th>Actions</th>
                 </tr>
               </thead>
               <tbody>
                 {% for product in products %}
                 <tr>
-                  <td>{{ product.id }}</td>
-                  <td>
+                  <td data-label="ID">{{ product.id }}</td>
+                  <td data-label="Image">
                     {% if product.featured_image %}
                     <img
                       src="/media/{{ product.featured_image }}"
@@ -78,9 +78,9 @@ block content %}
                     <span class="text-muted">No image</span>
                     {% endif %}
                   </td>
-                  <td>{{ product.name }}</td>
-                  <td>${{ product.price }}</td>
-                  <td>
+                  <td data-label="Name">{{ product.name }}</td>
+                  <td data-label="Price">${{ product.price }}</td>
+                  <td data-label="Description" class="td-description">
                     <span
                       class="text-truncate d-inline-block"
                       style="max-width: 200px"
@@ -89,7 +89,7 @@ block content %}
                       {{ product.description|truncate(50) }}
                     </span>
                   </td>
-                  <td>
+                  <td data-label="Actions">
                     <div class="d-flex gap-2">
                       <a
                         href="/admin/products/{{ product.id }}/edit"

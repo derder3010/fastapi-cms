@@ -196,6 +196,23 @@
                 border-top: 1px solid rgba(0,0,0,0.075);
             }
             
+            /* Text handling utilities */
+            .text-truncate {
+                overflow: hidden;
+                text-overflow: ellipsis;
+                white-space: nowrap;
+                max-width: 100%;
+            }
+            
+            /* Hide content/description columns in list views */
+            .content-column, .description-column {
+                max-width: 200px;
+                overflow: hidden;
+                text-overflow: ellipsis;
+                white-space: nowrap;
+            }
+            
+            /* Tablet view - collapsed sidebar with icons only */
             @media (max-width: 992px) {
                 .sidebar {
                     width: var(--sidebar-collapsed-width);
@@ -233,116 +250,188 @@
                 .table td, .table th {
                     padding: 0.5rem;
                 }
+                
+                /* Fix header in tablet view */
+                .header h1 {
+                    font-size: 1.5rem;
+                    max-width: calc(100% - 40px);
+                    white-space: nowrap;
+                    overflow: hidden;
+                    text-overflow: ellipsis;
+                }
             }
             
+            @media (max-width: 768px) {
+                /* Hide long content columns completely on mobile */
+                .content-column, .description-column {
+                    display: none !important;
+                }
+                
+                /* Adjust table for vertical card-like layout on mobile */
+                .table-responsive .table,
+                .table-responsive .table tbody,
+                .table-responsive .table tr {
+                    display: block;
+                    width: 100%;
+                }
+                
+                /* Hide table headers on mobile */
+                .table-responsive .table thead {
+                    display: none;
+                }
+                
+                .table-responsive .table tr {
+                    margin-bottom: 1rem;
+                    border: 1px solid rgba(0,0,0,0.125);
+                    border-radius: 0.25rem;
+                    background-color: #fff;
+                    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+                }
+                
+                .table-responsive .table td {
+                    display: flex;
+                    justify-content: space-between;
+                    align-items: flex-start;
+                    padding: 0.75rem;
+                    border-top: none;
+                    border-bottom: 1px solid rgba(0,0,0,0.05);
+                    text-align: right;
+                    position: relative;
+                    flex-wrap: wrap;
+                }
+                
+                .table-responsive .table td:last-child {
+                    border-bottom: none;
+                }
+                
+                .table-responsive .table td:before {
+                    content: attr(data-label);
+                    font-weight: 600;
+                    margin-right: 1rem;
+                    text-align: left;
+                    min-width: 90px;
+                    flex-shrink: 0;
+                }
+                
+                /* Fix long text in tables */
+                .table-responsive .table td span.text-truncate,
+                .table-responsive .table td > span {
+                    max-width: 65%;
+                    word-break: break-word;
+                    white-space: normal;
+                }
+                
+                /* Adjust action buttons on mobile */
+                .table-responsive .table td .d-flex {
+                    flex-direction: row;
+                    width: 100%;
+                    justify-content: flex-end;
+                    margin-top: 0.5rem;
+                }
+                
+                /* Fix content padding */
+                .content {
+                    padding: 15px;
+                }
+                
+                /* Fix header in mobile view */
+                .header h1 {
+                    font-size: 1.25rem;
+                    max-width: calc(100% - 40px);
+                    white-space: nowrap;
+                    overflow: hidden;
+                    text-overflow: ellipsis;
+                }
+                
+                /* Fix form inputs */
+                input, select, textarea {
+                    max-width: 100%;
+                }
+                
+                /* Toast UI Editor responsive fix */
+                .toastui-editor-defaultUI {
+                    max-width: 100%;
+                    overflow-x: auto;
+                }
+            }
+            
+            /* Mobile view - keep sidebar with icons only */
             @media (max-width: 576px) {
                 .mobile-toggle {
                     display: inline-block;
                 }
                 
+                /* Keep sidebar visible with icons only */
                 .sidebar {
-                    transform: translateX(-100%);
-                    width: var(--sidebar-width);
+                    width: var(--sidebar-collapsed-width);
+                    transform: translateX(0);
+                    overflow: hidden;
                 }
                 
-                .sidebar.show {
-                    transform: translateX(0);
+                .sidebar h1 {
+                    font-size: 0;
+                    margin: 15px 0;
+                }
+                
+                .sidebar h1:first-letter {
+                    font-size: 1.8rem;
                 }
                 
                 .sidebar li a span {
-                    display: inline;
+                    display: none;
+                }
+                
+                .sidebar li a i {
+                    margin-right: 0;
+                    font-size: 1.2rem;
                 }
                 
                 .content {
-                    margin-left: 0;
-                    width: 100%;
-                    padding: 10px;
+                    margin-left: var(--sidebar-collapsed-width);
+                    width: calc(100% - var(--sidebar-collapsed-width));
                 }
                 
-                .header {
+                .action-buttons {
                     flex-direction: column;
-                    align-items: flex-start;
+                    gap: 0.5rem;
                 }
                 
-                .header-buttons {
-                    margin-top: 10px;
-                    width: 100%;
-                    display: flex;
+                .table-responsive .table td .d-flex {
                     flex-wrap: wrap;
-                    gap: 8px;
+                    gap: 0.5rem;
                 }
                 
-                .btn-group {
-                    flex-wrap: wrap;
-                    gap: 8px;
-                }
-                
-                .btn-group .btn {
-                    flex: 1;
-                }
-                
-                .d-flex.gap-2 {
-                    flex-wrap: wrap;
-                    width: 100%;
-                    justify-content: flex-start;
-                    gap: 5px !important;
-                }
-                
-                .btn-sm {
-                    padding: 0.25rem 0.4rem;
-                    display: flex;
-                    align-items: center;
-                    justify-content: center;
-                    min-width: 32px;
-                    margin-bottom: 4px;
-                }
-                
-                .table td {
-                    white-space: nowrap;
-                    padding: 0.5rem;
-                    font-size: 0.9rem;
-                }
-                
-                .table th {
-                    padding: 0.5rem;
-                    font-size: 0.9rem;
-                }
-
-                .table .d-flex.gap-2 {
-                    display: flex;
-                    flex-direction: row;
-                    flex-wrap: wrap;
-                    width: 100%;
-                    gap: 4px !important;
-                }
-                
-                .table .btn-sm {
-                    flex: 0 0 auto;
-                    width: auto;
-                    padding: 0.25rem 0.4rem;
-                    margin-right: 4px;
-                    margin-bottom: 4px;
-                }
-                
-                .table .btn-sm i {
-                    margin-right: 0;
-                }
-
-                .table-responsive {
-                    border: 0;
-                    width: 100%;
-                    margin-bottom: 15px;
-                    overflow-y: hidden;
-                    -ms-overflow-style: -ms-autohiding-scrollbar;
-                }
-
-                .card-body {
-                    padding: 12px;
-                }
-                
-                .alert {
+                /* Fix modal content */
+                .modal-body, .modal-footer {
                     padding: 0.75rem;
-                    margin-bottom: 0.75rem;
+                    word-break: break-word;
+                }
+                
+                /* Fix cards on small screens */
+                .card-body {
+                    padding: 15px;
+                }
+                
+                /* Fix form labels and controls */
+                .form-label {
+                    word-break: break-word;
+                }
+                
+                .form-control, .form-select {
+                    max-width: 100%;
+                }
+            }
+            
+            /* Utility class to mark columns with description or content */
+            .td-description, .td-content {
+                display: none !important;
+            }
+            
+            @media (min-width: 992px) {
+                /* Only show content/description on larger screens */
+                .td-description, .td-content {
+                    display: table-cell !important;
+                    max-width: 200px;
                 }
             }
         </style>

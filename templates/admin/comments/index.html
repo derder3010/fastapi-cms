@@ -44,16 +44,16 @@ content %}
                   <th>Article</th>
                   <th>Author</th>
                   <th>Content</th>
-                  <th>Created</th>
-                  <th>Updated</th>
+                  <th class="description-column">Created</th>
+                  <th class="description-column">Updated</th>
                   <th>Actions</th>
                 </tr>
               </thead>
               <tbody>
                 {% for comment in comments %}
                 <tr>
-                  <td>{{ comment.id }}</td>
-                  <td>
+                  <td data-label="ID">{{ comment.id }}</td>
+                  <td data-label="Article">
                     <a
                       href="/admin/articles/{{ comment.article.id }}/edit"
                       title="{{ comment.article.title }}"
@@ -66,8 +66,8 @@ content %}
                       </span>
                     </a>
                   </td>
-                  <td>{{ comment.author.username }}</td>
-                  <td>
+                  <td data-label="Author">{{ comment.author.username }}</td>
+                  <td data-label="Content">
                     <span
                       class="text-truncate d-inline-block"
                       style="max-width: 250px"
@@ -76,9 +76,13 @@ content %}
                       {{ comment.content }}
                     </span>
                   </td>
-                  <td>{{ comment.created_at.strftime('%Y-%m-%d %H:%M') }}</td>
-                  <td>{{ comment.updated_at.strftime('%Y-%m-%d %H:%M') }}</td>
-                  <td>
+                  <td data-label="Created" class="td-description">
+                    {{ comment.created_at.strftime('%Y-%m-%d %H:%M') }}
+                  </td>
+                  <td data-label="Updated" class="td-description">
+                    {{ comment.updated_at.strftime('%Y-%m-%d %H:%M') }}
+                  </td>
+                  <td data-label="Actions">
                     <div class="d-flex gap-2">
                       <a
                         href="/admin/comments/{{ comment.id }}/edit"

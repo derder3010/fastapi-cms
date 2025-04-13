@@ -50,32 +50,34 @@ content %}
                   <th>Email</th>
                   <th>Status</th>
                   <th>Role</th>
-                  <th>Created At</th>
+                  <th class="description-column">Created At</th>
                   <th>Actions</th>
                 </tr>
               </thead>
               <tbody>
                 {% for user_item in users %}
                 <tr>
-                  <td>{{ user_item.id }}</td>
-                  <td>{{ user_item.username }}</td>
-                  <td>{{ user_item.email }}</td>
-                  <td>
+                  <td data-label="ID">{{ user_item.id }}</td>
+                  <td data-label="Username">{{ user_item.username }}</td>
+                  <td data-label="Email">{{ user_item.email }}</td>
+                  <td data-label="Status">
                     {% if user_item.is_active %}
                     <span class="badge bg-success">Active</span>
                     {% else %}
                     <span class="badge bg-secondary">Inactive</span>
                     {% endif %}
                   </td>
-                  <td>
+                  <td data-label="Role">
                     {% if user_item.is_superuser %}
                     <span class="badge bg-primary">Admin</span>
                     {% else %}
                     <span class="badge bg-info">User</span>
                     {% endif %}
                   </td>
-                  <td>{{ user_item.created_at.strftime('%Y-%m-%d %H:%M') }}</td>
-                  <td>
+                  <td data-label="Created At" class="td-description">
+                    {{ user_item.created_at.strftime('%Y-%m-%d %H:%M') }}
+                  </td>
+                  <td data-label="Actions">
                     <div class="d-flex gap-2">
                       <a
                         href="/admin/users/{{ user_item.id }}/edit"
