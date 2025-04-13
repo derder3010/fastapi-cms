@@ -47,17 +47,28 @@ content %}
             placeholder="Search articles..."
             value="{{ query or '' }}"
           />
+          <input
+            type="hidden"
+            name="page_size"
+            value="{{ pagination.page_size if pagination else 10 }}"
+          />
           <button class="btn btn-primary" type="submit">
             <i class="bi bi-search"></i>
           </button>
           {% if query %}
-          <a href="/admin/articles" class="btn btn-outline-secondary">
+          <a
+            href="/admin/articles?page_size={{ pagination.page_size if pagination else 10 }}"
+            class="btn btn-outline-secondary"
+          >
             <i class="bi bi-x-circle"></i> Clear
           </a>
           {% endif %}
         </div>
       </form>
     </div>
+    {% if pagination and pagination.total_records > 0 %} {% set item_name =
+    'articles' %} {% include "admin/components/pagination_info.html" %} {% endif
+    %}
   </div>
 
   <div class="row">
@@ -215,6 +226,8 @@ content %}
           </div>
           {% endif %}
         </div>
+        {% set url_path = '/admin/articles' %} {% include
+        "admin/components/pagination.html" %}
       </div>
     </div>
   </div>

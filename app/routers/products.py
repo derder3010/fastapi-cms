@@ -19,40 +19,76 @@ router = APIRouter(prefix="/products")
 templates = Jinja2Templates(directory="templates")
 
 @router.get("/", response_class=HTMLResponse)
-async def admin_products(request: Request, q: str = None, db: Session = Depends(get_db)):
+async def admin_products(
+    request: Request, 
+    q: str = None, 
+    page: int = 1, 
+    page_size: int = 10, 
+    db: Session = Depends(get_db)
+):
     # Verify user is logged in and is an admin
     user = await get_user_from_cookie(request, db)
     if not user or not user.is_superuser:
         return RedirectResponse(url="/admin/login", status_code=303)
     
-    # Create base query
-    query = select(Product)
-    
-    # Apply search filter if query parameter is provided
-    if q:
-        search_term = f"%{q}%"
-        query = query.where(
-            or_(
-                Product.name.ilike(search_term),
-                Product.description.ilike(search_term),
-                Product.slug.ilike(search_term)
+    try:
+        # Create base query
+        query = select(Product)
+        
+        # Apply search filter if query parameter is provided
+        if q:
+            search_term = f"%{q}%"
+            query = query.where(
+                or_(
+                    Product.name.ilike(search_term),
+                    Product.description.ilike(search_term)
+                )
             )
+        
+        # Count total records for pagination
+        count_query = select(func.count()).select_from(query.subquery())
+        total_records = db.execute(count_query).scalar_one()
+        
+        # Calculate pagination values
+        total_pages = (total_records + page_size - 1) // page_size
+        page = max(1, min(page, total_pages) if total_pages > 0 else 1)
+        offset = (page - 1) * page_size
+        
+        # Add pagination
+        paginated_query = query.order_by(Product.name).offset(offset).limit(page_size)
+        
+        # Get products
+        products = db.execute(paginated_query).scalars().all()
+        
+        # Render the admin products template
+        return templates.TemplateResponse(
+            "admin/products/list.html",
+            {
+                "request": request,
+                "user": user,
+                "products": products,
+                "query": q,
+                "message": request.query_params.get("message"),
+                "pagination": {
+                    "page": page,
+                    "page_size": page_size,
+                    "total_pages": total_pages,
+                    "total_records": total_records,
+                    "has_prev": page > 1,
+                    "has_next": page < total_pages
+                }
+            }
         )
-    
-    # Get products
-    products = db.execute(query).scalars().all()
-    
-    # Render the admin products template
-    return templates.TemplateResponse(
-        "admin/products/list.html",
-        {
-            "request": request,
-            "user": user,
-            "products": products,
-            "query": q,
-            "message": request.query_params.get("message")
-        }
-    )
+    except Exception as e:
+        return templates.TemplateResponse(
+            "admin/products/list.html",
+            {
+                "request": request,
+                "user": user,
+                "products": [],
+                "error": f"Error: {str(e)}"
+            }
+        )
 
 @router.get("/add", response_class=HTMLResponse)
 async def admin_add_product_form(request: Request, db: Session = Depends(get_db)):

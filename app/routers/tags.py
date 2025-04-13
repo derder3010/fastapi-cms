@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, Form, Request
 from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.templating import Jinja2Templates
-from sqlmodel import Session, select, func, delete
+from sqlmodel import Session, select, func, delete, or_
 
 from app.database import get_db
 from app.models import Tag, Article
@@ -13,7 +13,13 @@ router = APIRouter(prefix="/tags")
 templates = Jinja2Templates(directory="templates")
 
 @router.get("/", response_class=HTMLResponse)
-async def admin_tags(request: Request, q: str = None, db: Session = Depends(get_db)):
+async def admin_tags(
+    request: Request, 
+    q: str = None, 
+    page: int = 1, 
+    page_size: int = 10, 
+    db: Session = Depends(get_db)
+):
     # Verify user is logged in and is an admin
     user = await get_user_from_cookie(request, db)
     if not user or not user.is_superuser:
@@ -25,10 +31,27 @@ async def admin_tags(request: Request, q: str = None, db: Session = Depends(get_
     # Apply search filter if query parameter is provided
     if q:
         search_term = f"%{q}%"
-        query = query.where(Tag.name.ilike(search_term))
+        query = query.where(
+            or_(
+                Tag.name.ilike(search_term),
+                Tag.description.ilike(search_term)
+            )
+        )
     
-    # Get tags
-    tags = db.execute(query).scalars().all()
+    # Count total records for pagination
+    count_query = select(func.count()).select_from(query.subquery())
+    total_records = db.execute(count_query).scalar_one()
+    
+    # Calculate pagination values
+    total_pages = (total_records + page_size - 1) // page_size
+    page = max(1, min(page, total_pages) if total_pages > 0 else 1)
+    offset = (page - 1) * page_size
+    
+    # Add pagination
+    paginated_query = query.order_by(Tag.name).offset(offset).limit(page_size)
+    
+    # Get paginated tags
+    tags = db.execute(paginated_query).scalars().all()
     
     # Render the admin tags template
     return templates.TemplateResponse(
@@ -38,7 +61,15 @@ async def admin_tags(request: Request, q: str = None, db: Session = Depends(get_
             "user": user,
             "tags": tags,
             "query": q,
-            "message": request.query_params.get("message")
+            "message": request.query_params.get("message"),
+            "pagination": {
+                "page": page,
+                "page_size": page_size,
+                "total_pages": total_pages,
+                "total_records": total_records,
+                "has_prev": page > 1,
+                "has_next": page < total_pages
+            }
         }
     )
 

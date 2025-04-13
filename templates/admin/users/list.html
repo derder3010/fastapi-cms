@@ -47,17 +47,27 @@ content %}
             placeholder="Search users..."
             value="{{ query or '' }}"
           />
+          <input
+            type="hidden"
+            name="page_size"
+            value="{{ pagination.page_size if pagination else 10 }}"
+          />
           <button class="btn btn-primary" type="submit">
             <i class="bi bi-search"></i>
           </button>
           {% if query %}
-          <a href="/admin/users" class="btn btn-outline-secondary">
+          <a
+            href="/admin/users?page_size={{ pagination.page_size if pagination else 10 }}"
+            class="btn btn-outline-secondary"
+          >
             <i class="bi bi-x-circle"></i> Clear
           </a>
           {% endif %}
         </div>
       </form>
     </div>
+    {% set item_name = 'users' %} {% include
+    "admin/components/pagination_info.html" %}
   </div>
 
   <div class="row">
@@ -206,6 +216,8 @@ content %}
           <div class="alert alert-info mb-0" role="alert">No users found.</div>
           {% endif %}
         </div>
+        {% set url_path = '/admin/users' %} {% include
+        "admin/components/pagination.html" %}
       </div>
     </div>
   </div>

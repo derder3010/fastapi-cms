@@ -42,17 +42,27 @@ content %}
             placeholder="Search comments..."
             value="{{ query or '' }}"
           />
+          <input
+            type="hidden"
+            name="page_size"
+            value="{{ pagination.page_size if pagination else 10 }}"
+          />
           <button class="btn btn-primary" type="submit">
             <i class="bi bi-search"></i>
           </button>
           {% if query %}
-          <a href="/admin/comments" class="btn btn-outline-secondary">
+          <a
+            href="/admin/comments?page_size={{ pagination.page_size if pagination else 10 }}"
+            class="btn btn-outline-secondary"
+          >
             <i class="bi bi-x-circle"></i> Clear
           </a>
           {% endif %}
         </div>
       </form>
     </div>
+    {% set item_name = 'comments' %} {% include
+    "admin/components/pagination_info.html" %}
   </div>
 
   <div class="row">
@@ -195,6 +205,8 @@ content %}
           </div>
           {% endif %}
         </div>
+        {% set url_path = '/admin/comments' %} {% include
+        "admin/components/pagination.html" %}
       </div>
     </div>
   </div>

@@ -1,0 +1,67 @@
+{% if pagination and pagination.total_pages > 1 %}
+<div class="card-footer">
+  <nav aria-label="Page navigation">
+    <ul class="pagination justify-content-center mb-0">
+      <!-- Previous Page Button -->
+      <li class="page-item {% if not pagination.has_prev %}disabled{% endif %}">
+        <a
+          class="page-link"
+          href="{{ url_path }}?page={{ pagination.page - 1 }}&page_size={{ pagination.page_size }}{% if query %}&q={{ query }}{% endif %}"
+          aria-label="Previous"
+        >
+          <span aria-hidden="true">&laquo;</span>
+        </a>
+      </li>
+
+      <!-- Page Number Buttons -->
+      {% set start_page = [1, pagination.page - 2]|max %} {% set end_page =
+      [pagination.total_pages, start_page + 4]|min %} {% set start_page = [1,
+      end_page - 4]|max %} {% if start_page > 1 %}
+      <li class="page-item">
+        <a
+          class="page-link"
+          href="{{ url_path }}?page=1&page_size={{ pagination.page_size }}{% if query %}&q={{ query }}{% endif %}"
+          >1</a
+        >
+      </li>
+      {% if start_page > 2 %}
+      <li class="page-item disabled">
+        <span class="page-link">...</span>
+      </li>
+      {% endif %} {% endif %} {% for p in range(start_page, end_page + 1) %}
+      <li class="page-item {% if p == pagination.page %}active{% endif %}">
+        <a
+          class="page-link"
+          href="{{ url_path }}?page={{ p }}&page_size={{ pagination.page_size }}{% if query %}&q={{ query }}{% endif %}"
+          >{{ p }}</a
+        >
+      </li>
+      {% endfor %} {% if end_page < pagination.total_pages %} {% if end_page <
+      pagination.total_pages - 1 %}
+      <li class="page-item disabled">
+        <span class="page-link">...</span>
+      </li>
+      {% endif %}
+      <li class="page-item">
+        <a
+          class="page-link"
+          href="{{ url_path }}?page={{ pagination.total_pages }}&page_size={{ pagination.page_size }}{% if query %}&q={{ query }}{% endif %}"
+          >{{ pagination.total_pages }}</a
+        >
+      </li>
+      {% endif %}
+
+      <!-- Next Page Button -->
+      <li class="page-item {% if not pagination.has_next %}disabled{% endif %}">
+        <a
+          class="page-link"
+          href="{{ url_path }}?page={{ pagination.page + 1 }}&page_size={{ pagination.page_size }}{% if query %}&q={{ query }}{% endif %}"
+          aria-label="Next"
+        >
+          <span aria-hidden="true">&raquo;</span>
+        </a>
+      </li>
+    </ul>
+  </nav>
+</div>
+{% endif %}

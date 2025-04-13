@@ -1,0 +1,11 @@
+{% if pagination and pagination.total_records > 0 %}
+<div class="col-md-6 text-md-end mt-3 mt-md-0">
+  <small class="text-muted">
+    {% set item_name = item_name|default('items') %} Showing {% if
+    pagination.total_records > 0 %} {{ (pagination.page - 1) *
+    pagination.page_size + 1 }} to {{ [pagination.page * pagination.page_size,
+    pagination.total_records]|min }} of {{ pagination.total_records }} {% else
+    %} 0 of 0 {% endif %} {{ item_name }}
+  </small>
+</div>
+{% endif %}

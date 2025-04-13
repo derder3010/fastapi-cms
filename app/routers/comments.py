@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, Form, Request
 from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.templating import Jinja2Templates
-from sqlmodel import Session, select, desc, delete
+from sqlmodel import Session, select, desc, delete, func
 from sqlalchemy.orm import selectinload
 
 from app.database import get_db
@@ -14,7 +14,13 @@ router = APIRouter(prefix="/comments")
 templates = Jinja2Templates(directory="templates")
 
 @router.get("/", response_class=HTMLResponse)
-async def admin_comments(request: Request, q: str = None, db: Session = Depends(get_db)):
+async def admin_comments(
+    request: Request, 
+    q: str = None, 
+    page: int = 1, 
+    page_size: int = 10, 
+    db: Session = Depends(get_db)
+):
     # Verify user is logged in and is an admin
     user = await get_user_from_cookie(request, db)
     if not user or not user.is_superuser:
@@ -29,10 +35,24 @@ async def admin_comments(request: Request, q: str = None, db: Session = Depends(
     # Apply search filter if query parameter is provided
     if q:
         search_term = f"%{q}%"
-        query = query.where(Comment.content.ilike(search_term))
+        query = query.where(
+            Comment.content.ilike(search_term)
+        )
+    
+    # Count total records for pagination
+    count_query = select(func.count()).select_from(query.subquery())
+    total_records = db.execute(count_query).scalar_one()
+    
+    # Calculate pagination values
+    total_pages = (total_records + page_size - 1) // page_size
+    page = max(1, min(page, total_pages) if total_pages > 0 else 1)
+    offset = (page - 1) * page_size
+    
+    # Add pagination
+    paginated_query = query.order_by(desc(Comment.created_at)).offset(offset).limit(page_size)
     
     # Get comments
-    comments = db.execute(query).unique().scalars().all()
+    comments = db.execute(paginated_query).unique().scalars().all()
     
     # Render the admin comments template
     return templates.TemplateResponse(
@@ -42,7 +62,15 @@ async def admin_comments(request: Request, q: str = None, db: Session = Depends(
             "user": user,
             "comments": comments,
             "query": q,
-            "message": request.query_params.get("message")
+            "message": request.query_params.get("message"),
+            "pagination": {
+                "page": page,
+                "page_size": page_size,
+                "total_pages": total_pages,
+                "total_records": total_records,
+                "has_prev": page > 1,
+                "has_next": page < total_pages
+            }
         }
     )
 

@@ -16,7 +16,13 @@ router = APIRouter(prefix="/articles")
 templates = Jinja2Templates(directory="templates")
 
 @router.get("/", response_class=HTMLResponse)
-async def admin_articles(request: Request, q: str = None, db: Session = Depends(get_db)):
+async def admin_articles(
+    request: Request, 
+    q: str = None, 
+    page: int = 1, 
+    page_size: int = 10, 
+    db: Session = Depends(get_db)
+):
     # Verify user is logged in and is an admin
     user = await get_user_from_cookie(request, db)
     if not user or not user.is_superuser:
@@ -37,9 +43,21 @@ async def admin_articles(request: Request, q: str = None, db: Session = Depends(
             Article.content.ilike(search_term)
         )
     
-    # Get all articles with their categories, authors, and tags
+    # Count total records for pagination
+    count_query = select(func.count()).select_from(query.subquery())
+    total_records = db.execute(count_query).scalar_one()
+    
+    # Calculate pagination values
+    total_pages = (total_records + page_size - 1) // page_size
+    page = max(1, min(page, total_pages) if total_pages > 0 else 1)
+    offset = (page - 1) * page_size
+    
+    # Add pagination
+    paginated_query = query.order_by(desc(Article.created_at)).offset(offset).limit(page_size)
+    
+    # Get paginated articles with their categories, authors, and tags
     articles = db.execute(
-        query.order_by(desc(Article.created_at))
+        paginated_query
     ).unique().scalars().all()
     
     # Render the admin articles template
@@ -50,7 +68,15 @@ async def admin_articles(request: Request, q: str = None, db: Session = Depends(
             "user": user, 
             "articles": articles,
             "query": q,
-            "message": request.query_params.get("message")
+            "message": request.query_params.get("message"),
+            "pagination": {
+                "page": page,
+                "page_size": page_size,
+                "total_pages": total_pages,
+                "total_records": total_records,
+                "has_prev": page > 1,
+                "has_next": page < total_pages
+            }
         }
     )
 
