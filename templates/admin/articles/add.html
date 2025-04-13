@@ -24,7 +24,11 @@ block content %}
           </div>
           {% endif %}
 
-          <form method="POST" action="/admin/articles/add">
+          <form
+            method="POST"
+            action="/admin/articles/add"
+            enctype="multipart/form-data"
+          >
             <div class="mb-3">
               <label for="title" class="form-label"
                 >Title <span class="text-danger">*</span></label
@@ -55,43 +59,6 @@ block content %}
             </div>
 
             <div class="mb-3">
-              <label for="category_id" class="form-label"
-                >Category <span class="text-danger">*</span></label
-              >
-              <select
-                class="form-select"
-                id="category_id"
-                name="category_id"
-                required
-              >
-                <option value="">Select Category</option>
-                {% for category in categories %}
-                <option value="{{ category.id }}">{{ category.name }}</option>
-                {% endfor %}
-              </select>
-            </div>
-
-            <div class="mb-3">
-              <label for="tags" class="form-label">Tags</label>
-              <select class="form-select" id="tags" name="tag_ids" multiple>
-                {% for tag in tags %}
-                <option value="{{ tag.id }}">{{ tag.name }}</option>
-                {% endfor %}
-              </select>
-              <div class="form-text">
-                Hold Ctrl (Cmd on Mac) to select multiple tags
-              </div>
-            </div>
-
-            <div class="mb-3">
-              <label for="content" class="form-label"
-                >Content <span class="text-danger">*</span></label
-              >
-              <div id="editor"></div>
-              <input type="hidden" name="content" id="content-input" required />
-            </div>
-
-            <div class="mb-3">
               <label for="excerpt" class="form-label">Excerpt</label>
               <textarea
                 class="form-control"
@@ -106,19 +73,20 @@ block content %}
             </div>
 
             <div class="mb-3">
-              <label for="footer_content" class="form-label"
-                >Footer Content</label
+              <label for="category_id" class="form-label"
+                >Category <span class="text-danger">*</span></label
               >
-              <textarea
-                class="form-control"
-                id="footer_content"
-                name="footer_content"
-                rows="3"
-              ></textarea>
-              <div class="form-text">
-                Additional content to display at the end of the article
-                (disclaimers, source attributions, etc.)
-              </div>
+              <select
+                class="form-select"
+                id="category_id"
+                name="category_id"
+                required
+              >
+                <option value="">Select Category</option>
+                {% for category in categories %}
+                <option value="{{ category.id }}">{{ category.name }}</option>
+                {% endfor %}
+              </select>
             </div>
 
             <div class="mb-3">
@@ -182,6 +150,42 @@ block content %}
               </div>
             </div>
 
+            <div class="mb-3">
+              <label for="content" class="form-label"
+                >Content <span class="text-danger">*</span></label
+              >
+              <div id="editor"></div>
+              <input type="hidden" name="content" id="content-input" required />
+            </div>
+
+            <div class="mb-3">
+              <label for="tags" class="form-label">Tags</label>
+              <select class="form-select" id="tags" name="tag_ids" multiple>
+                {% for tag in tags %}
+                <option value="{{ tag.id }}">{{ tag.name }}</option>
+                {% endfor %}
+              </select>
+              <div class="form-text">
+                Hold Ctrl (Cmd on Mac) to select multiple tags
+              </div>
+            </div>
+
+            <div class="mb-3">
+              <label for="footer_content" class="form-label"
+                >Footer Content</label
+              >
+              <div id="footer-editor"></div>
+              <input
+                type="hidden"
+                name="footer_content"
+                id="footer-content-input"
+              />
+              <div class="form-text">
+                Additional content to display at the end of the article
+                (disclaimers, source attributions, etc.)
+              </div>
+            </div>
+
             <div class="mb-3 form-check">
               <input
                 type="checkbox"
@@ -210,10 +214,48 @@ block content %}
 {% block additional_js %}
 <script>
   document.addEventListener("DOMContentLoaded", function () {
-    // Initialize Toast UI Editor
+    // Initialize Toast UI Editor for main content
     const editor = new toastui.Editor({
       el: document.querySelector("#editor"),
       height: "500px",
+      initialEditType: "wysiwyg",
+      previewStyle: "vertical",
+      toolbarItems: [
+        ["heading", "bold", "italic", "strike"],
+        ["hr", "quote"],
+        ["ul", "ol", "task", "indent", "outdent"],
+        ["table", "image", "link"],
+        ["code", "codeblock"],
+      ],
+      hooks: {
+        addImageBlobHook: async (blob, callback) => {
+          const formData = new FormData();
+          formData.append("file", blob);
+
+          try {
+            const response = await fetch("/api/upload/image/web", {
+              method: "POST",
+              body: formData,
+            });
+
+            if (!response.ok) {
+              throw new Error("Image upload failed");
+            }
+
+            const data = await response.json();
+            callback(data.url);
+          } catch (error) {
+            console.error("Error uploading image:", error);
+            alert("Failed to upload image. Please try again.");
+          }
+        },
+      },
+    });
+
+    // Initialize Toast UI Editor for footer content
+    const footerEditor = new toastui.Editor({
+      el: document.querySelector("#footer-editor"),
+      height: "300px",
       initialEditType: "wysiwyg",
       previewStyle: "vertical",
       toolbarItems: [
@@ -253,9 +295,12 @@ block content %}
     form.addEventListener("submit", function (e) {
       e.preventDefault();
 
-      // Get HTML content from editor and set it to the hidden input
+      // Get HTML content from editors and set it to the hidden inputs
       const htmlContent = editor.getHTML();
       document.getElementById("content-input").value = htmlContent;
+
+      const footerHtmlContent = footerEditor.getHTML();
+      document.getElementById("footer-content-input").value = footerHtmlContent;
 
       // Submit the form
       this.submit();
