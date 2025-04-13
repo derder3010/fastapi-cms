@@ -229,7 +229,7 @@ class ProductRead(ProductBase):
         json_encoders = {
             datetime: lambda v: v.isoformat()
         }
-        schema_extra = {
+        json_schema_extra = {
             "example": {
                 "id": 1,
                 "name": "Sample Product",
@@ -269,7 +269,7 @@ class ProductReadWithParsedLinks(SQLModel):
         json_encoders = {
             datetime: lambda v: v.isoformat()
         }
-        schema_extra = {
+        json_schema_extra = {
             "example": {
                 "id": 1,
                 "name": "Sample Product",

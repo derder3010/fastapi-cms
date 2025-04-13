@@ -12,7 +12,7 @@ from app.routers.comments import router as comments_router
 from app.routers.tags import router as tags_router
 from app.routers.products import router as products_router
 
-admin_router = APIRouter(prefix="/admin")
+admin_router = APIRouter(prefix="/admin", include_in_schema=False)
 
 # Root admin route redirect to dashboard or login
 @admin_router.get("/", include_in_schema=False)
