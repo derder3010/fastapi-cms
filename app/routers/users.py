@@ -94,6 +94,8 @@ async def admin_add_user(
     username: str = Form(...),
     email: str = Form(...),
     password: str = Form(...),
+    first_name: str = Form(None),
+    last_name: str = Form(None),
     is_active: bool = Form(False),
     is_superuser: bool = Form(False),
     db: Session = Depends(get_db)
@@ -133,6 +135,8 @@ async def admin_add_user(
         username=username,
         email=email,
         password=get_password_hash(password),
+        first_name=first_name,
+        last_name=last_name,
         is_active=is_active,
         is_superuser=is_superuser,
     )
@@ -170,6 +174,8 @@ async def admin_edit_user(
     username: str = Form(...),
     email: str = Form(...),
     password: str = Form(None),
+    first_name: str = Form(None),
+    last_name: str = Form(None),
     is_active: bool = Form(False),
     is_superuser: bool = Form(False),
     db: Session = Depends(get_db)
@@ -213,13 +219,17 @@ async def admin_edit_user(
                 status_code=400
             )
     
-    # Update user
+    # Update user fields
     user_to_edit.username = username
     user_to_edit.email = email
-    if password:
-        user_to_edit.password = get_password_hash(password)
+    user_to_edit.first_name = first_name
+    user_to_edit.last_name = last_name
     user_to_edit.is_active = is_active
     user_to_edit.is_superuser = is_superuser
+    
+    # Update password if provided
+    if password:
+        user_to_edit.password = get_password_hash(password)
     
     db.add(user_to_edit)
     db.commit()

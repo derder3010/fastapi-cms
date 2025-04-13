@@ -32,10 +32,7 @@ async def admin_tags(
     if q:
         search_term = f"%{q}%"
         query = query.where(
-            or_(
-                Tag.name.ilike(search_term),
-                Tag.description.ilike(search_term)
-            )
+            Tag.name.ilike(search_term)
         )
     
     # Count total records for pagination

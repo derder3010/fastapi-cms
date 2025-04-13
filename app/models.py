@@ -10,6 +10,8 @@ class UserBase(SQLModel):
     email: EmailStr = Field(max_length=200, index=True, unique=True)
     is_active: bool = Field(default=True)
     is_superuser: bool = Field(default=False)
+    first_name: Optional[str] = Field(default=None, max_length=100)
+    last_name: Optional[str] = Field(default=None, max_length=100)
 
 
 class User(UserBase, table=True):
@@ -25,6 +27,8 @@ class User(UserBase, table=True):
 
 class UserCreate(UserBase):
     password: str
+    first_name: Optional[str] = None
+    last_name: Optional[str] = None
 
 
 class UserRead(UserBase):
@@ -39,6 +43,8 @@ class UserUpdate(SQLModel):
     password: Optional[str] = None
     is_active: Optional[bool] = None
     is_superuser: Optional[bool] = None
+    first_name: Optional[str] = None
+    last_name: Optional[str] = None
 
 
 class CategoryBase(SQLModel):

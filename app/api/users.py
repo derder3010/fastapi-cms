@@ -16,7 +16,9 @@ async def create_user(user: UserCreate, db: Session = Depends(get_db)):
         email=user.email,
         password=get_password_hash(user.password),
         is_active=user.is_active,
-        is_superuser=user.is_superuser
+        is_superuser=user.is_superuser,
+        first_name=user.first_name,
+        last_name=user.last_name
     )
     db.add(user_obj)
     db.commit()
