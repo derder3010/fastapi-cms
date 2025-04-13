@@ -52,7 +52,6 @@ endblock %} {% block header_title %}Edit Product{% endblock %} {% block content
                     class="form-control"
                     id="price"
                     name="price"
-                    step="0.01"
                     value="{{ product.price }}"
                   />
                 </div>
@@ -114,72 +113,29 @@ endblock %} {% block header_title %}Edit Product{% endblock %} {% block content
               </div>
 
               <div class="col-md-6">
-                <h5 class="mb-3">Affiliate Links</h5>
+                <h5 class="mb-3">Social Links</h5>
 
-                <div class="mb-3">
-                  <label for="shopee_link" class="form-label"
-                    >Shopee Link</label
-                  >
-                  <input
-                    type="url"
-                    class="form-control"
-                    id="shopee_link"
-                    name="shopee_link"
-                    value="{{ product.shopee_link }}"
-                  />
+                <div id="social-links-container">
+                  <!-- Dynamic social links will be added here -->
                 </div>
 
                 <div class="mb-3">
-                  <label for="lazada_link" class="form-label"
-                    >Lazada Link</label
+                  <button
+                    type="button"
+                    id="add-social-link"
+                    class="btn btn-sm btn-secondary"
                   >
-                  <input
-                    type="url"
-                    class="form-control"
-                    id="lazada_link"
-                    name="lazada_link"
-                    value="{{ product.lazada_link }}"
-                  />
+                    <i class="bi bi-plus-circle me-1"></i> Add Another Link
+                  </button>
                 </div>
 
-                <div class="mb-3">
-                  <label for="amazon_link" class="form-label"
-                    >Amazon Link</label
-                  >
-                  <input
-                    type="url"
-                    class="form-control"
-                    id="amazon_link"
-                    name="amazon_link"
-                    value="{{ product.amazon_link }}"
-                  />
-                </div>
-
-                <div class="mb-3">
-                  <label for="tiki_link" class="form-label">Tiki Link</label>
-                  <input
-                    type="url"
-                    class="form-control"
-                    id="tiki_link"
-                    name="tiki_link"
-                    value="{{ product.tiki_link }}"
-                  />
-                </div>
-
-                <div class="mb-3">
-                  <label for="other_links" class="form-label"
-                    >Other Links</label
-                  >
-                  <textarea
-                    class="form-control"
-                    id="other_links"
-                    name="other_links"
-                    rows="3"
-                    placeholder="Enter additional links, one per line"
-                  >
-{{ product.other_links }}</textarea
-                  >
-                </div>
+                <!-- Hidden input to store the final JSON -->
+                <input
+                  type="hidden"
+                  id="social_links"
+                  name="social_links"
+                  value="{{ product.social_links }}"
+                />
 
                 <div class="mb-3">
                   <label for="article_ids" class="form-label"
@@ -234,6 +190,185 @@ endblock %} {% block header_title %}Edit Product{% endblock %} {% block content
     if (articleSelect) {
       // You can add JS for enhanced select functionality here if needed
     }
+
+    // Social links functionality
+    const container = document.getElementById("social-links-container");
+    const addButton = document.getElementById("add-social-link");
+    const hiddenInput = document.getElementById("social_links");
+
+    // Create a social link row
+    function createSocialLinkRow(platform = "", link = "") {
+      // Check if it's a custom platform (not in our predefined list)
+      const isPredefinedPlatform = [
+        "shopee",
+        "lazada",
+        "amazon",
+        "tiki",
+        "facebook",
+        "instagram",
+        "twitter",
+        "",
+      ].includes(platform);
+      const customName = !isPredefinedPlatform ? platform : "";
+      const actualPlatform = isPredefinedPlatform ? platform : "other";
+
+      const newRow = document.createElement("div");
+      newRow.className = "mb-3 social-link-row";
+      newRow.innerHTML = `
+        <div class="input-group ${actualPlatform === "other" ? "mb-1" : ""}">
+          <select class="form-select platform-select" style="max-width: 120px;">
+            <option value="">Select</option>
+            <option value="shopee" ${
+              actualPlatform === "shopee" ? "selected" : ""
+            }>Shopee</option>
+            <option value="lazada" ${
+              actualPlatform === "lazada" ? "selected" : ""
+            }>Lazada</option>
+            <option value="amazon" ${
+              actualPlatform === "amazon" ? "selected" : ""
+            }>Amazon</option>
+            <option value="tiki" ${
+              actualPlatform === "tiki" ? "selected" : ""
+            }>Tiki</option>
+            <option value="facebook" ${
+              actualPlatform === "facebook" ? "selected" : ""
+            }>Facebook</option>
+            <option value="instagram" ${
+              actualPlatform === "instagram" ? "selected" : ""
+            }>Instagram</option>
+            <option value="twitter" ${
+              actualPlatform === "twitter" ? "selected" : ""
+            }>Twitter</option>
+            <option value="other" ${
+              actualPlatform === "other" ? "selected" : ""
+            }>Other</option>
+          </select>
+          <input type="url" class="form-control link-input" placeholder="Enter URL" value="${link}" />
+          <button type="button" class="btn btn-danger remove-link">
+            <i class="bi bi-x"></i>
+          </button>
+        </div>
+        ${
+          actualPlatform === "other"
+            ? `<div class="custom-platform-name-container">
+                <input type="text" class="form-control custom-platform-name" placeholder="Enter platform name" value="${customName}" />
+              </div>`
+            : ""
+        }
+      `;
+
+      return newRow;
+    }
+
+    // Add new link row
+    addButton.addEventListener("click", function () {
+      const newRow = createSocialLinkRow();
+      container.appendChild(newRow);
+      attachEventListeners(newRow);
+    });
+
+    // Attach event listeners to a row
+    function attachEventListeners(row) {
+      // For platform select dropdown
+      const platformSelect = row.querySelector(".platform-select");
+      platformSelect.addEventListener("change", function () {
+        const isOther = this.value === "other";
+        let customContainer = row.querySelector(
+          ".custom-platform-name-container"
+        );
+
+        if (isOther && !customContainer) {
+          // Add custom name input if "other" is selected
+          const inputGroup = this.closest(".input-group");
+          inputGroup.classList.add("mb-1");
+
+          customContainer = document.createElement("div");
+          customContainer.className = "custom-platform-name-container";
+          customContainer.innerHTML = `<input type="text" class="form-control custom-platform-name" placeholder="Enter platform name" />`;
+
+          inputGroup.insertAdjacentElement("afterend", customContainer);
+
+          // Add event listener to the new input
+          customContainer
+            .querySelector("input")
+            .addEventListener("input", updateHiddenInput);
+        } else if (!isOther && customContainer) {
+          // Remove custom name input if another option is selected
+          this.closest(".input-group").classList.remove("mb-1");
+          customContainer.remove();
+        }
+
+        updateHiddenInput();
+      });
+
+      // For remove button
+      row.querySelector(".remove-link")?.addEventListener("click", function () {
+        if (container.children.length > 1) {
+          row.remove();
+          updateHiddenInput();
+        }
+      });
+
+      // For select and input fields
+      row.querySelectorAll("select, input").forEach((el) => {
+        el.addEventListener("change", updateHiddenInput);
+        el.addEventListener("input", updateHiddenInput);
+      });
+    }
+
+    // Update hidden input with JSON data
+    function updateHiddenInput() {
+      const data = {};
+      container.querySelectorAll(".social-link-row").forEach((row) => {
+        const platform = row.querySelector(".platform-select").value;
+        const link = row.querySelector(".link-input").value;
+
+        if (platform && link) {
+          if (platform === "other") {
+            const customName = row
+              .querySelector(".custom-platform-name")
+              ?.value.trim();
+            if (customName) {
+              data[customName] = link;
+            } else {
+              data["other"] = link;
+            }
+          } else {
+            data[platform] = link;
+          }
+        }
+      });
+
+      hiddenInput.value = JSON.stringify(data);
+    }
+
+    // Load existing social links if any
+    let existingLinks = {};
+    try {
+      const socialLinksValue = hiddenInput.value.trim();
+      if (socialLinksValue) {
+        existingLinks = JSON.parse(socialLinksValue);
+      }
+    } catch (e) {
+      console.error("Error parsing social links JSON:", e);
+    }
+
+    // If we have existing links, create rows for them
+    if (Object.keys(existingLinks).length > 0) {
+      for (const [platform, link] of Object.entries(existingLinks)) {
+        const row = createSocialLinkRow(platform, link);
+        container.appendChild(row);
+        attachEventListeners(row);
+      }
+    } else {
+      // Add an empty row if no existing links
+      const emptyRow = createSocialLinkRow();
+      container.appendChild(emptyRow);
+      attachEventListeners(emptyRow);
+    }
+
+    // Initialize
+    updateHiddenInput();
   });
 </script>
 {% endblock %}

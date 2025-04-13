@@ -51,8 +51,7 @@ content %}
                     class="form-control"
                     id="price"
                     name="price"
-                    step="0.01"
-                    value="0.00"
+                    value="0"
                   />
                 </div>
 
@@ -99,66 +98,50 @@ content %}
               </div>
 
               <div class="col-md-6">
-                <h5 class="mb-3">Affiliate Links</h5>
+                <h5 class="mb-3">Social Links</h5>
+
+                <div id="social-links-container">
+                  <!-- Dynamic social links will be added here -->
+                  <div class="mb-3 social-link-row">
+                    <div class="input-group">
+                      <select
+                        class="form-select platform-select"
+                        style="max-width: 120px"
+                      >
+                        <option value="">Select</option>
+                        <option value="shopee">Shopee</option>
+                        <option value="lazada">Lazada</option>
+                        <option value="amazon">Amazon</option>
+                        <option value="tiki">Tiki</option>
+                        <option value="facebook">Facebook</option>
+                        <option value="instagram">Instagram</option>
+                        <option value="twitter">Twitter</option>
+                        <option value="other">Other</option>
+                      </select>
+                      <input
+                        type="url"
+                        class="form-control link-input"
+                        placeholder="Enter URL"
+                      />
+                      <button type="button" class="btn btn-danger remove-link">
+                        <i class="bi bi-x"></i>
+                      </button>
+                    </div>
+                  </div>
+                </div>
 
                 <div class="mb-3">
-                  <label for="shopee_link" class="form-label"
-                    >Shopee Link</label
+                  <button
+                    type="button"
+                    id="add-social-link"
+                    class="btn btn-sm btn-secondary"
                   >
-                  <input
-                    type="url"
-                    class="form-control"
-                    id="shopee_link"
-                    name="shopee_link"
-                  />
+                    <i class="bi bi-plus-circle me-1"></i> Add Another Link
+                  </button>
                 </div>
 
-                <div class="mb-3">
-                  <label for="lazada_link" class="form-label"
-                    >Lazada Link</label
-                  >
-                  <input
-                    type="url"
-                    class="form-control"
-                    id="lazada_link"
-                    name="lazada_link"
-                  />
-                </div>
-
-                <div class="mb-3">
-                  <label for="amazon_link" class="form-label"
-                    >Amazon Link</label
-                  >
-                  <input
-                    type="url"
-                    class="form-control"
-                    id="amazon_link"
-                    name="amazon_link"
-                  />
-                </div>
-
-                <div class="mb-3">
-                  <label for="tiki_link" class="form-label">Tiki Link</label>
-                  <input
-                    type="url"
-                    class="form-control"
-                    id="tiki_link"
-                    name="tiki_link"
-                  />
-                </div>
-
-                <div class="mb-3">
-                  <label for="other_links" class="form-label"
-                    >Other Links</label
-                  >
-                  <textarea
-                    class="form-control"
-                    id="other_links"
-                    name="other_links"
-                    rows="3"
-                    placeholder="Enter additional links, one per line"
-                  ></textarea>
-                </div>
+                <!-- Hidden input to store the final JSON -->
+                <input type="hidden" id="social_links" name="social_links" />
               </div>
             </div>
 
@@ -174,4 +157,201 @@ content %}
     </div>
   </div>
 </div>
+{% endblock %} {% block additional_js %}
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    const container = document.getElementById("social-links-container");
+    const addButton = document.getElementById("add-social-link");
+    const hiddenInput = document.getElementById("social_links");
+
+    // Function to create a row with proper event listeners
+    function createRow(platformValue = "", linkValue = "", customName = "") {
+      const newRow = document.createElement("div");
+      newRow.className = "mb-3 social-link-row";
+      newRow.innerHTML = `
+        <div class="input-group ${platformValue === "other" ? "mb-1" : ""}">
+          <select class="form-select platform-select" style="max-width: 120px;">
+            <option value="">Select</option>
+            <option value="shopee" ${
+              platformValue === "shopee" ? "selected" : ""
+            }>Shopee</option>
+            <option value="lazada" ${
+              platformValue === "lazada" ? "selected" : ""
+            }>Lazada</option>
+            <option value="amazon" ${
+              platformValue === "amazon" ? "selected" : ""
+            }>Amazon</option>
+            <option value="tiki" ${
+              platformValue === "tiki" ? "selected" : ""
+            }>Tiki</option>
+            <option value="facebook" ${
+              platformValue === "facebook" ? "selected" : ""
+            }>Facebook</option>
+            <option value="instagram" ${
+              platformValue === "instagram" ? "selected" : ""
+            }>Instagram</option>
+            <option value="twitter" ${
+              platformValue === "twitter" ? "selected" : ""
+            }>Twitter</option>
+            <option value="other" ${
+              platformValue === "other" ? "selected" : ""
+            }>Other</option>
+          </select>
+          <input type="url" class="form-control link-input" placeholder="Enter URL" value="${linkValue}" />
+          <button type="button" class="btn btn-danger remove-link">
+            <i class="bi bi-x"></i>
+          </button>
+        </div>
+        ${
+          platformValue === "other"
+            ? `<div class="custom-platform-name-container">
+                <input type="text" class="form-control custom-platform-name" placeholder="Enter platform name" value="${customName}" />
+              </div>`
+            : ""
+        }
+      `;
+
+      // Add event listeners
+      const platformSelect = newRow.querySelector(".platform-select");
+      platformSelect.addEventListener("change", function () {
+        const isOther = this.value === "other";
+        let customContainer = newRow.querySelector(
+          ".custom-platform-name-container"
+        );
+
+        if (isOther && !customContainer) {
+          // Add custom name input if "other" is selected
+          const inputGroup = this.closest(".input-group");
+          inputGroup.classList.add("mb-1");
+
+          customContainer = document.createElement("div");
+          customContainer.className = "custom-platform-name-container";
+          customContainer.innerHTML = `<input type="text" class="form-control custom-platform-name" placeholder="Enter platform name" />`;
+
+          inputGroup.insertAdjacentElement("afterend", customContainer);
+
+          // Add event listener to the new input
+          customContainer
+            .querySelector("input")
+            .addEventListener("input", updateHiddenInput);
+        } else if (!isOther && customContainer) {
+          // Remove custom name input if another option is selected
+          this.closest(".input-group").classList.remove("mb-1");
+          customContainer.remove();
+        }
+
+        updateHiddenInput();
+      });
+
+      // Add remove button event listener
+      newRow
+        .querySelector(".remove-link")
+        .addEventListener("click", function () {
+          if (container.children.length > 1) {
+            newRow.remove();
+            updateHiddenInput();
+          }
+        });
+
+      // Add event listeners to input fields
+      newRow.querySelectorAll("input.link-input").forEach((el) => {
+        el.addEventListener("input", updateHiddenInput);
+      });
+
+      return newRow;
+    }
+
+    // Add new link row
+    addButton.addEventListener("click", function () {
+      const newRow = createRow();
+      container.appendChild(newRow);
+    });
+
+    // Remove link row - delegated event handled by row creation now
+
+    // Update hidden input with JSON data
+    function updateHiddenInput() {
+      const data = {};
+      container.querySelectorAll(".social-link-row").forEach((row) => {
+        const platformSelect = row.querySelector(".platform-select");
+        const platform = platformSelect.value;
+        const link = row.querySelector(".link-input").value;
+
+        if (platform && link) {
+          if (platform === "other") {
+            const customName = row
+              .querySelector(".custom-platform-name")
+              ?.value.trim();
+            if (customName) {
+              data[customName] = link;
+            } else {
+              data["other"] = link;
+            }
+          } else {
+            data[platform] = link;
+          }
+        }
+      });
+
+      hiddenInput.value = JSON.stringify(data);
+    }
+
+    // Initialize with a empty row
+    if (container.children.length === 0) {
+      container.appendChild(createRow());
+    } else {
+      // Add event listeners to existing rows
+      container.querySelectorAll(".social-link-row").forEach((row) => {
+        const platformSelect = row.querySelector(".platform-select");
+        platformSelect.addEventListener("change", function () {
+          const isOther = this.value === "other";
+          let customContainer = row.querySelector(
+            ".custom-platform-name-container"
+          );
+
+          if (isOther && !customContainer) {
+            // Add custom name input if "other" is selected
+            const inputGroup = this.closest(".input-group");
+            inputGroup.classList.add("mb-1");
+
+            customContainer = document.createElement("div");
+            customContainer.className = "custom-platform-name-container";
+            customContainer.innerHTML = `<input type="text" class="form-control custom-platform-name" placeholder="Enter platform name" />`;
+
+            inputGroup.insertAdjacentElement("afterend", customContainer);
+
+            // Add event listener to the new input
+            customContainer
+              .querySelector("input")
+              .addEventListener("input", updateHiddenInput);
+          } else if (!isOther && customContainer) {
+            // Remove custom name input if another option is selected
+            this.closest(".input-group").classList.remove("mb-1");
+            customContainer.remove();
+          }
+
+          updateHiddenInput();
+        });
+
+        // Add remove button event listener
+        row
+          .querySelector(".remove-link")
+          .addEventListener("click", function () {
+            if (container.children.length > 1) {
+              row.remove();
+              updateHiddenInput();
+            }
+          });
+
+        // Add event listeners to input fields
+        row.querySelectorAll("input").forEach((el) => {
+          el.addEventListener("input", updateHiddenInput);
+        });
+      });
+    }
+
+    // Initialize
+    updateHiddenInput();
+  });
+</script>
 {% endblock %}

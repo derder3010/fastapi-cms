@@ -5,6 +5,7 @@ from sqlmodel import Session, select, func
 import os
 from datetime import datetime
 import shutil
+import json
 
 from app.database import get_db
 from app.models import Product, Article, ProductArticleLink
@@ -58,14 +59,10 @@ async def admin_add_product_form(request: Request, db: Session = Depends(get_db)
 async def admin_add_product(
     request: Request,
     name: str = Form(...),
-    price: float = Form(0.0),
+    price: int = Form(0),
     slug: str = Form(None),
     description: str = Form(None),
-    shopee_link: str = Form(None),
-    lazada_link: str = Form(None),
-    amazon_link: str = Form(None),
-    tiki_link: str = Form(None),
-    other_links: str = Form(None),
+    social_links: str = Form(None),
     featured_image: UploadFile = File(None),
     db: Session = Depends(get_db)
 ):
@@ -75,6 +72,21 @@ async def admin_add_product(
         return RedirectResponse(url="/admin/login", status_code=303)
     
     try:
+        # Validate social_links as valid JSON if provided
+        if social_links:
+            try:
+                json.loads(social_links)
+            except json.JSONDecodeError:
+                return templates.TemplateResponse(
+                    "admin/products/add.html", 
+                    {
+                        "request": request,
+                        "user": user,
+                        "error": "Social links must be valid JSON."
+                    },
+                    status_code=400
+                )
+        
         # Generate slug if not provided
         if not slug:
             existing_slugs = db.execute(select(Product.slug)).scalars().all()
@@ -120,11 +132,7 @@ async def admin_add_product(
             slug=slug,
             description=description,
             featured_image=featured_image_path,
-            shopee_link=shopee_link,
-            lazada_link=lazada_link,
-            amazon_link=amazon_link,
-            tiki_link=tiki_link,
-            other_links=other_links
+            social_links=social_links
         )
         db.add(product)
         db.commit()
@@ -194,14 +202,10 @@ async def admin_edit_product(
     request: Request,
     product_id: int,
     name: str = Form(...),
-    price: float = Form(0.0),
+    price: int = Form(0),
     slug: str = Form(None),
     description: str = Form(None),
-    shopee_link: str = Form(None),
-    lazada_link: str = Form(None),
-    amazon_link: str = Form(None),
-    tiki_link: str = Form(None),
-    other_links: str = Form(None),
+    social_links: str = Form(None),
     featured_image: UploadFile = File(None),
     article_ids: list[int] = Form([]),
     db: Session = Depends(get_db)
@@ -219,6 +223,22 @@ async def admin_edit_product(
                 url="/admin/products?message=Product not found",
                 status_code=303
             )
+        
+        # Validate social_links as valid JSON if provided
+        if social_links:
+            try:
+                json.loads(social_links)
+            except json.JSONDecodeError:
+                return templates.TemplateResponse(
+                    "admin/products/edit.html",
+                    {
+                        "request": request,
+                        "user": user,
+                        "product": product,
+                        "error": "Social links must be valid JSON."
+                    },
+                    status_code=400
+                )
         
         # Generate slug if not provided
         if not slug:
@@ -247,12 +267,6 @@ async def admin_edit_product(
             upload_dir = os.path.join("media", "products")
             os.makedirs(upload_dir, exist_ok=True)
             
-            # Delete old image if it exists
-            if product.featured_image:
-                old_image_path = os.path.join("media", product.featured_image)
-                if os.path.exists(old_image_path):
-                    os.remove(old_image_path)
-            
             # Generate a unique filename
             timestamp = datetime.now().strftime("%Y%m%d%H%M%S")
             file_extension = os.path.splitext(featured_image.filename)[1]
@@ -263,38 +277,53 @@ async def admin_edit_product(
             with open(file_path, "wb") as buffer:
                 shutil.copyfileobj(featured_image.file, buffer)
             
-            # Save the relative path
+            # Remove old image if it exists
+            if product.featured_image:
+                old_file_path = os.path.join("media", product.featured_image)
+                if os.path.exists(old_file_path):
+                    os.remove(old_file_path)
+            
+            # Update featured image path
             featured_image_path = os.path.join("products", new_filename)
         
-        # Update product
+        # Update product fields
         product.name = name
         product.price = price
         product.slug = slug
         product.description = description
         product.featured_image = featured_image_path
-        product.shopee_link = shopee_link
-        product.lazada_link = lazada_link
-        product.amazon_link = amazon_link
-        product.tiki_link = tiki_link
-        product.other_links = other_links
+        product.social_links = social_links
         
-        # Update article associations
-        # First, remove existing associations
-        db.execute(select(ProductArticleLink).where(ProductArticleLink.product_id == product_id))
-        existing_links = db.execute(
-            select(ProductArticleLink).where(ProductArticleLink.product_id == product_id)
-        ).scalars().all()
-        
-        for link in existing_links:
-            db.delete(link)
-        
-        # Then, add new associations
-        for article_id in article_ids:
-            product_article_link = ProductArticleLink(product_id=product_id, article_id=article_id)
-            db.add(product_article_link)
-        
+        # Update product
         db.add(product)
         db.commit()
+        
+        # Update article associations
+        current_article_ids = [article.id for article in product.articles]
+        
+        # Remove associations that are not in the new list
+        for article_id in current_article_ids:
+            if article_id not in article_ids:
+                link = db.execute(
+                    select(ProductArticleLink).where(
+                        (ProductArticleLink.product_id == product_id) & 
+                        (ProductArticleLink.article_id == article_id)
+                    )
+                ).scalar_one_or_none()
+                if link:
+                    db.delete(link)
+        
+        # Add new associations
+        for article_id in article_ids:
+            if article_id not in current_article_ids:
+                # Check if article exists
+                article = db.get(Article, article_id)
+                if article:
+                    link = ProductArticleLink(product_id=product_id, article_id=article_id)
+                    db.add(link)
+        
+        db.commit()
+        db.refresh(product)
         
         return RedirectResponse(
             url=f"/admin/products?message=Product '{name}' updated successfully",
@@ -306,7 +335,7 @@ async def admin_edit_product(
             {
                 "request": request,
                 "user": user,
-                "product": product if 'product' in locals() else None,
+                "product": product,
                 "error": f"Error: {str(e)}."
             },
             status_code=500

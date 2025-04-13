@@ -2,6 +2,7 @@ from sqlmodel import SQLModel, Field, Relationship
 from pydantic import EmailStr
 from typing import Optional, List
 from datetime import datetime
+import json
 
 
 class UserBase(SQLModel):
@@ -189,15 +190,11 @@ class TagUpdate(SQLModel):
 
 class ProductBase(SQLModel):
     name: str = Field(max_length=200, index=True)
-    price: float = Field(default=0.0)
+    price: int = Field(default=0)
     slug: str = Field(max_length=200, index=True, unique=True)
     description: Optional[str] = None
     featured_image: Optional[str] = Field(default=None, max_length=500)
-    shopee_link: Optional[str] = Field(default=None, max_length=500)
-    lazada_link: Optional[str] = Field(default=None, max_length=500)
-    amazon_link: Optional[str] = Field(default=None, max_length=500)
-    tiki_link: Optional[str] = Field(default=None, max_length=500)
-    other_links: Optional[str] = None
+    social_links: Optional[str] = Field(default=None)  # JSON string with format {"name": "link"}
 
 
 class Product(ProductBase, table=True):
@@ -217,16 +214,71 @@ class ProductRead(ProductBase):
     id: int
     created_at: datetime
     updated_at: datetime
+    
+    @property
+    def parsed_social_links(self) -> Optional[dict]:
+        """Return social_links as a parsed JSON object if it exists."""
+        if not self.social_links:
+            return None
+        try:
+            return json.loads(self.social_links)
+        except json.JSONDecodeError:
+            return None
+
+    class Config:
+        json_encoders = {
+            datetime: lambda v: v.isoformat()
+        }
+        schema_extra = {
+            "example": {
+                "id": 1,
+                "name": "Sample Product",
+                "price": 100,
+                "slug": "sample-product",
+                "description": "This is a sample product",
+                "featured_image": "products/sample.jpg",
+                "social_links": None,
+                "parsed_social_links": {"shopee": "https://shopee.com/product1", "lazada": "https://lazada.com/product1"},
+                "created_at": "2023-01-01T00:00:00",
+                "updated_at": "2023-01-01T00:00:00"
+            }
+        }
 
 
 class ProductUpdate(SQLModel):
     name: Optional[str] = None
-    price: Optional[float] = None
+    price: Optional[int] = None
     slug: Optional[str] = None
     description: Optional[str] = None
     featured_image: Optional[str] = None
-    shopee_link: Optional[str] = None
-    lazada_link: Optional[str] = None
-    amazon_link: Optional[str] = None
-    tiki_link: Optional[str] = None
-    other_links: Optional[str] = None 
+    social_links: Optional[str] = None
+
+
+class ProductReadWithParsedLinks(SQLModel):
+    id: int
+    name: str
+    price: int
+    slug: str
+    description: Optional[str] = None
+    featured_image: Optional[str] = None
+    social_links: Optional[dict] = None  # This will be filled with parsed links
+    created_at: datetime
+    updated_at: datetime
+    
+    class Config:
+        json_encoders = {
+            datetime: lambda v: v.isoformat()
+        }
+        schema_extra = {
+            "example": {
+                "id": 1,
+                "name": "Sample Product",
+                "price": 100,
+                "slug": "sample-product",
+                "description": "This is a sample product",
+                "featured_image": "products/sample.jpg",
+                "social_links": {"shopee": "https://shopee.com/product1", "lazada": "https://lazada.com/product1"},
+                "created_at": "2023-01-01T00:00:00",
+                "updated_at": "2023-01-01T00:00:00"
+            }
+        } 

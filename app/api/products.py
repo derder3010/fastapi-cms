@@ -1,15 +1,28 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlmodel import Session, select
 from typing import List
+import json
 
 from app.database import get_db
-from app.models import Product, ProductCreate, ProductRead, ProductUpdate
+from app.models import Product, ProductCreate, ProductRead, ProductUpdate, ProductReadWithParsedLinks
 from app.auth.deps import get_current_active_user
 from app.utils.text import generate_unique_slug
 
 router = APIRouter(prefix="/products", tags=["products"])
 
-@router.post("/", response_model=ProductRead)
+def _parse_product_for_response(product: Product) -> ProductReadWithParsedLinks:
+    """Convert a Product instance to ProductReadWithParsedLinks with parsed social_links."""
+    product_dict = product.dict()
+    social_links_str = product_dict.pop("social_links", None)
+    
+    # Create a new dictionary with the parsed social_links
+    product_data = ProductReadWithParsedLinks(
+        **product_dict,
+        social_links=json.loads(social_links_str) if social_links_str else None
+    )
+    return product_data
+
+@router.post("/", response_model=ProductReadWithParsedLinks)
 async def create_product(
     product: ProductCreate, 
     current_user = Depends(get_current_active_user),
@@ -18,6 +31,13 @@ async def create_product(
     # Only allow superusers to create products
     if not current_user.is_superuser:
         raise HTTPException(status_code=403, detail="Not authorized to create products")
+    
+    # Validate social_links as valid JSON if provided
+    if product.social_links:
+        try:
+            json.loads(product.social_links)
+        except json.JSONDecodeError:
+            raise HTTPException(status_code=400, detail="social_links must be a valid JSON string")
     
     product_obj = Product.from_orm(product)
     
@@ -30,28 +50,30 @@ async def create_product(
     db.add(product_obj)
     db.commit()
     db.refresh(product_obj)
-    return product_obj
+    
+    # Convert to response model with parsed social_links
+    return _parse_product_for_response(product_obj)
 
-@router.get("/", response_model=List[ProductRead])
+@router.get("/", response_model=List[ProductReadWithParsedLinks])
 async def get_products(db: Session = Depends(get_db)):
     products = db.execute(select(Product)).scalars().all()
-    return products
+    return [_parse_product_for_response(product) for product in products]
 
-@router.get("/{product_id}", response_model=ProductRead)
+@router.get("/{product_id}", response_model=ProductReadWithParsedLinks)
 async def get_product(product_id: int, db: Session = Depends(get_db)):
     product = db.get(Product, product_id)
     if not product:
         raise HTTPException(status_code=404, detail="Product not found")
-    return product
+    return _parse_product_for_response(product)
 
-@router.get("/by-slug/{slug}", response_model=ProductRead)
+@router.get("/by-slug/{slug}", response_model=ProductReadWithParsedLinks)
 async def get_product_by_slug(slug: str, db: Session = Depends(get_db)):
     product = db.execute(select(Product).where(Product.slug == slug)).scalar_one_or_none()
     if not product:
         raise HTTPException(status_code=404, detail="Product not found")
-    return product
+    return _parse_product_for_response(product)
 
-@router.put("/{product_id}", response_model=ProductRead)
+@router.put("/{product_id}", response_model=ProductReadWithParsedLinks)
 async def update_product(
     product_id: int,
     product_update: ProductUpdate,
@@ -68,6 +90,13 @@ async def update_product(
     
     product_data = product_update.dict(exclude_unset=True)
     
+    # Validate social_links as valid JSON if provided
+    if "social_links" in product_data and product_data["social_links"]:
+        try:
+            json.loads(product_data["social_links"])
+        except json.JSONDecodeError:
+            raise HTTPException(status_code=400, detail="social_links must be a valid JSON string")
+    
     # If name is updated but slug is not provided, regenerate slug
     if "name" in product_data and "slug" not in product_data:
         # Get existing slugs excluding current product's slug
@@ -80,7 +109,9 @@ async def update_product(
     db.add(product)
     db.commit()
     db.refresh(product)
-    return product
+    
+    # Convert to response model with parsed social_links
+    return _parse_product_for_response(product)
 
 @router.delete("/{product_id}", status_code=204)
 async def delete_product(
