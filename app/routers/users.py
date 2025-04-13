@@ -1,10 +1,10 @@
 from fastapi import APIRouter, Depends, Form, Request
 from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.templating import Jinja2Templates
-from sqlmodel import Session, select
+from sqlmodel import Session, select, delete
 
 from app.database import get_db
-from app.models import User
+from app.models import User, Article, Comment
 from app.auth.utils import get_user_from_cookie, get_password_hash
 
 router = APIRouter(prefix="/users")
@@ -202,12 +202,114 @@ async def admin_delete_user(request: Request, user_id: int, db: Session = Depend
             status_code=303
         )
     
-    # Delete user
-    db.delete(user_to_delete)
-    db.commit()
+    # Delete articles and comments authored by this user first
+    try:
+        # Delete comments by this user
+        db.execute(delete(Comment).where(Comment.author_id == user_id))
+        db.commit()
+        
+        # Get articles by this user
+        articles_by_user = db.execute(select(Article.id).where(Article.author_id == user_id)).scalars().all()
+        
+        # Delete comments on articles by this user
+        for article_id in articles_by_user:
+            db.execute(delete(Comment).where(Comment.article_id == article_id))
+        db.commit()
+        
+        # Delete articles by this user
+        db.execute(delete(Article).where(Article.author_id == user_id))
+        db.commit()
+        
+        # Delete user
+        db.delete(user_to_delete)
+        db.commit()
+        
+        return RedirectResponse(
+            url="/admin/users?message=User deleted successfully",
+            status_code=303
+        )
+    except Exception as e:
+        return templates.TemplateResponse(
+            "admin/users/list.html",
+            {
+                "request": request,
+                "user": user,
+                "users": db.execute(select(User)).scalars().all(),
+                "error": f"Error deleting user: {str(e)}"
+            },
+            status_code=500
+        )
+
+@router.get("/delete-all", response_class=HTMLResponse)
+async def admin_delete_all_users_confirm(request: Request, db: Session = Depends(get_db)):
+    # Verify user is logged in and is an admin
+    user = await get_user_from_cookie(request, db)
+    if not user or not user.is_superuser:
+        return RedirectResponse(url="/admin/login", status_code=303)
     
-    # Redirect to users list with success message
-    return RedirectResponse(
-        url="/admin/users?message=User deleted successfully",
-        status_code=303
-    ) 
+    # Count users
+    user_count = db.execute(select(User).where(User.id != user.id)).all()
+    count = len(user_count)
+    
+    if count == 0:
+        return templates.TemplateResponse(
+            "admin/users/list.html",
+            {
+                "request": request,
+                "user": user,
+                "users": db.execute(select(User)).scalars().all(),
+                "error": "There are no other users to delete."
+            }
+        )
+    
+    # Render confirmation page
+    return templates.TemplateResponse(
+        "admin/confirm_delete_all.html",
+        {
+            "request": request,
+            "user": user,
+            "count": count,
+            "item_type": "users (except your account)",
+            "back_url": "/admin/users",
+            "confirm_url": "/admin/users/delete-all-confirm"
+        }
+    )
+
+@router.get("/delete-all-confirm")
+async def admin_delete_all_users(request: Request, db: Session = Depends(get_db)):
+    # Verify user is logged in and is an admin
+    user = await get_user_from_cookie(request, db)
+    if not user or not user.is_superuser:
+        return RedirectResponse(url="/admin/login", status_code=303)
+    
+    try:
+        # Get IDs of users to delete (all except current user)
+        users_to_delete = db.execute(select(User.id).where(User.id != user.id)).scalars().all()
+        
+        # Delete all content related to these users
+        for user_id in users_to_delete:
+            # Delete comments by this user
+            db.execute(delete(Comment).where(Comment.author_id == user_id))
+            
+            # Get articles by this user
+            articles_by_user = db.execute(select(Article.id).where(Article.author_id == user_id)).scalars().all()
+            
+            # Delete comments on articles by this user
+            for article_id in articles_by_user:
+                db.execute(delete(Comment).where(Comment.article_id == article_id))
+            
+            # Delete articles by this user
+            db.execute(delete(Article).where(Article.author_id == user_id))
+        
+        db.commit()
+        
+        # Delete all users except current user
+        db.execute(delete(User).where(User.id != user.id))
+        db.commit()
+        
+        return RedirectResponse(
+            url="/admin/users?message=All users (except your account) have been deleted successfully",
+            status_code=303
+        )
+    except Exception as e:
+        return HTMLResponse(f"Error deleting users: {str(e)}. <a href='/admin/users'>Go back</a>", status_code=500) 

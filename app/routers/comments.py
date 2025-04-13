@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, Form, Request
 from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.templating import Jinja2Templates
-from sqlmodel import Session, select, desc
+from sqlmodel import Session, select, desc, delete
 from sqlalchemy.orm import selectinload
 
 from app.database import get_db
@@ -82,7 +82,7 @@ async def admin_edit_comment(
     
     # Redirect to comments list with success message
     return RedirectResponse(
-        url=f"/admin/comments?message=Comment updated successfully",
+        url="/admin/comments?message=Comment updated successfully",
         status_code=303
     )
 
@@ -93,17 +93,74 @@ async def admin_delete_comment(request: Request, comment_id: int, db: Session = 
     if not user or not user.is_superuser:
         return RedirectResponse(url="/admin/login", status_code=303)
 
-    # Get the comment to delete
-    comment = db.get(Comment, comment_id)
-    if not comment:
-        return RedirectResponse(url="/admin/comments?message=Comment not found", status_code=303)
+    try:
+        # Get the comment to delete
+        comment = db.get(Comment, comment_id)
+        if not comment:
+            return RedirectResponse(url="/admin/comments?message=Comment not found", status_code=303)
+        
+        # Delete the comment
+        db.delete(comment)
+        db.commit()
+        
+        # Redirect to comments list with success message
+        return RedirectResponse(
+            url="/admin/comments?message=Comment deleted successfully",
+            status_code=303
+        )
+    except Exception as e:
+        return HTMLResponse(f"Error deleting comment: {str(e)}. <a href='/admin/comments'>Go back</a>", status_code=500)
+
+@router.get("/delete-all", response_class=HTMLResponse)
+async def admin_delete_all_comments_confirm(request: Request, db: Session = Depends(get_db)):
+    # Verify user is logged in and is an admin
+    user = await get_user_from_cookie(request, db)
+    if not user or not user.is_superuser:
+        return RedirectResponse(url="/admin/login", status_code=303)
     
-    # Delete the comment
-    db.delete(comment)
-    db.commit()
+    # Count comments
+    comment_count = db.execute(select(Comment)).all()
+    count = len(comment_count)
     
-    # Redirect to comments list with success message
-    return RedirectResponse(
-        url="/admin/comments?message=Comment deleted successfully",
-        status_code=303
-    ) 
+    if count == 0:
+        return templates.TemplateResponse(
+            "admin/comments/index.html",
+            {
+                "request": request,
+                "user": user,
+                "comments": [],
+                "error": "There are no comments to delete."
+            }
+        )
+    
+    # Render confirmation page
+    return templates.TemplateResponse(
+        "admin/confirm_delete_all.html",
+        {
+            "request": request,
+            "user": user,
+            "count": count,
+            "item_type": "comments",
+            "back_url": "/admin/comments",
+            "confirm_url": "/admin/comments/delete-all-confirm"
+        }
+    )
+
+@router.get("/delete-all-confirm")
+async def admin_delete_all_comments(request: Request, db: Session = Depends(get_db)):
+    # Verify user is logged in and is an admin
+    user = await get_user_from_cookie(request, db)
+    if not user or not user.is_superuser:
+        return RedirectResponse(url="/admin/login", status_code=303)
+    
+    try:
+        # Delete all comments
+        db.execute(delete(Comment))
+        db.commit()
+        
+        return RedirectResponse(
+            url="/admin/comments?message=All comments have been deleted successfully",
+            status_code=303
+        )
+    except Exception as e:
+        return HTMLResponse(f"Error deleting all comments: {str(e)}. <a href='/admin/comments'>Go back</a>", status_code=500) 

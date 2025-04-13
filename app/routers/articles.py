@@ -210,4 +210,51 @@ async def admin_delete_article(request: Request, article_id: int, db: Session = 
         
         return RedirectResponse(url=f"/admin/articles?message=Article '{article_title}' deleted successfully", status_code=303)
     except Exception as e:
-        return HTMLResponse(f"Error: {str(e)}. <a href='/admin/articles'>Try again</a>") 
+        return HTMLResponse(f"Error: {str(e)}. <a href='/admin/articles'>Try again</a>")
+
+@router.get("/delete-all", response_class=HTMLResponse)
+async def admin_delete_all_articles_confirm(request: Request, db: Session = Depends(get_db)):
+    # Verify user is logged in and is an admin
+    user = await get_user_from_cookie(request, db)
+    if not user or not user.is_superuser:
+        return RedirectResponse(url="/admin/login", status_code=303)
+    
+    # Count articles
+    article_count = db.execute(select(Article)).all()
+    count = len(article_count)
+    
+    # Render confirmation page
+    return templates.TemplateResponse(
+        "admin/confirm_delete_all.html",
+        {
+            "request": request,
+            "user": user,
+            "count": count,
+            "item_type": "articles",
+            "back_url": "/admin/articles",
+            "confirm_url": "/admin/articles/delete-all-confirm"
+        }
+    )
+
+@router.get("/delete-all-confirm")
+async def admin_delete_all_articles(request: Request, db: Session = Depends(get_db)):
+    # Verify user is logged in and is an admin
+    user = await get_user_from_cookie(request, db)
+    if not user or not user.is_superuser:
+        return RedirectResponse(url="/admin/login", status_code=303)
+    
+    try:
+        # Delete all comments first (they depend on articles)
+        db.execute(delete(Comment))
+        db.commit()
+        
+        # Delete all articles
+        db.execute(delete(Article))
+        db.commit()
+        
+        return RedirectResponse(
+            url="/admin/articles?message=All articles and their comments have been deleted successfully",
+            status_code=303
+        )
+    except Exception as e:
+        return HTMLResponse(f"Error deleting all articles: {str(e)}. <a href='/admin/articles'>Go back</a>", status_code=500) 

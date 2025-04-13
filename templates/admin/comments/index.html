@@ -1,108 +1,158 @@
-{% extends "admin/base.html" %}
-
-{% block title %}Comments - Admin Dashboard{% endblock %}
-
-{% block header_title %}Comment Management{% endblock %}
-
-{% block content %}
+{% extends "admin/base.html" %} {% block title %}Comments - Admin Dashboard{%
+endblock %} {% block header_title %}Comment Management{% endblock %} {% block
+content %}
 <div class="container-fluid mt-4">
-    <div class="row mb-3">
-        <div class="col-12 d-flex justify-content-between align-items-center">
-            <h5>All Comments</h5>
-        </div>
+  <div class="row mb-3">
+    <div class="col-12 d-flex justify-content-between align-items-center">
+      <h5>All Comments</h5>
+      {% if comments and comments|length > 0 %}
+      <a href="/admin/comments/delete-all" class="btn btn-danger">
+        <i class="bi bi-trash"></i> Delete All Comments
+      </a>
+      {% endif %}
     </div>
+  </div>
 
-    {% if message %}
-    <div class="row">
-        <div class="col-12">
-            <div class="alert alert-success alert-dismissible fade show" role="alert">
-                {{ message }}
-                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-            </div>
-        </div>
+  {% if message %}
+  <div class="row">
+    <div class="col-12">
+      <div class="alert alert-success alert-dismissible fade show" role="alert">
+        {{ message }}
+        <button
+          type="button"
+          class="btn-close"
+          data-bs-dismiss="alert"
+          aria-label="Close"
+        ></button>
+      </div>
     </div>
-    {% endif %}
+  </div>
+  {% endif %}
 
-    <div class="row">
-        <div class="col-12">
-            <div class="card">
-                <div class="card-body">
-                    {% if comments %}
-                    <div class="table-responsive">
-                        <table class="table table-striped table-hover">
-                            <thead>
-                                <tr>
-                                    <th>ID</th>
-                                    <th>Article</th>
-                                    <th>Author</th>
-                                    <th>Content</th>
-                                    <th>Created</th>
-                                    <th>Updated</th>
-                                    <th>Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {% for comment in comments %}
-                                <tr>
-                                    <td>{{ comment.id }}</td>
-                                    <td>
-                                        <a href="/admin/articles/{{ comment.article.id }}/edit" title="{{ comment.article.title }}">
-                                            <span class="text-truncate d-inline-block" style="max-width: 150px;">
-                                                {{ comment.article.title }}
-                                            </span>
-                                        </a>
-                                    </td>
-                                    <td>{{ comment.author.username }}</td>
-                                    <td>
-                                        <span class="text-truncate d-inline-block" style="max-width: 250px;" title="{{ comment.content }}">
-                                            {{ comment.content }}
-                                        </span>
-                                    </td>
-                                    <td>{{ comment.created_at.strftime('%Y-%m-%d %H:%M') }}</td>
-                                    <td>{{ comment.updated_at.strftime('%Y-%m-%d %H:%M') }}</td>
-                                    <td>
-                                        <div class="d-flex gap-2">
-                                            <a href="/admin/comments/{{ comment.id }}/edit" class="btn btn-sm btn-primary">
-                                                <i class="bi bi-pencil-square"></i>
-                                            </a>
-                                            <button type="button" class="btn btn-sm btn-danger" data-bs-toggle="modal" data-bs-target="#deleteModal{{ comment.id }}">
-                                                <i class="bi bi-trash"></i>
-                                            </button>
-                                        </div>
-                                        
-                                        <!-- Delete Confirmation Modal -->
-                                        <div class="modal fade" id="deleteModal{{ comment.id }}" tabindex="-1" aria-labelledby="deleteModalLabel{{ comment.id }}" aria-hidden="true">
-                                            <div class="modal-dialog">
-                                                <div class="modal-content">
-                                                    <div class="modal-header">
-                                                        <h5 class="modal-title" id="deleteModalLabel{{ comment.id }}">Confirm Delete</h5>
-                                                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                                                    </div>
-                                                    <div class="modal-body">
-                                                        Are you sure you want to delete this comment?
-                                                        This action cannot be undone.
-                                                    </div>
-                                                    <div class="modal-footer">
-                                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                                                        <a href="/admin/comments/{{ comment.id }}/delete" class="btn btn-danger">Delete</a>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </td>
-                                </tr>
-                                {% endfor %}
-                            </tbody>
-                        </table>
+  <div class="row">
+    <div class="col-12">
+      <div class="card">
+        <div class="card-body">
+          {% if comments %}
+          <div class="table-responsive">
+            <table class="table table-striped table-hover">
+              <thead>
+                <tr>
+                  <th>ID</th>
+                  <th>Article</th>
+                  <th>Author</th>
+                  <th>Content</th>
+                  <th>Created</th>
+                  <th>Updated</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for comment in comments %}
+                <tr>
+                  <td>{{ comment.id }}</td>
+                  <td>
+                    <a
+                      href="/admin/articles/{{ comment.article.id }}/edit"
+                      title="{{ comment.article.title }}"
+                    >
+                      <span
+                        class="text-truncate d-inline-block"
+                        style="max-width: 150px"
+                      >
+                        {{ comment.article.title }}
+                      </span>
+                    </a>
+                  </td>
+                  <td>{{ comment.author.username }}</td>
+                  <td>
+                    <span
+                      class="text-truncate d-inline-block"
+                      style="max-width: 250px"
+                      title="{{ comment.content }}"
+                    >
+                      {{ comment.content }}
+                    </span>
+                  </td>
+                  <td>{{ comment.created_at.strftime('%Y-%m-%d %H:%M') }}</td>
+                  <td>{{ comment.updated_at.strftime('%Y-%m-%d %H:%M') }}</td>
+                  <td>
+                    <div class="d-flex gap-2">
+                      <a
+                        href="/admin/comments/{{ comment.id }}/edit"
+                        class="btn btn-sm btn-primary"
+                      >
+                        <i class="bi bi-pencil-square"></i>
+                      </a>
+                      <button
+                        type="button"
+                        class="btn btn-sm btn-danger"
+                        data-bs-toggle="modal"
+                        data-bs-target="#deleteModal{{ comment.id }}"
+                      >
+                        <i class="bi bi-trash"></i>
+                      </button>
                     </div>
-                    {% else %}
-                    <div class="alert alert-info mb-0" role="alert">
-                        No comments found yet.
+
+                    <!-- Delete Confirmation Modal -->
+                    <div
+                      class="modal fade"
+                      id="deleteModal{{ comment.id }}"
+                      tabindex="-1"
+                      aria-labelledby="deleteModalLabel{{ comment.id }}"
+                      aria-hidden="true"
+                    >
+                      <div class="modal-dialog">
+                        <div class="modal-content">
+                          <div class="modal-header">
+                            <h5
+                              class="modal-title"
+                              id="deleteModalLabel{{ comment.id }}"
+                            >
+                              Confirm Delete
+                            </h5>
+                            <button
+                              type="button"
+                              class="btn-close"
+                              data-bs-dismiss="modal"
+                              aria-label="Close"
+                            ></button>
+                          </div>
+                          <div class="modal-body">
+                            Are you sure you want to delete this comment? This
+                            action cannot be undone.
+                          </div>
+                          <div class="modal-footer">
+                            <button
+                              type="button"
+                              class="btn btn-secondary"
+                              data-bs-dismiss="modal"
+                            >
+                              Cancel
+                            </button>
+                            <a
+                              href="/admin/comments/{{ comment.id }}/delete"
+                              class="btn btn-danger"
+                              >Delete</a
+                            >
+                          </div>
+                        </div>
+                      </div>
                     </div>
-                    {% endif %}
-                </div>
-            </div>
+                  </td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+          {% else %}
+          <div class="alert alert-info mb-0" role="alert">
+            No comments found yet.
+          </div>
+          {% endif %}
         </div>
+      </div>
     </div>
+  </div>
 </div>
-{% endblock %} 
+{% endblock %}
