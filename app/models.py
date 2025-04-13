@@ -1,70 +1,138 @@
-from tortoise import fields, models
-from tortoise.contrib.pydantic import pydantic_model_creator
+from sqlmodel import SQLModel, Field, Relationship
+from pydantic import EmailStr
+from typing import Optional, List
 from datetime import datetime
 
 
-class User(models.Model):
-    id = fields.IntField(pk=True)
-    username = fields.CharField(max_length=50, unique=True)
-    password = fields.CharField(max_length=200)
-    email = fields.CharField(max_length=200, unique=True)
-    is_active = fields.BooleanField(default=True)
-    is_superuser = fields.BooleanField(default=False)
-    created_at = fields.DatetimeField(auto_now_add=True)
-    updated_at = fields.DatetimeField(auto_now=True)
-
-    def __str__(self):
-        return self.username
+class UserBase(SQLModel):
+    username: str = Field(max_length=50, index=True, unique=True)
+    email: EmailStr = Field(max_length=200, index=True, unique=True)
+    is_active: bool = Field(default=True)
+    is_superuser: bool = Field(default=False)
 
 
-class Category(models.Model):
-    id = fields.IntField(pk=True)
-    name = fields.CharField(max_length=100, unique=True)
-    description = fields.TextField(null=True)
-    created_at = fields.DatetimeField(auto_now_add=True)
-    updated_at = fields.DatetimeField(auto_now=True)
-
-    def __str__(self):
-        return self.name
-
-
-class Article(models.Model):
-    id = fields.IntField(pk=True)
-    title = fields.CharField(max_length=200)
-    content = fields.TextField()
-    category = fields.ForeignKeyField('models.Category', related_name='articles')
-    author = fields.ForeignKeyField('models.User', related_name='articles')
-    published = fields.BooleanField(default=False)
-    featured_image = fields.CharField(max_length=500, null=True)
-    views = fields.IntField(default=0)
-    created_at = fields.DatetimeField(auto_now_add=True)
-    updated_at = fields.DatetimeField(auto_now=True)
+class User(UserBase, table=True):
+    id: Optional[int] = Field(default=None, primary_key=True)
+    password: str = Field(max_length=200)
+    created_at: datetime = Field(default_factory=datetime.utcnow)
+    updated_at: datetime = Field(default_factory=datetime.utcnow, sa_column_kwargs={"onupdate": datetime.utcnow})
     
-    def __str__(self):
-        return self.title
+    # Relationships
+    articles: List["Article"] = Relationship(back_populates="author")
+    comments: List["Comment"] = Relationship(back_populates="author")
 
 
-class Comment(models.Model):
-    id = fields.IntField(pk=True)
-    content = fields.TextField()
-    article = fields.ForeignKeyField('models.Article', related_name='comments')
-    author = fields.ForeignKeyField('models.User', related_name='comments')
-    created_at = fields.DatetimeField(auto_now_add=True)
-    updated_at = fields.DatetimeField(auto_now=True)
+class UserCreate(UserBase):
+    password: str
+
+
+class UserRead(UserBase):
+    id: int
+    created_at: datetime
+    updated_at: datetime
+
+
+class UserUpdate(SQLModel):
+    username: Optional[str] = None
+    email: Optional[EmailStr] = None
+    password: Optional[str] = None
+    is_active: Optional[bool] = None
+    is_superuser: Optional[bool] = None
+
+
+class CategoryBase(SQLModel):
+    name: str = Field(max_length=100, index=True, unique=True)
+    description: Optional[str] = None
+
+
+class Category(CategoryBase, table=True):
+    id: Optional[int] = Field(default=None, primary_key=True)
+    created_at: datetime = Field(default_factory=datetime.utcnow)
+    updated_at: datetime = Field(default_factory=datetime.utcnow, sa_column_kwargs={"onupdate": datetime.utcnow})
     
-    def __str__(self):
-        return f"Comment by {self.author.username} on {self.article.title}"
+    # Relationships
+    articles: List["Article"] = Relationship(back_populates="category")
 
 
-# Pydantic models for validation
-User_Pydantic = pydantic_model_creator(User, name="User")
-UserIn_Pydantic = pydantic_model_creator(User, name="UserIn", exclude_readonly=True)
+class CategoryCreate(CategoryBase):
+    pass
 
-Category_Pydantic = pydantic_model_creator(Category, name="Category")
-CategoryIn_Pydantic = pydantic_model_creator(Category, name="CategoryIn", exclude_readonly=True)
 
-Article_Pydantic = pydantic_model_creator(Article, name="Article")
-ArticleIn_Pydantic = pydantic_model_creator(Article, name="ArticleIn", exclude_readonly=True)
+class CategoryRead(CategoryBase):
+    id: int
+    created_at: datetime
+    updated_at: datetime
 
-Comment_Pydantic = pydantic_model_creator(Comment, name="Comment")
-CommentIn_Pydantic = pydantic_model_creator(Comment, name="CommentIn", exclude_readonly=True) 
+
+class CategoryUpdate(SQLModel):
+    name: Optional[str] = None
+    description: Optional[str] = None
+
+
+class ArticleBase(SQLModel):
+    title: str = Field(max_length=200)
+    content: str
+    published: bool = Field(default=False)
+    featured_image: Optional[str] = Field(default=None, max_length=500)
+    views: int = Field(default=0)
+    category_id: int = Field(foreign_key="category.id")
+    author_id: int = Field(foreign_key="user.id")
+
+
+class Article(ArticleBase, table=True):
+    id: Optional[int] = Field(default=None, primary_key=True)
+    created_at: datetime = Field(default_factory=datetime.utcnow)
+    updated_at: datetime = Field(default_factory=datetime.utcnow, sa_column_kwargs={"onupdate": datetime.utcnow})
+    
+    # Relationships
+    category: Category = Relationship(back_populates="articles")
+    author: User = Relationship(back_populates="articles")
+    comments: List["Comment"] = Relationship(back_populates="article")
+
+
+class ArticleCreate(ArticleBase):
+    pass
+
+
+class ArticleRead(ArticleBase):
+    id: int
+    created_at: datetime
+    updated_at: datetime
+
+
+class ArticleUpdate(SQLModel):
+    title: Optional[str] = None
+    content: Optional[str] = None
+    published: Optional[bool] = None
+    featured_image: Optional[str] = None
+    category_id: Optional[int] = None
+
+
+class CommentBase(SQLModel):
+    content: str
+    article_id: int = Field(foreign_key="article.id")
+    author_id: int = Field(foreign_key="user.id")
+
+
+class Comment(CommentBase, table=True):
+    id: Optional[int] = Field(default=None, primary_key=True)
+    created_at: datetime = Field(default_factory=datetime.utcnow)
+    updated_at: datetime = Field(default_factory=datetime.utcnow, sa_column_kwargs={"onupdate": datetime.utcnow})
+    
+    # Relationships
+    article: Article = Relationship(back_populates="comments")
+    author: User = Relationship(back_populates="comments")
+
+
+class CommentCreate(CommentBase):
+    pass
+
+
+class CommentRead(CommentBase):
+    id: int
+    created_at: datetime
+    updated_at: datetime
+
+
+class CommentUpdate(SQLModel):
+    content: Optional[str] = None 

@@ -14,11 +14,17 @@ RUN pip install --no-cache-dir -r requirements.txt
 # Copy project files
 COPY . .
 
-# Create upload directory
-RUN mkdir -p upload
+# Make the entrypoint script executable
+RUN chmod +x /app/docker-entrypoint.sh
+
+# Create directories
+RUN mkdir -p static media
 
 # Expose port
 EXPOSE 8000
 
-# Run the application
-CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"] 
+# Set the entrypoint
+ENTRYPOINT ["/app/docker-entrypoint.sh"]
+
+# Default command
+CMD ["run", "--host", "0.0.0.0", "--port", "8000"] 
