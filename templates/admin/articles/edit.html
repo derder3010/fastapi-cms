@@ -58,7 +58,8 @@
                         
                         <div class="mb-3">
                             <label for="content" class="form-label">Content <span class="text-danger">*</span></label>
-                            <textarea class="form-control" id="content" name="content" rows="10" required>{{ article.content }}</textarea>
+                            <div id="editor"></div>
+                            <input type="hidden" name="content" id="content-input" required>
                         </div>
                         
                         <div class="mb-3">
@@ -82,4 +83,42 @@
         </div>
     </div>
 </div>
+
+{% block additional_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Get initial content from the article
+        const initialContent = `{{ article.content|safe }}`;
+        
+        // Initialize Toast UI Editor with existing content
+        const editor = new toastui.Editor({
+            el: document.querySelector('#editor'),
+            height: '500px',
+            initialEditType: 'wysiwyg',
+            initialValue: initialContent,
+            previewStyle: 'vertical',
+            toolbarItems: [
+                ['heading', 'bold', 'italic', 'strike'],
+                ['hr', 'quote'],
+                ['ul', 'ol', 'task', 'indent', 'outdent'],
+                ['table', 'image', 'link'],
+                ['code', 'codeblock']
+            ]
+        });
+        
+        // Handle form submission to capture editor content
+        const form = document.querySelector('form');
+        form.addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            // Get HTML content from editor and set it to the hidden input
+            const htmlContent = editor.getHTML();
+            document.getElementById('content-input').value = htmlContent;
+            
+            // Submit the form
+            this.submit();
+        });
+    });
+</script>
+{% endblock %}
 {% endblock %} 
