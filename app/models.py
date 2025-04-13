@@ -77,6 +77,7 @@ class ArticleBase(SQLModel):
     views: int = Field(default=0)
     category_id: int = Field(foreign_key="category.id")
     author_id: int = Field(foreign_key="user.id")
+    slug: Optional[str] = Field(default=None, max_length=200, index=True, unique=True)
 
 
 class Article(ArticleBase, table=True):
@@ -106,6 +107,7 @@ class ArticleUpdate(SQLModel):
     published: Optional[bool] = None
     featured_image: Optional[str] = None
     category_id: Optional[int] = None
+    slug: Optional[str] = None
 
 
 class CommentBase(SQLModel):

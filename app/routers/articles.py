@@ -3,10 +3,12 @@ from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.templating import Jinja2Templates
 from sqlmodel import Session, select, desc, delete
 from sqlalchemy.orm import selectinload
+from typing import Optional
 
 from app.database import get_db
 from app.models import Article, Category, Comment
 from app.auth.utils import get_user_from_cookie
+from app.utils.text import generate_unique_slug
 
 router = APIRouter(prefix="/articles")
 
@@ -57,6 +59,7 @@ async def admin_add_article(
     category_id: int = Form(...),
     content: str = Form(...),
     featured_image: str = Form(None),
+    slug: Optional[str] = Form(None),
     published: bool = Form(False),
     db: Session = Depends(get_db)
 ):
@@ -80,6 +83,11 @@ async def admin_add_article(
             status_code=400
         )
     
+    # Generate slug from title if not provided
+    if not slug or not slug.strip():
+        existing_slugs = db.execute(select(Article.slug)).scalars().all()
+        slug = generate_unique_slug(title, existing_slugs)
+    
     # Create the article
     article = Article(
         title=title,
@@ -87,7 +95,8 @@ async def admin_add_article(
         category_id=category_id,
         author_id=user.id,
         published=published,
-        featured_image=featured_image if featured_image and featured_image.strip() else None
+        featured_image=featured_image if featured_image and featured_image.strip() else None,
+        slug=slug
     )
     db.add(article)
     db.commit()
@@ -140,6 +149,7 @@ async def admin_edit_article(
     category_id: int = Form(...),
     content: str = Form(...),
     featured_image: str = Form(None),
+    slug: Optional[str] = Form(None),
     published: bool = Form(False),
     db: Session = Depends(get_db)
 ):
@@ -170,12 +180,18 @@ async def admin_edit_article(
                 status_code=400
             )
         
+        # Generate slug from title if not provided
+        if not slug or not slug.strip():
+            existing_slugs = db.execute(select(Article.slug).where(Article.id != article_id)).scalars().all()
+            slug = generate_unique_slug(title, existing_slugs)
+        
         # Update article
         article.title = title
         article.content = content
         article.category_id = category_id
         article.published = published
         article.featured_image = featured_image if featured_image and featured_image.strip() else None
+        article.slug = slug
         
         db.add(article)
         db.commit()

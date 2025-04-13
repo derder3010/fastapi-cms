@@ -5,6 +5,7 @@ from typing import List
 from app.database import get_db
 from app.models import Article, ArticleCreate, ArticleRead, ArticleUpdate
 from app.auth.deps import get_current_active_user
+from app.utils.text import generate_unique_slug
 
 router = APIRouter(prefix="/articles", tags=["articles"])
 
@@ -16,6 +17,13 @@ async def create_article(
 ):
     article_obj = Article.from_orm(article)
     article_obj.author_id = current_user.id
+    
+    # Generate slug from title if not provided
+    if not article_obj.slug:
+        # Get existing slugs to ensure uniqueness
+        existing_slugs = db.execute(select(Article.slug)).scalars().all()
+        article_obj.slug = generate_unique_slug(article_obj.title, existing_slugs)
+    
     db.add(article_obj)
     db.commit()
     db.refresh(article_obj)
@@ -49,6 +57,13 @@ async def update_article(
         raise HTTPException(status_code=403, detail="Not authorized to update this article")
     
     article_data = article_update.dict(exclude_unset=True)
+    
+    # If title is updated but slug is not provided, regenerate slug
+    if "title" in article_data and "slug" not in article_data:
+        # Get existing slugs excluding current article's slug
+        existing_slugs = db.execute(select(Article.slug).where(Article.id != article_id)).scalars().all()
+        article_data["slug"] = generate_unique_slug(article_data["title"], existing_slugs)
+    
     for key, value in article_data.items():
         setattr(article, key, value)
     

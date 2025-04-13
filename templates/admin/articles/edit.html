@@ -27,6 +27,12 @@
                         </div>
                         
                         <div class="mb-3">
+                            <label for="slug" class="form-label">Slug</label>
+                            <input type="text" class="form-control" id="slug" name="slug" value="{{ article.slug or '' }}">
+                            <div class="form-text">Leave empty to auto-generate from title. The slug is used in URLs and should be URL-friendly.</div>
+                        </div>
+                        
+                        <div class="mb-3">
                             <label for="category_id" class="form-label">Category <span class="text-danger">*</span></label>
                             <select class="form-select" id="category_id" name="category_id" required>
                                 <option value="">Select Category</option>
