@@ -89,6 +89,15 @@ class ArticleTagLink(SQLModel, table=True):
     )
 
 
+class ProductArticleLink(SQLModel, table=True):
+    product_id: Optional[int] = Field(
+        default=None, foreign_key="product.id", primary_key=True
+    )
+    article_id: Optional[int] = Field(
+        default=None, foreign_key="article.id", primary_key=True
+    )
+
+
 class Article(ArticleBase, table=True):
     id: Optional[int] = Field(default=None, primary_key=True)
     created_at: datetime = Field(default_factory=datetime.utcnow)
@@ -99,6 +108,7 @@ class Article(ArticleBase, table=True):
     author: User = Relationship(back_populates="articles")
     comments: List["Comment"] = Relationship(back_populates="article")
     tags: List["Tag"] = Relationship(back_populates="articles", link_model=ArticleTagLink)
+    products: List["Product"] = Relationship(back_populates="articles", link_model=ProductArticleLink)
 
 
 class ArticleCreate(ArticleBase):
@@ -174,4 +184,49 @@ class TagRead(TagBase):
 
 
 class TagUpdate(SQLModel):
-    name: Optional[str] = None 
+    name: Optional[str] = None
+
+
+class ProductBase(SQLModel):
+    name: str = Field(max_length=200, index=True)
+    price: float = Field(default=0.0)
+    slug: str = Field(max_length=200, index=True, unique=True)
+    description: Optional[str] = None
+    featured_image: Optional[str] = Field(default=None, max_length=500)
+    shopee_link: Optional[str] = Field(default=None, max_length=500)
+    lazada_link: Optional[str] = Field(default=None, max_length=500)
+    amazon_link: Optional[str] = Field(default=None, max_length=500)
+    tiki_link: Optional[str] = Field(default=None, max_length=500)
+    other_links: Optional[str] = None
+
+
+class Product(ProductBase, table=True):
+    id: Optional[int] = Field(default=None, primary_key=True)
+    created_at: datetime = Field(default_factory=datetime.utcnow)
+    updated_at: datetime = Field(default_factory=datetime.utcnow, sa_column_kwargs={"onupdate": datetime.utcnow})
+    
+    # Relationships
+    articles: List["Article"] = Relationship(back_populates="products", link_model=ProductArticleLink)
+
+
+class ProductCreate(ProductBase):
+    pass
+
+
+class ProductRead(ProductBase):
+    id: int
+    created_at: datetime
+    updated_at: datetime
+
+
+class ProductUpdate(SQLModel):
+    name: Optional[str] = None
+    price: Optional[float] = None
+    slug: Optional[str] = None
+    description: Optional[str] = None
+    featured_image: Optional[str] = None
+    shopee_link: Optional[str] = None
+    lazada_link: Optional[str] = None
+    amazon_link: Optional[str] = None
+    tiki_link: Optional[str] = None
+    other_links: Optional[str] = None 

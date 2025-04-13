@@ -1,0 +1,202 @@
+{% extends "admin/base.html" %} {% block title %}Product Articles - {{
+product.name }}{% endblock %} {% block content %}
+<div class="container-fluid">
+  <h1 class="h3 mb-2 text-gray-800">Product Articles</h1>
+  <p class="mb-4">
+    Manage articles associated with <strong>{{ product.name }}</strong>.
+  </p>
+
+  {% if error %}
+  <div class="alert alert-danger alert-dismissible fade show" role="alert">
+    {{ error }}
+    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+      <span aria-hidden="true">&times;</span>
+    </button>
+  </div>
+  {% endif %} {% if message %}
+  <div class="alert alert-success alert-dismissible fade show" role="alert">
+    {{ message }}
+    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+      <span aria-hidden="true">&times;</span>
+    </button>
+  </div>
+  {% endif %}
+
+  <div class="row">
+    <div class="col-md-4">
+      <div class="card shadow mb-4">
+        <div class="card-header py-3">
+          <h6 class="m-0 font-weight-bold text-primary">Product Details</h6>
+        </div>
+        <div class="card-body">
+          {% if product.featured_image %}
+          <div class="text-center mb-3">
+            <img
+              src="/media/{{ product.featured_image }}"
+              alt="{{ product.name }}"
+              class="img-fluid rounded"
+              style="max-height: 200px"
+            />
+          </div>
+          {% endif %}
+
+          <h4>{{ product.name }}</h4>
+          <p class="mb-1">
+            <strong>Price:</strong> ${{ "%.2f"|format(product.price) }}
+          </p>
+          <p class="mb-1"><strong>Slug:</strong> {{ product.slug }}</p>
+
+          {% if product.description %}
+          <p class="mt-3">
+            <strong>Description:</strong><br />{{ product.description }}
+          </p>
+          {% endif %}
+
+          <div class="mt-3">
+            <a
+              href="/admin/products/{{ product.id }}/edit"
+              class="btn btn-info btn-sm"
+            >
+              <i class="fas fa-edit fa-sm"></i> Edit Product
+            </a>
+            <a href="/admin/products" class="btn btn-secondary btn-sm">
+              <i class="fas fa-arrow-left fa-sm"></i> Back to Products
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-md-8">
+      <div class="card shadow mb-4">
+        <div class="card-header py-3">
+          <h6 class="m-0 font-weight-bold text-primary">Associated Articles</h6>
+        </div>
+        <div class="card-body">
+          <form
+            action="/admin/products/{{ product.id }}/edit"
+            method="post"
+            enctype="multipart/form-data"
+          >
+            <div class="form-group">
+              <label for="article_ids">Select Articles</label>
+              <select
+                class="form-control select2"
+                id="article_ids"
+                name="article_ids"
+                multiple
+              >
+                {% for article in all_articles %}
+                <option
+                  value="{{ article.id }}"
+                  {%
+                  if
+                  article
+                  in
+                  associated_articles
+                  %}selected{%
+                  endif
+                  %}
+                >
+                  {{ article.title }}
+                </option>
+                {% endfor %}
+              </select>
+              <small class="form-text text-muted"
+                >Select the articles that should be associated with this
+                product.</small
+              >
+            </div>
+
+            <div class="form-group">
+              <!-- Hidden fields for other product properties -->
+              <input type="hidden" name="name" value="{{ product.name }}" />
+              <input type="hidden" name="price" value="{{ product.price }}" />
+              <input type="hidden" name="slug" value="{{ product.slug }}" />
+              <input
+                type="hidden"
+                name="description"
+                value="{{ product.description }}"
+              />
+              <input
+                type="hidden"
+                name="shopee_link"
+                value="{{ product.shopee_link }}"
+              />
+              <input
+                type="hidden"
+                name="lazada_link"
+                value="{{ product.lazada_link }}"
+              />
+              <input
+                type="hidden"
+                name="amazon_link"
+                value="{{ product.amazon_link }}"
+              />
+              <input
+                type="hidden"
+                name="tiki_link"
+                value="{{ product.tiki_link }}"
+              />
+              <input
+                type="hidden"
+                name="other_links"
+                value="{{ product.other_links }}"
+              />
+
+              <button type="submit" class="btn btn-primary">
+                Save Associations
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+
+      <div class="card shadow mb-4">
+        <div class="card-header py-3">
+          <h6 class="m-0 font-weight-bold text-primary">
+            Currently Associated Articles
+          </h6>
+        </div>
+        <div class="card-body">
+          {% if associated_articles %}
+          <div class="list-group">
+            {% for article in associated_articles %}
+            <div class="list-group-item">
+              <div class="d-flex w-100 justify-content-between">
+                <h5 class="mb-1">{{ article.title }}</h5>
+                <small>{{ article.created_at.strftime('%Y-%m-%d') }}</small>
+              </div>
+              <p class="mb-1">{{ article.content|truncate(100) }}</p>
+              <small>
+                <a
+                  href="/admin/articles/{{ article.id }}/edit"
+                  target="_blank"
+                  class="text-primary"
+                >
+                  <i class="fas fa-external-link-alt"></i> Edit Article
+                </a>
+              </small>
+            </div>
+            {% endfor %}
+          </div>
+          {% else %}
+          <div class="alert alert-info">
+            No articles are currently associated with this product.
+          </div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %} {% block scripts %}
+<script>
+  $(document).ready(function () {
+    $(".select2").select2({
+      placeholder: "Select articles to associate",
+      width: "100%",
+    });
+  });
+</script>
+{% endblock %}

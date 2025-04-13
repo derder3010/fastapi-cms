@@ -5,7 +5,7 @@ from sqlmodel import Session, select, func, desc
 from sqlalchemy.orm import selectinload
 
 from app.database import get_db
-from app.models import User, Category, Article, Comment, Tag
+from app.models import User, Category, Article, Comment, Tag, Product
 from app.auth.utils import get_user_from_cookie
 
 router = APIRouter(prefix="/dashboard")
@@ -26,6 +26,7 @@ async def admin_dashboard(request: Request, db: Session = Depends(get_db)):
     articles_count = db.execute(select(func.count()).select_from(Article)).scalar() or 0
     comments_count = db.execute(select(func.count()).select_from(Comment)).scalar() or 0
     tags_count = db.execute(select(func.count()).select_from(Tag)).scalar() or 0
+    products_count = db.execute(select(func.count()).select_from(Product)).scalar() or 0
     
     # Get recent articles and comments
     recent_articles = db.execute(
@@ -42,6 +43,11 @@ async def admin_dashboard(request: Request, db: Session = Depends(get_db)):
         ).order_by(desc(Comment.created_at)).limit(5)
     ).unique().scalars().all()
     
+    # Get recent products
+    recent_products = db.execute(
+        select(Product).order_by(desc(Product.created_at)).limit(5)
+    ).scalars().all()
+    
     return templates.TemplateResponse(
         "admin/dashboard.html",
         {
@@ -52,7 +58,9 @@ async def admin_dashboard(request: Request, db: Session = Depends(get_db)):
             "articles_count": articles_count,
             "comments_count": comments_count,
             "tags_count": tags_count,
+            "products_count": products_count,
             "recent_articles": recent_articles,
-            "recent_comments": recent_comments
+            "recent_comments": recent_comments,
+            "recent_products": recent_products
         }
     ) 
