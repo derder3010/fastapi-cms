@@ -2,8 +2,17 @@ services:
   # Web service
   - type: web
     name: fastapi-cms
-    env: docker
-    region: ohio  # You can change this to a region closer to your users
+    env: python
+    buildCommand: chmod +x .render-buildcmd.sh && ./.render-buildcmd.sh
+    startCommand: uvicorn app.main:app --host 0.0.0.0 --port $PORT
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.9.0
+      - key: GIT_LFS_ENABLED
+        value: 1
+      - key: GIT_SUBMODULE_STRATEGY
+        value: recursive
+    region: ohio # You can change this to a region closer to your users
     plan: free
     healthCheckPath: /
     buildFilter:
@@ -12,6 +21,3 @@ services:
         - app/**
         - templates/**
         - requirements.txt
-    envVars:
-      - key: PYTHONUNBUFFERED
-        value: 1 
