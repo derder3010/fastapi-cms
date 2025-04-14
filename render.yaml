@@ -3,7 +3,6 @@ services:
   - type: web
     name: fastapi-cms
     env: docker
-    region: ohio # You can change this to a region closer to your users
     plan: free
     healthCheckPath: /
     buildFilter:
