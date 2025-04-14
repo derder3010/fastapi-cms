@@ -606,11 +606,8 @@ content %}
       {% endif %}
 
       <div class="pagination-container">
-        {% set url_path = '/admin/comments' %}
-        <div class="d-flex justify-content-center mb-3">
-          {% include "admin/components/page_size_selector.html" %}
-        </div>
-        {% include "admin/components/pagination.html" %}
+        {% set url_path = '/admin/comments' %} {% include
+        "admin/components/pagination.html" %}
       </div>
     </div>
   </div>
