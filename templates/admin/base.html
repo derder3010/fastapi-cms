@@ -122,6 +122,52 @@
                 text-align: center;
             }
             
+            .sidebar-footer {
+                position: absolute;
+                bottom: 0;
+                width: 100%;
+                padding: 15px 10px;
+                font-size: 0.75rem;
+                color: rgba(255,255,255,0.5);
+                text-align: center;
+                border-top: 1px solid rgba(255,255,255,0.1);
+            }
+            
+            .sidebar-footer a {
+                color: rgba(255,255,255,0.7);
+                text-decoration: none;
+            }
+            
+            .sidebar-footer a:hover {
+                color: #fff;
+                text-decoration: underline;
+            }
+            
+            @media (max-width: 992px) {
+                .sidebar-footer span {
+                    display: none;
+                }
+                
+                .sidebar-footer {
+                    padding: 8px 0;
+                }
+                
+                .sidebar-footer a {
+                    font-size: 0.65rem;
+                    white-space: nowrap;
+                    overflow: hidden;
+                    text-overflow: ellipsis;
+                    max-width: 100%;
+                    display: block;
+                }
+            }
+            
+            @media (max-width: 576px) {
+                .sidebar-footer {
+                    display: none;
+                }
+            }
+            
             .content {
                 flex: 1;
                 padding: 20px;
@@ -137,12 +183,21 @@
                 margin-bottom: 20px;
                 padding-bottom: 10px;
                 border-bottom: 1px solid #dee2e6;
+                flex-wrap: wrap;
+            }
+            
+            .header > div {
+                margin-bottom: 5px;
             }
             
             .header h1 {
                 margin: 0;
                 font-size: 1.75rem;
                 color: #212529;
+                white-space: normal;
+                overflow: visible;
+                text-overflow: clip;
+                max-width: 100%;
             }
             
             .mobile-toggle {
@@ -270,6 +325,15 @@
                     font-size: 1.2rem;
                 }
                 
+                .sidebar-footer {
+                    padding: 10px 0;
+                    font-size: 0.7rem;
+                }
+                
+                .sidebar-footer span {
+                    display: none;
+                }
+                
                 .content {
                     margin-left: var(--sidebar-collapsed-width);
                     width: calc(100% - var(--sidebar-collapsed-width));
@@ -287,10 +351,9 @@
                 /* Fix header in tablet view */
                 .header h1 {
                     font-size: 1.5rem;
-                    max-width: calc(100% - 40px);
-                    white-space: nowrap;
-                    overflow: hidden;
-                    text-overflow: ellipsis;
+                    max-width: 100%;
+                    white-space: normal;
+                    overflow: visible;
                 }
             }
             
@@ -370,10 +433,9 @@
                 /* Fix header in mobile view */
                 .header h1 {
                     font-size: 1.25rem;
-                    max-width: calc(100% - 40px);
-                    white-space: nowrap;
-                    overflow: hidden;
-                    text-overflow: ellipsis;
+                    max-width: 100%;
+                    white-space: normal;
+                    overflow: visible;
                 }
                 
                 /* Fix form inputs */
@@ -390,8 +452,9 @@
             
             /* Mobile view - keep sidebar with icons only */
             @media (max-width: 576px) {
+                /* No need for mobile toggle anymore */
                 .mobile-toggle {
-                    display: inline-block;
+                    display: none;
                 }
                 
                 /* Keep sidebar visible with icons only */
@@ -399,6 +462,7 @@
                     width: var(--sidebar-collapsed-width);
                     transform: translateX(0);
                     overflow: hidden;
+                    position: fixed;
                 }
                 
                 .sidebar h1 {
@@ -484,14 +548,16 @@
                     <li><a href="/admin/comments" {% if '/admin/comments' in request.path %}class="active"{% endif %}><i class="bi bi-chat-left-text"></i> <span>Comments</span></a></li>
                     <li class="mt-5"><a href="/admin/logout"><i class="bi bi-box-arrow-left"></i> <span>Logout</span></a></li>
                 </ul>
+                <div class="sidebar-footer">
+                    <span>Developed by Duy Tran</span>
+                    <a href="mailto:duytrander@gmail.com">duytrander@gmail.com</a>
+                </div>
             </div>
             <div class="content">
                 <div class="header">
-                    <div class="d-flex align-items-center">
-                        <button class="mobile-toggle" id="sidebar-toggle">
-                            <i class="bi bi-list"></i>
-                        </button>
-                        <h1>{% block header_title %}Admin Dashboard{% endblock %}</h1>
+                    <div class="d-flex align-items-start flex-column">
+                        <h1 class="mb-0">{% block header_title %}Admin Dashboard{% endblock %}</h1>
+                        <small class="text-muted">&copy; Duy Tran - <a href="mailto:duytrander@gmail.com">duytrander@gmail.com</a></small>
                     </div>
                     <div class="header-buttons">
                         {% block header_buttons %}{% endblock %}
@@ -507,24 +573,7 @@
         <script src="https://uicdn.toast.com/editor/latest/toastui-editor-all.min.js"></script>
         <script>
             document.addEventListener('DOMContentLoaded', function() {
-                const sidebarToggle = document.getElementById('sidebar-toggle');
-                const sidebar = document.getElementById('sidebar');
-                
-                if (sidebarToggle) {
-                    sidebarToggle.addEventListener('click', function() {
-                        sidebar.classList.toggle('show');
-                    });
-                }
-                
-                // Close sidebar when clicking outside on mobile
-                document.addEventListener('click', function(event) {
-                    if (window.innerWidth <= 576 && 
-                        !sidebar.contains(event.target) && 
-                        !sidebarToggle.contains(event.target) &&
-                        sidebar.classList.contains('show')) {
-                        sidebar.classList.remove('show');
-                    }
-                });
+                // No mobile toggle functionality needed
             });
         </script>
         {% block additional_js %}{% endblock %}
