@@ -2,7 +2,7 @@
 set -e
 
 # Create necessary directories
-mkdir -p static media
+mkdir -p static media alembic/versions
 
 # Run migrations if needed
 # If using Alembic or other migration tools, uncomment the relevant command
