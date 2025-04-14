@@ -127,7 +127,7 @@ async def admin_articles(
     
     # Render the admin articles template
     return templates.TemplateResponse(
-        "admin/articles/list.html",
+        "admin/articles/index.html",
         {
             "request": request,
             "articles": articles,
