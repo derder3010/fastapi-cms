@@ -1,0 +1,103 @@
+<!-- Card list view styles -->
+<style>
+  .entity-card {
+    border-radius: 6px;
+    border: 1px solid rgba(0, 0, 0, 0.08);
+    margin-bottom: 15px;
+    overflow: hidden;
+    background-color: #fff;
+  }
+
+  .entity-card .card-header {
+    padding: 12px 15px;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px;
+  }
+
+  .entity-card .card-row {
+    padding: 12px 15px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+  }
+
+  .entity-card .card-row:last-child {
+    border-bottom: none;
+  }
+
+  .entity-card .card-label {
+    font-weight: 500;
+    color: #555;
+    width: 80px;
+  }
+
+  .entity-card .card-value {
+    flex: 1;
+    text-align: right;
+  }
+
+  .entity-card .card-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px;
+    justify-content: flex-start;
+  }
+
+  .entity-card .badge {
+    font-size: 0.8rem;
+    font-weight: 500;
+    padding: 5px 10px;
+    display: inline-block;
+    margin: 2px;
+    border-radius: 5px;
+    text-transform: none;
+    color: white;
+  }
+
+  .entity-card .action-buttons {
+    display: flex;
+    gap: 8px;
+    justify-content: flex-end;
+  }
+
+  .entity-card .action-buttons .btn {
+    width: 38px;
+    height: 38px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+  }
+
+  .entity-card .status-badge {
+    display: inline-block;
+    padding: 6px 10px;
+    font-weight: 500;
+    border-radius: 5px;
+    text-align: center;
+    min-width: 80px;
+  }
+
+  .entity-card .draft-badge {
+    background-color: #ffc107;
+    color: #212529;
+  }
+
+  .entity-card .published-badge {
+    background-color: #28a745;
+    color: #fff;
+  }
+
+  .entity-card .active-badge {
+    background-color: #28a745;
+    color: #fff;
+  }
+
+  .entity-card .inactive-badge {
+    background-color: #6c757d;
+    color: #fff;
+  }
+</style>

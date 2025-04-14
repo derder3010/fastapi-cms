@@ -26,7 +26,7 @@
         --secondary-color: #6c757d;
         --success-color: #28a745;
         --danger-color: #dc3545;
-        --sidebar-width: 250px;
+        --sidebar-width: 200px;
         --sidebar-collapsed-width: 70px;
       }
 
@@ -50,7 +50,7 @@
         color: white;
         height: 100vh;
         position: fixed;
-        padding: 20px 0;
+        padding: 20px 10px;
         box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
         transition: all 0.3s ease;
         z-index: 1000;
@@ -58,9 +58,9 @@
 
       .sidebar h1 {
         text-align: center;
-        font-size: 1.5em;
-        margin-bottom: 30px;
-        padding: 0 15px;
+        font-size: 1.3em;
+        margin-bottom: 20px;
+        padding: 0 10px;
         white-space: nowrap;
         overflow: hidden;
         text-overflow: ellipsis;
@@ -109,13 +109,14 @@
       }
 
       .sidebar li a {
-        padding: 10px 20px;
+        padding: 8px 15px;
         display: flex;
         align-items: center;
         color: rgba(255, 255, 255, 0.8);
         text-decoration: none;
         transition: all 0.3s;
         white-space: nowrap;
+        border-radius: 4px;
       }
 
       .sidebar li a:hover,
@@ -126,9 +127,9 @@
       }
 
       .sidebar li a i {
-        margin-right: 10px;
-        font-size: 1.1rem;
-        min-width: 24px;
+        margin-right: 8px;
+        font-size: 1rem;
+        min-width: 20px;
         text-align: center;
       }
 
@@ -154,22 +155,7 @@
       }
 
       @media (max-width: 992px) {
-        .sidebar-footer span {
-          display: none;
-        }
-
-        .sidebar-footer {
-          padding: 8px 0;
-        }
-
-        .sidebar-footer a {
-          font-size: 0.65rem;
-          white-space: nowrap;
-          overflow: hidden;
-          text-overflow: ellipsis;
-          max-width: 100%;
-          display: block;
-        }
+        /* Remove these styles as they will be replaced */
       }
 
       @media (max-width: 576px) {
@@ -313,62 +299,692 @@
 
       /* Tablet view - collapsed sidebar with icons only */
       @media (max-width: 992px) {
+        /* Remove these styles as they will be replaced */
+      }
+
+      @media (max-width: 576px) {
+        .sidebar-footer {
+          display: none;
+        }
+      }
+
+      .content {
+        flex: 1;
+        padding: 20px;
+        margin-left: var(--sidebar-width);
+        transition: all 0.3s ease;
+        width: calc(100% - var(--sidebar-width));
+      }
+
+      .header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 20px;
+        padding-bottom: 10px;
+        border-bottom: 1px solid #dee2e6;
+        flex-wrap: wrap;
+      }
+
+      .header > div {
+        margin-bottom: 5px;
+      }
+
+      .header h1 {
+        margin: 0;
+        font-size: 1.75rem;
+        color: #212529;
+        white-space: normal;
+        overflow: visible;
+        text-overflow: clip;
+        max-width: 100%;
+      }
+
+      .mobile-toggle {
+        display: none;
+        background: none;
+        border: none;
+        color: #212529;
+        font-size: 1.5rem;
+        cursor: pointer;
+        padding: 0.5rem;
+        margin-right: 0.5rem;
+      }
+
+      .table-responsive {
+        overflow-x: auto;
+      }
+
+      .table {
+        width: 100%;
+        margin-bottom: 0;
+      }
+
+      .table th {
+        white-space: nowrap;
+      }
+
+      .card {
+        border: none;
+        border-radius: 10px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+        margin-bottom: 20px;
+        overflow: hidden;
+      }
+
+      .card-header {
+        background-color: #fff;
+        border-bottom: 1px solid rgba(0, 0, 0, 0.075);
+        padding: 15px 20px;
+      }
+
+      .card-body {
+        padding: 20px;
+      }
+
+      .btn {
+        border-radius: 5px;
+        font-weight: 500;
+      }
+
+      .btn-primary {
+        background-color: var(--primary-color);
+        border-color: var(--primary-color);
+      }
+
+      .btn-danger {
+        background-color: var(--danger-color);
+        border-color: var(--danger-color);
+      }
+
+      .form-label {
+        font-weight: 500;
+      }
+
+      .alert {
+        border-radius: 5px;
+      }
+
+      .badge {
+        font-weight: 500;
+        padding: 5px 10px;
+        border-radius: 5px;
+      }
+
+      .modal-content {
+        border-radius: 10px;
+        border: none;
+      }
+
+      .modal-header {
+        border-bottom: 1px solid rgba(0, 0, 0, 0.075);
+      }
+
+      .modal-footer {
+        border-top: 1px solid rgba(0, 0, 0, 0.075);
+      }
+
+      /* Text handling utilities */
+      .text-truncate {
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        max-width: 100%;
+      }
+
+      /* Hide content/description columns in list views */
+      .content-column,
+      .description-column {
+        max-width: 200px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+
+      /* Remove old tablet styles */
+      @media (max-width: 992px) {
+        /* Remove these styles as they will be replaced */
+      }
+
+      /* Remove conflicting iPad Air specific styles */
+      @media (min-width: 820px) and (max-width: 1200px) {
+        /* Remove these styles as they are now handled by the tablet media query */
+      }
+
+      /* Remove conflicting larger tablet styles */
+      @media (min-width: 992px) and (max-width: 1200px) {
+        /* Remove these styles as they are now handled by the tablet media query */
+      }
+
+      /* Remove conflicting tablet styles */
+      @media (min-width: 768px) and (max-width: 1024px) {
+        /* Remove these styles as they will be replaced */
+      }
+
+      /* Comprehensive tablet styles (768px - 1200px) */
+      @media (min-width: 768px) and (max-width: 1200px) {
+        /* Optimized sidebar for tablets */
         .sidebar {
-          width: var(--sidebar-collapsed-width);
+          width: 65px;
+          padding: 0;
+          background-color: #1a1f23;
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          position: fixed;
+          top: 0;
+          left: 0;
+          height: 100vh;
           overflow: hidden;
+          z-index: 1010;
         }
 
         .sidebar h1 {
           font-size: 0;
           margin: 15px 0;
+          padding: 0;
+          text-align: center;
+          width: 100%;
         }
 
         .sidebar h1:first-letter {
-          font-size: 1.8rem;
+          font-size: 1.5rem;
+          color: white;
+        }
+
+        .sidebar ul {
+          margin: 0;
+          padding: 0;
+          width: 100%;
+        }
+
+        .sidebar li {
+          margin: 0;
+          width: 100%;
+        }
+
+        .sidebar li a {
+          padding: 15px 0;
+          justify-content: center;
+          opacity: 0.7;
+          transition: all 0.2s ease;
+          width: 100%;
+          border-left: none;
+        }
+
+        .sidebar li a:hover {
+          opacity: 1;
+          background-color: rgba(255, 255, 255, 0.1);
+        }
+
+        .sidebar li a.active {
+          opacity: 1;
+          background-color: rgba(255, 255, 255, 0.15);
+          border-left: 3px solid var(--primary-color);
+        }
+
+        .sidebar li a i {
+          margin: 0;
+          font-size: 1.2rem;
         }
 
         .sidebar li a span {
           display: none;
         }
 
-        .sidebar li a i {
-          margin-right: 0;
-          font-size: 1.2rem;
+        .sidebar li.mt-5 {
+          margin-top: 1rem !important;
         }
 
         .sidebar-footer {
-          padding: 10px 0;
-          font-size: 0.7rem;
-        }
-
-        .sidebar-footer span {
           display: none;
         }
 
+        /* Content area improvements */
         .content {
-          margin-left: var(--sidebar-collapsed-width);
-          width: calc(100% - var(--sidebar-collapsed-width));
+          margin-left: 65px;
+          width: calc(100% - 65px);
+          padding: 15px;
+          margin-top: 60px;
+          background-color: #fff;
         }
 
+        /* Fixed header */
+        .header {
+          position: fixed;
+          top: 0;
+          right: 0;
+          left: 65px;
+          z-index: 1000;
+          background: #fff;
+          margin: 0;
+          padding: 12px 15px;
+          box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+          height: 60px;
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          border-bottom: 1px solid #dee2e6;
+        }
+
+        .header h1 {
+          font-size: 1.2rem;
+          font-weight: 500;
+          color: #2c3338;
+          margin: 0;
+        }
+
+        .header small {
+          font-size: 0.75rem;
+          opacity: 0.6;
+        }
+
+        /* Show mobile toggle for tablet */
+        .mobile-toggle {
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          width: 32px;
+          height: 32px;
+          border-radius: 4px;
+          background-color: #f8f9fa;
+          border: 1px solid #dee2e6;
+          color: #212529;
+          font-size: 1.2rem;
+          cursor: pointer;
+          padding: 0;
+          margin-right: 10px;
+          transition: all 0.2s ease;
+        }
+
+        .mobile-toggle:hover {
+          background-color: #e9ecef;
+        }
+
+        .mobile-toggle:focus {
+          outline: none;
+          box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.25);
+        }
+
+        /* Table improvements */
         .table-responsive {
-          border: 0;
+          background: #fff;
+          border-radius: 8px;
+          box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+          border: 1px solid rgba(0,0,0,0.05);
+          margin-top: 15px;
           overflow-x: auto;
         }
 
-        .table td,
-        .table th {
-          padding: 0.5rem;
+        .table {
+          margin: 0;
+          width: 100%;
+          border-collapse: separate;
+          border-spacing: 0;
         }
 
-        /* Fix header in tablet view */
-        .header h1 {
-          font-size: 1.5rem;
+        .table thead th {
+          background-color: #f8f9fa;
+          font-weight: 500;
+          font-size: 0.85rem;
+          padding: 10px 15px;
+          border-bottom: 1px solid rgba(0,0,0,0.05);
+          color: #666;
+          white-space: nowrap;
+          text-transform: uppercase;
+          letter-spacing: 0.5px;
+          position: sticky;
+          top: 0;
+          z-index: 10;
+        }
+
+        .table tbody td {
+          padding: 12px 15px;
+          vertical-align: middle;
+          font-size: 0.9rem;
+          color: #333;
+          border-bottom: 1px solid rgba(0,0,0,0.05);
+        }
+
+        /* Category column styling */
+        .category-column {
+          font-weight: 500;
+          color: #444;
+        }
+
+        /* Make rows slightly different color for better readability */
+        .table tbody tr:nth-of-type(odd) {
+          background-color: rgba(0, 0, 0, 0.01);
+        }
+
+        /* Status column styling */
+        .status-column {
+          text-align: center;
+        }
+
+        /* Action buttons in table */
+        .table .action-buttons {
+          display: flex;
+          gap: 6px;
+          justify-content: center;
+          min-width: 115px;
+        }
+
+        .table .action-buttons .btn {
+          padding: 6px;
+          font-size: 0.8rem;
+          width: 45px;
+          height: 35px;
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          white-space: nowrap;
+          border-radius: 4px;
+          box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+          color: white;
+        }
+
+        .table .action-buttons .btn-primary {
+          background-color: #0d6efd;
+          border-color: #0d6efd;
+        }
+
+        .table .action-buttons .btn-danger {
+          background-color: #dc3545;
+          border-color: #dc3545;
+        }
+
+        .table .action-buttons .btn i {
+          font-size: 1rem;
+        }
+
+        /* Table row spacing */
+        .table tbody tr {
+          transition: all 0.2s ease;
+        }
+
+        .table tbody tr:hover {
+          background-color: rgba(0, 0, 0, 0.02);
+        }
+
+        /* Advanced filters section */
+        .advanced-filters {
+          margin-bottom: 15px;
+          padding: 10px 15px;
+          background-color: #f8f9fa;
+          border-radius: 8px;
+          border: 1px solid rgba(0,0,0,0.05);
+          display: flex;
+          flex-wrap: wrap;
+          align-items: center;
+          gap: 10px;
+        }
+
+        .advanced-filters label {
+          font-weight: 500;
+          font-size: 0.85rem;
+          margin-right: 5px;
+        }
+
+        .advanced-filters select,
+        .advanced-filters input {
+          height: 32px;
+          padding: 6px 12px;
+          font-size: 0.85rem;
+          border: 1px solid rgba(0,0,0,0.1);
+          border-radius: 4px;
+        }
+
+        /* Tag display in tables */
+        .badge {
+          font-size: 0.75rem;
+          font-weight: 500;
+          padding: 4px 8px;
+          border-radius: 4px;
+          display: inline-block;
+          margin: 2px;
+        }
+
+        /* Tags container in table */
+        .tags-container {
+          display: flex;
+          flex-wrap: wrap;
+          gap: 4px;
           max-width: 100%;
-          white-space: normal;
-          overflow: visible;
+        }
+
+        .tags-column {
+          max-width: 260px;
+        }
+
+        /* Specific iPad Air/Pro adjustments */
+        @media (min-width: 820px) {
+          /* Slightly more space on larger tablets */
+          .content {
+            padding: 15px 20px;
+          }
+          
+          .header {
+            padding: 12px 20px;
+          }
+          
+          /* Allow more content to be visible */
+          .td-description,
+          .td-content {
+            max-width: 220px;
+          }
+        }
+
+        /* Expanded sidebar for tablets */
+        .sidebar.expanded {
+          width: 200px;
+          padding: 15px 10px;
+          transition: all 0.3s ease;
+        }
+
+        .sidebar.expanded h1 {
+          font-size: 1.2rem;
+          padding: 0 10px;
+          text-align: left;
+        }
+
+        .sidebar.expanded h1:first-letter {
+          font-size: 1.2rem;
+        }
+
+        .sidebar.expanded li a {
+          justify-content: flex-start;
+          padding: 8px 15px;
+        }
+
+        .sidebar.expanded li a i {
+          margin-right: 8px;
+        }
+
+        .sidebar.expanded li a span {
+          display: inline;
+        }
+
+        /* Adjust content when sidebar is expanded */
+        .content.sidebar-expanded {
+          margin-left: 200px;
+          width: calc(100% - 200px);
+        }
+
+        /* Move the header when sidebar expands */
+        .sidebar.expanded + .content .header {
+          left: 200px;
+          width: calc(100% - 200px);
+        }
+        
+        /* Special hover behavior for sidebar in tablet mode */
+        .sidebar:not(.expanded):hover {
+          background-color: #1a1f23;
+          box-shadow: 0 0 15px rgba(0, 0, 0, 0.2);
+        }
+
+        /* Remove top margin from header as it's now fixed */
+        .header + * {
+          margin-top: 15px;
+        }
+
+        /* Top action buttons */
+        .header-buttons .btn {
+          padding: 6px 12px;
+          font-size: 0.85rem;
+          height: 32px;
+          display: inline-flex;
+          align-items: center;
+        }
+
+        /* Search form improvements */
+        .search-form {
+          max-width: 250px;
+          margin: 10px 0;
+        }
+
+        .search-form .input-group {
+          height: 32px;
+        }
+
+        .search-form .form-control {
+          height: 32px;
+          padding: 6px 12px;
+          font-size: 0.85rem;
+          border: 1px solid rgba(0,0,0,0.1);
+          border-right: none;
+        }
+
+        .search-form .btn {
+          height: 32px;
+          padding: 6px 12px;
+          font-size: 0.85rem;
+        }
+
+        /* Card improvements */
+        .card {
+          margin-bottom: 15px;
+          border-radius: 6px;
+        }
+
+        .card-header {
+          padding: 12px 15px;
+        }
+
+        .card-body {
+          padding: 15px;
+        }
+
+        /* Form improvements */
+        .form-control,
+        .form-select {
+          font-size: 0.9rem;
+        }
+
+        /* Pagination */
+        .pagination {
+          margin-top: 15px;
+        }
+
+        .pagination .page-link {
+          padding: 6px 12px;
+          font-size: 0.85rem;
+        }
+
+        /* Toast UI Editor responsive fix */
+        .toastui-editor-defaultUI {
+          max-width: 100%;
+        }
+
+        /* Ensure proper flex layouts */
+        .d-flex {
+          display: flex !important;
+        }
+
+        .align-items-center {
+          align-items: center !important;
+        }
+
+        .justify-content-between {
+          justify-content: space-between !important;
+        }
+
+        /* Ensure content columns are visible but compact */
+        .td-description,
+        .td-content {
+          display: table-cell !important;
+          max-width: 180px;
+          white-space: nowrap;
+          overflow: hidden;
+          text-overflow: ellipsis;
+        }
+
+        /* Tablet-specific article list adjustments */
+        .article-management-table {
+          border-collapse: separate;
+          border-spacing: 0;
+        }
+        
+        .article-management-table thead th {
+          position: sticky;
+          top: 0;
+          z-index: 10;
+          padding: 12px 10px;
+          font-size: 0.7rem;
+        }
+        
+        .article-management-table tbody td {
+          padding: 12px 10px;
+        }
+        
+        .article-management-table .badge {
+          font-size: 0.7rem;
+          padding: 4px 8px;
+          margin: 2px;
+        }
+        
+        .article-management-table .tags-container {
+          gap: 3px;
+        }
+        
+        .article-management-table .status-badge {
+          padding: 5px 8px;
+          min-width: 75px;
+          font-size: 0.75rem;
+        }
+        
+        .article-management-table .action-buttons .btn {
+          width: 35px;
+          height: 35px;
+        }
+        
+        .article-management-table .action-buttons .btn i {
+          font-size: 1rem;
+        }
+        
+        /* Tag colors brightness adjustment for better visibility on tablets */
+        .article-management-table .badge-backend,
+        .article-management-table .badge-database,
+        .article-management-table .badge-ui,
+        .article-management-table .badge-uiux,
+        .article-management-table .badge-quantum-computing,
+        .article-management-table .badge-glitch,
+        .article-management-table .badge-cloud,
+        .article-management-table .badge-fintech,
+        .article-management-table .badge-serverless,
+        .article-management-table .badge-mobile,
+        .article-management-table .badge-robotics,
+        .article-management-table .badge-cybersecurity,
+        .article-management-table .badge-gaming,
+        .article-management-table .badge-web-development,
+        .article-management-table .badge-ai,
+        .article-management-table .badge-blockchain,
+        .article-management-table .badge-virtual-reality {
+          filter: brightness(1.05);
         }
       }
 
+      /* Mobile styles */
       @media (max-width: 768px) {
         /* Hide long content columns completely on mobile */
         .content-column,
@@ -630,6 +1246,402 @@
           max-width: 200px;
         }
       }
+
+      /* Action buttons in table */
+      .table .action-buttons {
+        display: flex;
+        gap: 4px;
+        justify-content: flex-end;
+        min-width: 110px;
+      }
+
+      .table .action-buttons .btn {
+        padding: 4px 8px;
+        font-size: 0.8rem;
+        line-height: 1.4;
+        height: 28px;
+        display: inline-flex;
+        align-items: center;
+        white-space: nowrap;
+      }
+
+      /* Ensure the close button appears on mobile */
+      @media (max-width: 767px) {
+        .mobile-toggle {
+          display: block;
+        }
+      }
+
+      /* Add badge styles for different tag types */
+      .badge {
+        display: inline-block;
+        padding: 4px 8px;
+        margin: 2px;
+        font-size: 0.75rem;
+        font-weight: 500;
+        line-height: 1;
+        text-align: center;
+        white-space: nowrap;
+        vertical-align: baseline;
+        border-radius: 4px;
+        color: #fff;
+      }
+
+      /* Status badges */
+      .badge-draft {
+        background-color: #ffc107;
+        color: #212529;
+      }
+
+      .badge-published {
+        background-color: #28a745;
+        color: #fff;
+      }
+
+      /* Technology tag colors */
+      .badge-backend, .badge-backend-badge {
+        background-color: #6610f2;
+      }
+
+      .badge-database {
+        background-color: #17a2b8;
+      }
+
+      .badge-ui, .badge-uiux {
+        background-color: #e83e8c;
+      }
+
+      .badge-quantum, .badge-quantum-computing {
+        background-color: #6f42c1;
+      }
+
+      .badge-glitch {
+        background-color: #dc3545;
+      }
+
+      .badge-cloud {
+        background-color: #0dcaf0;
+      }
+
+      .badge-fintech {
+        background-color: #20c997;
+      }
+
+      .badge-serverless {
+        background-color: #fd7e14;
+      }
+
+      .badge-mobile {
+        background-color: #0d6efd;
+      }
+
+      .badge-robotics {
+        background-color: #6c757d;
+      }
+
+      .badge-cybersecurity {
+        background-color: #212529;
+      }
+
+      .badge-gaming {
+        background-color: #7952b3;
+      }
+
+      .badge-web, .badge-web-development {
+        background-color: #198754;
+      }
+
+      .badge-ai {
+        background-color: #0d6efd;
+      }
+
+      .badge-healthcare {
+        background-color: #20c997;
+      }
+
+      .badge-blockchain {
+        background-color: #fd7e14;
+      }
+
+      .badge-ar, .badge-vr, .badge-virtual-reality {
+        background-color: #6f42c1;
+      }
+
+      .badge-frontend {
+        background-color: #e83e8c;
+      }
+
+      .badge-big-data {
+        background-color: #17a2b8;
+      }
+
+      /* Tags container for better spacing */
+      .tags-container {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 4px;
+        max-width: 100%;
+      }
+
+      /* Specific styles for article management */
+      .article-management-table {
+        border-collapse: separate;
+        border-spacing: 0;
+        width: 100%;
+      }
+      
+      .article-management-table thead th {
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        font-size: 0.75rem;
+        color: #555;
+        font-weight: 600;
+        background-color: #f8f9fa;
+        padding: 12px 15px;
+        border-bottom: 1px solid rgba(0,0,0,0.05);
+      }
+      
+      .article-management-table tbody td {
+        padding: 15px;
+        vertical-align: middle;
+        font-size: 0.9rem;
+      }
+
+      .article-management-table .badge {
+        font-size: 0.75rem;
+        font-weight: 500;
+        padding: 5px 10px;
+        display: inline-block;
+        margin: 3px 2px;
+        border-radius: 5px;
+        text-transform: none;
+        color: white;
+      }
+
+      .article-management-table .action-buttons {
+        justify-content: center;
+        gap: 8px;
+      }
+
+      .article-management-table .status-badge {
+        display: inline-block;
+        padding: 6px 12px;
+        font-weight: 500;
+        border-radius: 5px;
+        text-align: center;
+        min-width: 85px;
+      }
+
+      .article-management-table .draft-badge {
+        background-color: #ffc107;
+        color: #212529;
+      }
+
+      .article-management-table .published-badge {
+        background-color: #28a745;
+        color: #fff;
+      }
+      
+      .article-management-table .action-buttons .btn {
+        width: 40px;
+        height: 40px;
+        border-radius: 5px;
+        padding: 0;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+      }
+      
+      .article-management-table .action-buttons .btn i {
+        font-size: 1.1rem;
+      }
+      
+      .article-management-table tbody tr {
+        border-bottom: 1px solid rgba(0,0,0,0.05);
+      }
+      
+      .article-management-table .tags-container {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 5px;
+        max-width: 100%;
+      }
+      
+      /* Update tag colors to match screenshot */
+      .badge-backend {
+        background-color: #6610f2;
+      }
+      
+      .badge-database {
+        background-color: #0dcaf0;
+      }
+      
+      .badge-uiux, .badge-ui {
+        background-color: #e83e8c;
+      }
+      
+      .badge-quantum-computing {
+        background-color: #6f42c1;
+      }
+      
+      .badge-glitch {
+        background-color: #dc3545;
+      }
+      
+      .badge-cloud {
+        background-color: #0dcaf0;
+      }
+      
+      .badge-fintech {
+        background-color: #20c997;
+      }
+      
+      .badge-serverless {
+        background-color: #fd7e14;
+      }
+
+      /* Advanced filters */
+      .advanced-filters {
+        background-color: #f8f9fa; 
+        border-radius: 6px;
+        padding: 10px 15px;
+        margin-bottom: 15px;
+        border: 1px solid rgba(0,0,0,0.05);
+      }
+
+      .advanced-filters-title {
+        font-weight: 500;
+        margin-bottom: 5px;
+        display: flex;
+        align-items: center;
+        gap: 5px;
+        font-size: 0.9rem;
+      }
+
+      .advanced-filters-title i {
+        font-size: 0.9rem;
+      }
+
+      /* For compact tag display on smaller screens */
+      @media (max-width: 1200px) {
+        .tags-column {
+          max-width: 250px;
+        }
+        
+        .article-management-table .tags-column .badge {
+          font-size: 0.7rem;
+          padding: 2px 6px;
+        }
+      }
+
+      /* Filter styles */
+      .filter-container {
+        background-color: #f8f9fa;
+        border-radius: 6px;
+        padding: 15px;
+        margin-bottom: 15px;
+      }
+
+      .filter-container label {
+        font-size: 0.85rem;
+        font-weight: 500;
+        color: #555;
+        margin-bottom: 5px;
+      }
+
+      .filter-container .form-select,
+      .filter-container .form-control {
+        height: 32px;
+        padding: 5px 10px;
+        font-size: 0.85rem;
+        border: 1px solid rgba(0,0,0,0.1);
+        border-radius: 4px;
+      }
+
+      .filter-container .form-select:focus,
+      .filter-container .form-control:focus {
+        border-color: rgba(13, 110, 253, 0.25);
+        box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.15);
+      }
+
+      .filter-container .btn {
+        height: 32px;
+        padding: 4px 12px;
+        font-size: 0.85rem;
+        display: inline-flex;
+        align-items: center;
+      }
+
+      /* Tablet specific filter adjustments */
+      @media (min-width: 768px) and (max-width: 1200px) {
+        .filter-container {
+          padding: 12px;
+        }
+        
+        .filter-container .col-md-4 {
+          margin-bottom: 8px;
+        }
+      }
+
+      /* Card view styles for tags */
+      .article-card .badge {
+        font-size: 0.8rem;
+        font-weight: 500;
+        padding: 5px 10px;
+        display: inline-block;
+        margin: 2px;
+        border-radius: 5px;
+        text-transform: none;
+        color: white;
+      }
+      
+      .article-card .status-badge {
+        display: inline-block;
+        padding: 6px 10px;
+        font-weight: 500;
+        border-radius: 5px;
+        text-align: center;
+        min-width: 80px;
+      }
+      
+      .article-card .draft-badge {
+        background-color: #ffc107;
+        color: #212529;
+      }
+      
+      .article-card .published-badge {
+        background-color: #28a745;
+        color: #fff;
+      }
+      
+      /* More vibrant colors for tags */
+      .badge-quantum-computing {
+        background-color: #7b53c1 !important;
+      }
+      
+      .badge-backend {
+        background-color: #7355b9 !important;
+      }
+      
+      .badge-cloud {
+        background-color: #19bfe6 !important;
+      }
+      
+      .badge-fintech {
+        background-color: #19d2a1 !important;
+      }
+      
+      .badge-serverless {
+        background-color: #ff8c38 !important;
+      }
+      
+      .badge-mobile {
+        background-color: #4284f5 !important;
+      }
+      
+      .badge-robotics {
+        background-color: #8690a0 !important;
+      }
     </style>
     {% block additional_css %}{% endblock %}
   </head>
@@ -686,10 +1698,22 @@
       document.addEventListener("DOMContentLoaded", function () {
         const sidebarToggle = document.getElementById("sidebarToggle");
         const sidebar = document.getElementById("sidebar");
+        const content = document.querySelector(".content");
+        const isTablet = window.matchMedia("(min-width: 768px) and (max-width: 1200px)").matches;
 
         if (sidebarToggle && sidebar) {
-          sidebarToggle.addEventListener("click", function () {
+          // Toggle sidebar on button click
+          sidebarToggle.addEventListener("click", function (e) {
+            e.stopPropagation();
             sidebar.classList.toggle("show");
+            
+            // If tablet, toggle expanded sidebar
+            if (isTablet) {
+              sidebar.classList.toggle("expanded");
+              if (content) {
+                content.classList.toggle("sidebar-expanded");
+              }
+            }
           });
 
           // Close sidebar when clicking outside
@@ -699,6 +1723,28 @@
               !sidebarToggle.contains(event.target)
             ) {
               sidebar.classList.remove("show");
+              
+              // For tablet only
+              if (isTablet) {
+                sidebar.classList.remove("expanded");
+                if (content) {
+                  content.classList.remove("sidebar-expanded");
+                }
+              }
+            }
+          });
+          
+          // Handle window resize
+          window.addEventListener("resize", function() {
+            const nowTablet = window.matchMedia("(min-width: 768px) and (max-width: 1200px)").matches;
+            
+            // Reset classes if device size changes
+            if (nowTablet !== isTablet) {
+              sidebar.classList.remove("show", "expanded");
+              if (content) {
+                content.classList.remove("sidebar-expanded");
+              }
+              location.reload(); // Reload to apply correct styles
             }
           });
         }
@@ -707,3 +1753,4 @@
     {% block additional_js %}{% endblock %}
   </body>
 </html>
+

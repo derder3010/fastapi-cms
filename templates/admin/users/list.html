@@ -1,7 +1,57 @@
 {% extends "admin/base.html" %} {% block title %}User Management - FastAPI CMS{%
 endblock %} {% block header_title %}User Management{% endblock %} {% block
 content %}
-<div class="container-fluid mt-4">
+
+<!-- Include card list styles -->
+{% include "admin/components/card_list_style.html" %}
+
+<style>
+  /* Ensure badge text is visible */
+  .badge {
+    color: #fff !important;
+    text-shadow: 0 0 1px rgba(0, 0, 0, 0.5);
+    border: 1px solid rgba(0, 0, 0, 0.1);
+  }
+  
+  /* Fixed height card styles */
+  .fixed-height-card {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+  }
+  
+  .fixed-height-card .card-header {
+    display: flex;
+    align-items: center;
+    min-height: 60px;
+  }
+  
+  .fixed-height-card .card-body {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+  }
+  
+  /* Status badge styles */
+  .active-badge {
+    background-color: #28a745 !important;
+  }
+  
+  .inactive-badge {
+    background-color: #dc3545 !important;
+  }
+  
+  /* Card border status styles */
+  .card-status-active {
+    border: 2px solid #28a745;
+  }
+  
+  .card-status-inactive {
+    border: 2px solid #dc3545;
+  }
+</style>
+
+<div class="container-fluid">
   <div class="row mb-3">
     <div
       class="col-12 d-flex justify-content-between align-items-center flex-wrap"
@@ -35,9 +85,9 @@ content %}
   </div>
   {% endif %}
 
-  <div class="row mb-4">
+  <div class="row mb-3">
     <div class="col-md-6">
-      <form action="/admin/users" method="get" class="d-flex">
+      <form action="/admin/users" method="get" class="search-form d-flex">
         <div class="input-group">
           <input
             type="text"
@@ -75,153 +125,221 @@ content %}
 
   <div class="row">
     <div class="col-12">
-      <div class="card">
-        {% if query %}
+      {% if query %}
+      <div class="card mb-3">
         <div class="card-header bg-light">
           <div class="d-flex justify-content-between align-items-center">
             <span>Search results for: <strong>"{{ query }}"</strong></span>
             <span class="badge bg-primary">{{ users|length }} results</span>
           </div>
         </div>
-        {% endif %}
-        <div class="card-body">
-          {% if users %}
-          <div class="table-responsive">
-            <table class="table table-striped table-hover">
-              <thead>
-                <tr>
-                  <th>ID</th>
-                  <th>Username</th>
-                  <th>Email</th>
-                  <th>Status</th>
-                  <th>Role</th>
-                  <th class="description-column">Created At</th>
-                  <th>Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {% for user_item in users %}
-                <tr>
-                  <td data-label="ID">{{ user_item.id }}</td>
-                  <td data-label="Username">{{ user_item.username }}</td>
-                  <td data-label="Email">{{ user_item.email }}</td>
-                  <td data-label="Status">
-                    {% if user_item.is_active %}
-                    <span class="badge bg-success">Active</span>
-                    {% else %}
-                    <span class="badge bg-secondary">Inactive</span>
-                    {% endif %}
-                  </td>
-                  <td data-label="Role">
-                    {% if user_item.is_superuser %}
-                    <span class="badge bg-primary">Admin</span>
-                    {% else %}
-                    <span class="badge bg-info">User</span>
-                    {% endif %}
-                  </td>
-                  <td data-label="Created At" class="td-description">
-                    {{ user_item.created_at.strftime('%Y-%m-%d %H:%M') }}
-                  </td>
-                  <td data-label="Actions">
-                    <div class="d-flex gap-2">
+      </div>
+      {% endif %} 
+      
+      {% if users %}
+      <!-- Table view for desktop -->
+      <div class="d-none d-lg-block mb-4">
+        <div class="card">
+          <div class="card-body">
+            <div class="table-responsive">
+              <table class="table table-striped table-hover">
+                <thead>
+                  <tr>
+                    <th>Username</th>
+                    <th>Email</th>
+                    <th>Status</th>
+                    <th>Role</th>
+                    <th>Created</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {% for user_item in users %}
+                  <tr>
+                    <td>{{ user_item.username }}</td>
+                    <td>{{ user_item.email }}</td>
+                    <td>
+                      {% if user_item.is_active %}
+                      <span class="badge active-badge">Active</span>
+                      {% else %}
+                      <span class="badge inactive-badge">Inactive</span>
+                      {% endif %}
+                    </td>
+                    <td>
+                      {% if user_item.is_superuser %}
+                      <span class="badge bg-primary">Admin</span>
+                      {% else %}
+                      <span class="badge bg-info">User</span>
+                      {% endif %}
+                    </td>
+                    <td>{{ user_item.created_at.strftime('%Y-%m-%d') }}</td>
+                    <td>
+                      <div class="d-flex gap-2">
+                        <a
+                          href="/admin/users/{{ user_item.id }}/edit"
+                          class="btn btn-sm btn-primary"
+                          title="Edit"
+                        >
+                          <i class="bi bi-pencil-square"></i>
+                          <span class="d-none d-md-inline-block ms-1">Edit</span>
+                        </a>
+                        <button
+                          type="button"
+                          class="btn btn-sm btn-danger"
+                          data-bs-toggle="modal"
+                          data-bs-target="#deleteModal{{ user_item.id }}"
+                          title="Delete"
+                          {% if user_item.id == user.id %}disabled{% endif %}
+                        >
+                          <i class="bi bi-trash"></i>
+                          <span class="d-none d-md-inline-block ms-1">Delete</span>
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                  {% endfor %}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Card view for tablet and mobile -->
+      <div class="d-lg-none">
+        <div class="row">
+          {% for user_item in users %}
+          <div class="col-md-6 col-sm-6 col-12 mb-3">
+            <div class="entity-card fixed-height-card {% if user_item.is_active %}card-status-active{% else %}card-status-inactive{% endif %}">
+              <div class="card-header bg-light">
+                <div class="card-tags">
+                  {% if user_item.is_active %}
+                  <span class="badge active-badge">Active</span>
+                  {% else %}
+                  <span class="badge inactive-badge">Inactive</span>
+                  {% endif %} {% if user_item.is_superuser %}
+                  <span class="badge bg-primary">Admin</span>
+                  {% else %}
+                  <span class="badge bg-info">User</span>
+                  {% endif %}
+                </div>
+              </div>
+
+              <div class="card-body">
+                <div class="card-row">
+                  <div class="card-label">Username</div>
+                  <div class="card-value">{{ user_item.username }}</div>
+                </div>
+
+                <div class="card-row">
+                  <div class="card-label">Email</div>
+                  <div class="card-value">{{ user_item.email }}</div>
+                </div>
+
+                <div class="card-row">
+                  <div class="card-label">Created</div>
+                  <div class="card-value">
+                    {{ user_item.created_at.strftime('%Y-%m-%d') }}
+                  </div>
+                </div>
+
+                <div class="card-row">
+                  <div class="card-label">Actions</div>
+                  <div class="card-value">
+                    <div class="action-buttons">
                       <a
                         href="/admin/users/{{ user_item.id }}/edit"
-                        class="btn btn-sm btn-primary"
+                        class="btn btn-primary"
                         title="Edit"
                       >
                         <i class="bi bi-pencil-square"></i>
-                        <span class="d-none d-md-inline-block ms-1">Edit</span>
                       </a>
                       <button
                         type="button"
-                        class="btn btn-sm btn-danger"
+                        class="btn btn-danger"
                         data-bs-toggle="modal"
                         data-bs-target="#deleteModal{{ user_item.id }}"
                         title="Delete"
+                        {% if user_item.id == user.id %}disabled{% endif %}
                       >
                         <i class="bi bi-trash"></i>
-                        <span class="d-none d-md-inline-block ms-1"
-                          >Delete</span
-                        >
                       </button>
                     </div>
-
-                    <!-- Delete Confirmation Modal -->
-                    <div
-                      class="modal fade"
-                      id="deleteModal{{ user_item.id }}"
-                      tabindex="-1"
-                      aria-labelledby="deleteModalLabel{{ user_item.id }}"
-                      aria-hidden="true"
-                    >
-                      <div class="modal-dialog">
-                        <div class="modal-content">
-                          <div class="modal-header">
-                            <h5
-                              class="modal-title"
-                              id="deleteModalLabel{{ user_item.id }}"
-                            >
-                              Confirm Delete
-                            </h5>
-                            <button
-                              type="button"
-                              class="btn-close"
-                              data-bs-dismiss="modal"
-                              aria-label="Close"
-                            ></button>
-                          </div>
-                          <div class="modal-body">
-                            {% if user_item.id == user.id %}
-                            <div class="alert alert-danger">
-                              <i
-                                class="bi bi-exclamation-triangle-fill me-2"
-                              ></i
-                              >You cannot delete your own account!
-                            </div>
-                            {% else %} Are you sure you want to delete the user
-                            "{{ user_item.username }}"? This action cannot be
-                            undone. {% endif %}
-                          </div>
-                          <div class="modal-footer">
-                            <button
-                              type="button"
-                              class="btn btn-secondary"
-                              data-bs-dismiss="modal"
-                            >
-                              Cancel
-                            </button>
-                            {% if user_item.id != user.id %}
-                            <a
-                              href="/admin/users/{{ user_item.id }}/delete"
-                              class="btn btn-danger"
-                              >Delete</a
-                            >
-                            {% else %}
-                            <button
-                              type="button"
-                              class="btn btn-danger"
-                              disabled
-                            >
-                              Delete
-                            </button>
-                            {% endif %}
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </td>
-                </tr>
-                {% endfor %}
-              </tbody>
-            </table>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
-          {% else %}
-          <div class="alert alert-info mb-0" role="alert">No users found.</div>
-          {% endif %}
+          {% endfor %}
         </div>
-        {% set url_path = '/admin/users' %} {% include
-        "admin/components/pagination.html" %}
       </div>
+      
+      <!-- Delete Confirmation Modals -->
+      {% for user_item in users %}
+      <div
+        class="modal fade"
+        id="deleteModal{{ user_item.id }}"
+        tabindex="-1"
+        aria-labelledby="deleteModalLabel{{ user_item.id }}"
+        aria-hidden="true"
+      >
+        <div class="modal-dialog">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h5
+                class="modal-title"
+                id="deleteModalLabel{{ user_item.id }}"
+              >
+                Confirm Delete
+              </h5>
+              <button
+                type="button"
+                class="btn-close"
+                data-bs-dismiss="modal"
+                aria-label="Close"
+              ></button>
+            </div>
+            <div class="modal-body">
+              {% if user_item.id == user.id %}
+              <div class="alert alert-danger">
+                <i class="bi bi-exclamation-triangle-fill me-2"></i>You
+                cannot delete your own account!
+              </div>
+              {% else %} Are you sure you want to delete the user "{{
+              user_item.username }}"? This action cannot be undone. {%
+              endif %}
+            </div>
+            <div class="modal-footer">
+              <button
+                type="button"
+                class="btn btn-secondary"
+                data-bs-dismiss="modal"
+              >
+                Cancel
+              </button>
+              {% if user_item.id != user.id %}
+              <a
+                href="/admin/users/{{ user_item.id }}/delete"
+                class="btn btn-danger"
+                >Delete</a
+              >
+              {% else %}
+              <button type="button" class="btn btn-danger" disabled>
+                Delete
+              </button>
+              {% endif %}
+            </div>
+          </div>
+        </div>
+      </div>
+      {% endfor %}
+      
+      {% else %}
+      <div class="alert alert-info mb-0" role="alert">No users found.</div>
+      {% endif %} 
+      
+      {% set url_path = '/admin/users' %} 
+      {% include "admin/components/pagination.html" %}
     </div>
   </div>
 </div>
