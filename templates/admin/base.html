@@ -1,581 +1,709 @@
 <!DOCTYPE html>
 <html>
-    <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>{% block title %}FastAPI CMS{% endblock %}</title>
-        <!-- Bootstrap CSS -->
-        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-        <!-- Bootstrap Icons -->
-        <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
-        <!-- Toast UI Editor CSS -->
-        <link rel="stylesheet" href="https://uicdn.toast.com/editor/latest/toastui-editor.min.css" />
-        {% block head_scripts %}{% endblock %}
-        <style>
-            :root {
-                --primary-color: #0d6efd;
-                --secondary-color: #6c757d;
-                --success-color: #28a745;
-                --danger-color: #dc3545;
-                --sidebar-width: 250px;
-                --sidebar-collapsed-width: 70px;
-            }
-            
-            body {
-                font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-                margin: 0;
-                padding: 0;
-                background-color: #f8f9fa;
-                overflow-x: hidden;
-            }
-            
-            .dashboard {
-                display: flex;
-                min-height: 100vh;
-                position: relative;
-            }
-            
-            .sidebar {
-                width: var(--sidebar-width);
-                background-color: #212529;
-                color: white;
-                height: 100vh;
-                position: fixed;
-                padding: 20px 0;
-                box-shadow: 2px 0 5px rgba(0,0,0,0.1);
-                transition: all 0.3s ease;
-                z-index: 1000;
-            }
-            
-            .sidebar h1 {
-                text-align: center;
-                font-size: 1.5em;
-                margin-bottom: 30px;
-                padding: 0 15px;
-                white-space: nowrap;
-                overflow: hidden;
-                text-overflow: ellipsis;
-            }
-            
-            .sidebar-search {
-                padding: 0 15px;
-                margin-bottom: 20px;
-            }
-            
-            .sidebar-search .form-control {
-                background-color: rgba(255,255,255,0.1);
-                border: none;
-                color: #fff;
-                border-radius: 4px;
-            }
-            
-            .sidebar-search .form-control::placeholder {
-                color: rgba(255,255,255,0.5);
-            }
-            
-            .sidebar-search .form-control:focus {
-                background-color: rgba(255,255,255,0.2);
-                box-shadow: none;
-            }
-            
-            .sidebar-search .btn {
-                background-color: rgba(255,255,255,0.1);
-                border: none;
-                color: rgba(255,255,255,0.7);
-            }
-            
-            .sidebar-search .btn:hover {
-                background-color: rgba(255,255,255,0.2);
-                color: #fff;
-            }
-            
-            .sidebar ul {
-                list-style: none;
-                padding: 0;
-                margin-top: 20px;
-            }
-            
-            .sidebar li {
-                margin-bottom: 5px;
-            }
-            
-            .sidebar li a {
-                padding: 10px 20px;
-                display: flex;
-                align-items: center;
-                color: rgba(255,255,255,0.8);
-                text-decoration: none;
-                transition: all 0.3s;
-                white-space: nowrap;
-            }
-            
-            .sidebar li a:hover, .sidebar li a.active {
-                background-color: rgba(255,255,255,0.1);
-                color: white;
-                border-left: 3px solid var(--primary-color);
-            }
-            
-            .sidebar li a i {
-                margin-right: 10px;
-                font-size: 1.1rem;
-                min-width: 24px;
-                text-align: center;
-            }
-            
-            .sidebar-footer {
-                position: absolute;
-                bottom: 0;
-                width: 100%;
-                padding: 15px 10px;
-                font-size: 0.75rem;
-                color: rgba(255,255,255,0.5);
-                text-align: center;
-                border-top: 1px solid rgba(255,255,255,0.1);
-            }
-            
-            .sidebar-footer a {
-                color: rgba(255,255,255,0.7);
-                text-decoration: none;
-            }
-            
-            .sidebar-footer a:hover {
-                color: #fff;
-                text-decoration: underline;
-            }
-            
-            @media (max-width: 992px) {
-                .sidebar-footer span {
-                    display: none;
-                }
-                
-                .sidebar-footer {
-                    padding: 8px 0;
-                }
-                
-                .sidebar-footer a {
-                    font-size: 0.65rem;
-                    white-space: nowrap;
-                    overflow: hidden;
-                    text-overflow: ellipsis;
-                    max-width: 100%;
-                    display: block;
-                }
-            }
-            
-            @media (max-width: 576px) {
-                .sidebar-footer {
-                    display: none;
-                }
-            }
-            
-            .content {
-                flex: 1;
-                padding: 20px;
-                margin-left: var(--sidebar-width);
-                transition: all 0.3s ease;
-                width: calc(100% - var(--sidebar-width));
-            }
-            
-            .header {
-                display: flex;
-                justify-content: space-between;
-                align-items: center;
-                margin-bottom: 20px;
-                padding-bottom: 10px;
-                border-bottom: 1px solid #dee2e6;
-                flex-wrap: wrap;
-            }
-            
-            .header > div {
-                margin-bottom: 5px;
-            }
-            
-            .header h1 {
-                margin: 0;
-                font-size: 1.75rem;
-                color: #212529;
-                white-space: normal;
-                overflow: visible;
-                text-overflow: clip;
-                max-width: 100%;
-            }
-            
-            .mobile-toggle {
-                display: none;
-                background: none;
-                border: none;
-                color: #212529;
-                font-size: 1.5rem;
-                cursor: pointer;
-                padding: 0.5rem;
-                margin-right: 0.5rem;
-            }
-            
-            .table-responsive {
-                overflow-x: auto;
-            }
-            
-            .table {
-                width: 100%;
-                margin-bottom: 0;
-            }
-            
-            .table th {
-                white-space: nowrap;
-            }
-            
-            .card {
-                border: none;
-                border-radius: 10px;
-                box-shadow: 0 2px 10px rgba(0,0,0,0.05);
-                margin-bottom: 20px;
-                overflow: hidden;
-            }
-            
-            .card-header {
-                background-color: #fff;
-                border-bottom: 1px solid rgba(0,0,0,0.075);
-                padding: 15px 20px;
-            }
-            
-            .card-body {
-                padding: 20px;
-            }
-            
-            .btn {
-                border-radius: 5px;
-                font-weight: 500;
-            }
-            
-            .btn-primary {
-                background-color: var(--primary-color);
-                border-color: var(--primary-color);
-            }
-            
-            .btn-danger {
-                background-color: var(--danger-color);
-                border-color: var(--danger-color);
-            }
-            
-            .form-label {
-                font-weight: 500;
-            }
-            
-            .alert {
-                border-radius: 5px;
-            }
-            
-            .badge {
-                font-weight: 500;
-                padding: 5px 10px;
-                border-radius: 5px;
-            }
-            
-            .modal-content {
-                border-radius: 10px;
-                border: none;
-            }
-            
-            .modal-header {
-                border-bottom: 1px solid rgba(0,0,0,0.075);
-            }
-            
-            .modal-footer {
-                border-top: 1px solid rgba(0,0,0,0.075);
-            }
-            
-            /* Text handling utilities */
-            .text-truncate {
-                overflow: hidden;
-                text-overflow: ellipsis;
-                white-space: nowrap;
-                max-width: 100%;
-            }
-            
-            /* Hide content/description columns in list views */
-            .content-column, .description-column {
-                max-width: 200px;
-                overflow: hidden;
-                text-overflow: ellipsis;
-                white-space: nowrap;
-            }
-            
-            /* Tablet view - collapsed sidebar with icons only */
-            @media (max-width: 992px) {
-                .sidebar {
-                    width: var(--sidebar-collapsed-width);
-                    overflow: hidden;
-                }
-                
-                .sidebar h1 {
-                    font-size: 0;
-                    margin: 15px 0;
-                }
-                
-                .sidebar h1:first-letter {
-                    font-size: 1.8rem;
-                }
-                
-                .sidebar li a span {
-                    display: none;
-                }
-                
-                .sidebar li a i {
-                    margin-right: 0;
-                    font-size: 1.2rem;
-                }
-                
-                .sidebar-footer {
-                    padding: 10px 0;
-                    font-size: 0.7rem;
-                }
-                
-                .sidebar-footer span {
-                    display: none;
-                }
-                
-                .content {
-                    margin-left: var(--sidebar-collapsed-width);
-                    width: calc(100% - var(--sidebar-collapsed-width));
-                }
-                
-                .table-responsive {
-                    border: 0;
-                    overflow-x: auto;
-                }
-                
-                .table td, .table th {
-                    padding: 0.5rem;
-                }
-                
-                /* Fix header in tablet view */
-                .header h1 {
-                    font-size: 1.5rem;
-                    max-width: 100%;
-                    white-space: normal;
-                    overflow: visible;
-                }
-            }
-            
-            @media (max-width: 768px) {
-                /* Hide long content columns completely on mobile */
-                .content-column, .description-column {
-                    display: none !important;
-                }
-                
-                /* Adjust table for vertical card-like layout on mobile */
-                .table-responsive .table,
-                .table-responsive .table tbody,
-                .table-responsive .table tr {
-                    display: block;
-                    width: 100%;
-                }
-                
-                /* Hide table headers on mobile */
-                .table-responsive .table thead {
-                    display: none;
-                }
-                
-                .table-responsive .table tr {
-                    margin-bottom: 1rem;
-                    border: 1px solid rgba(0,0,0,0.125);
-                    border-radius: 0.25rem;
-                    background-color: #fff;
-                    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
-                }
-                
-                .table-responsive .table td {
-                    display: flex;
-                    justify-content: space-between;
-                    align-items: flex-start;
-                    padding: 0.75rem;
-                    border-top: none;
-                    border-bottom: 1px solid rgba(0,0,0,0.05);
-                    text-align: right;
-                    position: relative;
-                    flex-wrap: wrap;
-                }
-                
-                .table-responsive .table td:last-child {
-                    border-bottom: none;
-                }
-                
-                .table-responsive .table td:before {
-                    content: attr(data-label);
-                    font-weight: 600;
-                    margin-right: 1rem;
-                    text-align: left;
-                    min-width: 90px;
-                    flex-shrink: 0;
-                }
-                
-                /* Fix long text in tables */
-                .table-responsive .table td span.text-truncate,
-                .table-responsive .table td > span {
-                    max-width: 65%;
-                    word-break: break-word;
-                    white-space: normal;
-                }
-                
-                /* Adjust action buttons on mobile */
-                .table-responsive .table td .d-flex {
-                    flex-direction: row;
-                    width: 100%;
-                    justify-content: flex-end;
-                    margin-top: 0.5rem;
-                }
-                
-                /* Fix content padding */
-                .content {
-                    padding: 15px;
-                }
-                
-                /* Fix header in mobile view */
-                .header h1 {
-                    font-size: 1.25rem;
-                    max-width: 100%;
-                    white-space: normal;
-                    overflow: visible;
-                }
-                
-                /* Fix form inputs */
-                input, select, textarea {
-                    max-width: 100%;
-                }
-                
-                /* Toast UI Editor responsive fix */
-                .toastui-editor-defaultUI {
-                    max-width: 100%;
-                    overflow-x: auto;
-                }
-            }
-            
-            /* Mobile view - keep sidebar with icons only */
-            @media (max-width: 576px) {
-                /* No need for mobile toggle anymore */
-                .mobile-toggle {
-                    display: none;
-                }
-                
-                /* Keep sidebar visible with icons only */
-                .sidebar {
-                    width: var(--sidebar-collapsed-width);
-                    transform: translateX(0);
-                    overflow: hidden;
-                    position: fixed;
-                }
-                
-                .sidebar h1 {
-                    font-size: 0;
-                    margin: 15px 0;
-                }
-                
-                .sidebar h1:first-letter {
-                    font-size: 1.8rem;
-                }
-                
-                .sidebar li a span {
-                    display: none;
-                }
-                
-                .sidebar li a i {
-                    margin-right: 0;
-                    font-size: 1.2rem;
-                }
-                
-                .content {
-                    margin-left: var(--sidebar-collapsed-width);
-                    width: calc(100% - var(--sidebar-collapsed-width));
-                }
-                
-                .action-buttons {
-                    flex-direction: column;
-                    gap: 0.5rem;
-                }
-                
-                .table-responsive .table td .d-flex {
-                    flex-wrap: wrap;
-                    gap: 0.5rem;
-                }
-                
-                /* Fix modal content */
-                .modal-body, .modal-footer {
-                    padding: 0.75rem;
-                    word-break: break-word;
-                }
-                
-                /* Fix cards on small screens */
-                .card-body {
-                    padding: 15px;
-                }
-                
-                /* Fix form labels and controls */
-                .form-label {
-                    word-break: break-word;
-                }
-                
-                .form-control, .form-select {
-                    max-width: 100%;
-                }
-            }
-            
-            /* Utility class to mark columns with description or content */
-            .td-description, .td-content {
-                display: none !important;
-            }
-            
-            @media (min-width: 992px) {
-                /* Only show content/description on larger screens */
-                .td-description, .td-content {
-                    display: table-cell !important;
-                    max-width: 200px;
-                }
-            }
-        </style>
-        {% block additional_css %}{% endblock %}
-    </head>
-    <body>
-        <div class="dashboard">
-            <div class="sidebar" id="sidebar">
-                <h1>FastAPI CMS</h1>
-                <ul>
-                    <li><a href="/admin/dashboard" {% if request.path == '/admin/dashboard' %}class="active"{% endif %}><i class="bi bi-speedometer2"></i> <span>Dashboard</span></a></li>
-                    <li><a href="/admin/users" {% if '/admin/users' in request.path %}class="active"{% endif %}><i class="bi bi-people"></i> <span>Users</span></a></li>
-                    <li><a href="/admin/categories" {% if '/admin/categories' in request.path %}class="active"{% endif %}><i class="bi bi-tags"></i> <span>Categories</span></a></li>
-                    <li><a href="/admin/tags" {% if '/admin/tags' in request.path %}class="active"{% endif %}><i class="bi bi-tag"></i> <span>Tags</span></a></li>
-                    <li><a href="/admin/articles" {% if '/admin/articles' in request.path %}class="active"{% endif %}><i class="bi bi-file-text"></i> <span>Articles</span></a></li>
-                    <li><a href="/admin/products" {% if '/admin/products' in request.path %}class="active"{% endif %}><i class="bi bi-box"></i> <span>Products</span></a></li>
-                    <li><a href="/admin/comments" {% if '/admin/comments' in request.path %}class="active"{% endif %}><i class="bi bi-chat-left-text"></i> <span>Comments</span></a></li>
-                    <li class="mt-5"><a href="/admin/logout"><i class="bi bi-box-arrow-left"></i> <span>Logout</span></a></li>
-                </ul>
-                <div class="sidebar-footer">
-                    <span>Developed by Duy Tran</span>
-                    <a href="mailto:duytrander@gmail.com">duytrander@gmail.com</a>
-                </div>
-            </div>
-            <div class="content">
-                <div class="header">
-                    <div class="d-flex align-items-start flex-column">
-                        <h1 class="mb-0">{% block header_title %}Admin Dashboard{% endblock %}</h1>
-                        <small class="text-muted">&copy; Duy Tran - <a href="mailto:duytrander@gmail.com">duytrander@gmail.com</a></small>
-                    </div>
-                    <div class="header-buttons">
-                        {% block header_buttons %}{% endblock %}
-                    </div>
-                </div>
-                {% block content %}{% endblock %}
-            </div>
-        </div>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>{% block title %}FastAPI CMS{% endblock %}</title>
+    <!-- Bootstrap CSS -->
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+    <!-- Bootstrap Icons -->
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css"
+      rel="stylesheet"
+    />
+    <!-- Toast UI Editor CSS -->
+    <link
+      rel="stylesheet"
+      href="https://uicdn.toast.com/editor/latest/toastui-editor.min.css"
+    />
+    {% block head_scripts %}{% endblock %}
+    <style>
+      :root {
+        --primary-color: #0d6efd;
+        --secondary-color: #6c757d;
+        --success-color: #28a745;
+        --danger-color: #dc3545;
+        --sidebar-width: 250px;
+        --sidebar-collapsed-width: 70px;
+      }
+
+      body {
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+        margin: 0;
+        padding: 0;
+        background-color: #f8f9fa;
+        overflow-x: hidden;
+      }
+
+      .dashboard {
+        display: flex;
+        min-height: 100vh;
+        position: relative;
+      }
+
+      .sidebar {
+        width: var(--sidebar-width);
+        background-color: #212529;
+        color: white;
+        height: 100vh;
+        position: fixed;
+        padding: 20px 0;
+        box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
+        transition: all 0.3s ease;
+        z-index: 1000;
+      }
+
+      .sidebar h1 {
+        text-align: center;
+        font-size: 1.5em;
+        margin-bottom: 30px;
+        padding: 0 15px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+
+      .sidebar-search {
+        padding: 0 15px;
+        margin-bottom: 20px;
+      }
+
+      .sidebar-search .form-control {
+        background-color: rgba(255, 255, 255, 0.1);
+        border: none;
+        color: #fff;
+        border-radius: 4px;
+      }
+
+      .sidebar-search .form-control::placeholder {
+        color: rgba(255, 255, 255, 0.5);
+      }
+
+      .sidebar-search .form-control:focus {
+        background-color: rgba(255, 255, 255, 0.2);
+        box-shadow: none;
+      }
+
+      .sidebar-search .btn {
+        background-color: rgba(255, 255, 255, 0.1);
+        border: none;
+        color: rgba(255, 255, 255, 0.7);
+      }
+
+      .sidebar-search .btn:hover {
+        background-color: rgba(255, 255, 255, 0.2);
+        color: #fff;
+      }
+
+      .sidebar ul {
+        list-style: none;
+        padding: 0;
+        margin-top: 20px;
+      }
+
+      .sidebar li {
+        margin-bottom: 5px;
+      }
+
+      .sidebar li a {
+        padding: 10px 20px;
+        display: flex;
+        align-items: center;
+        color: rgba(255, 255, 255, 0.8);
+        text-decoration: none;
+        transition: all 0.3s;
+        white-space: nowrap;
+      }
+
+      .sidebar li a:hover,
+      .sidebar li a.active {
+        background-color: rgba(255, 255, 255, 0.1);
+        color: white;
+        border-left: 3px solid var(--primary-color);
+      }
+
+      .sidebar li a i {
+        margin-right: 10px;
+        font-size: 1.1rem;
+        min-width: 24px;
+        text-align: center;
+      }
+
+      .sidebar-footer {
+        position: absolute;
+        bottom: 0;
+        width: 100%;
+        padding: 15px 10px;
+        font-size: 0.75rem;
+        color: rgba(255, 255, 255, 0.5);
+        text-align: center;
+        border-top: 1px solid rgba(255, 255, 255, 0.1);
+      }
+
+      .sidebar-footer a {
+        color: rgba(255, 255, 255, 0.7);
+        text-decoration: none;
+      }
+
+      .sidebar-footer a:hover {
+        color: #fff;
+        text-decoration: underline;
+      }
+
+      @media (max-width: 992px) {
+        .sidebar-footer span {
+          display: none;
+        }
+
+        .sidebar-footer {
+          padding: 8px 0;
+        }
+
+        .sidebar-footer a {
+          font-size: 0.65rem;
+          white-space: nowrap;
+          overflow: hidden;
+          text-overflow: ellipsis;
+          max-width: 100%;
+          display: block;
+        }
+      }
+
+      @media (max-width: 576px) {
+        .sidebar-footer {
+          display: none;
+        }
+      }
+
+      .content {
+        flex: 1;
+        padding: 20px;
+        margin-left: var(--sidebar-width);
+        transition: all 0.3s ease;
+        width: calc(100% - var(--sidebar-width));
+      }
+
+      .header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 20px;
+        padding-bottom: 10px;
+        border-bottom: 1px solid #dee2e6;
+        flex-wrap: wrap;
+      }
+
+      .header > div {
+        margin-bottom: 5px;
+      }
+
+      .header h1 {
+        margin: 0;
+        font-size: 1.75rem;
+        color: #212529;
+        white-space: normal;
+        overflow: visible;
+        text-overflow: clip;
+        max-width: 100%;
+      }
+
+      .mobile-toggle {
+        display: none;
+        background: none;
+        border: none;
+        color: #212529;
+        font-size: 1.5rem;
+        cursor: pointer;
+        padding: 0.5rem;
+        margin-right: 0.5rem;
+      }
+
+      .table-responsive {
+        overflow-x: auto;
+      }
+
+      .table {
+        width: 100%;
+        margin-bottom: 0;
+      }
+
+      .table th {
+        white-space: nowrap;
+      }
+
+      .card {
+        border: none;
+        border-radius: 10px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+        margin-bottom: 20px;
+        overflow: hidden;
+      }
+
+      .card-header {
+        background-color: #fff;
+        border-bottom: 1px solid rgba(0, 0, 0, 0.075);
+        padding: 15px 20px;
+      }
+
+      .card-body {
+        padding: 20px;
+      }
+
+      .btn {
+        border-radius: 5px;
+        font-weight: 500;
+      }
+
+      .btn-primary {
+        background-color: var(--primary-color);
+        border-color: var(--primary-color);
+      }
+
+      .btn-danger {
+        background-color: var(--danger-color);
+        border-color: var(--danger-color);
+      }
+
+      .form-label {
+        font-weight: 500;
+      }
+
+      .alert {
+        border-radius: 5px;
+      }
+
+      .badge {
+        font-weight: 500;
+        padding: 5px 10px;
+        border-radius: 5px;
+      }
+
+      .modal-content {
+        border-radius: 10px;
+        border: none;
+      }
+
+      .modal-header {
+        border-bottom: 1px solid rgba(0, 0, 0, 0.075);
+      }
+
+      .modal-footer {
+        border-top: 1px solid rgba(0, 0, 0, 0.075);
+      }
+
+      /* Text handling utilities */
+      .text-truncate {
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        max-width: 100%;
+      }
+
+      /* Hide content/description columns in list views */
+      .content-column,
+      .description-column {
+        max-width: 200px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+
+      /* Tablet view - collapsed sidebar with icons only */
+      @media (max-width: 992px) {
+        .sidebar {
+          width: var(--sidebar-collapsed-width);
+          overflow: hidden;
+        }
+
+        .sidebar h1 {
+          font-size: 0;
+          margin: 15px 0;
+        }
+
+        .sidebar h1:first-letter {
+          font-size: 1.8rem;
+        }
+
+        .sidebar li a span {
+          display: none;
+        }
+
+        .sidebar li a i {
+          margin-right: 0;
+          font-size: 1.2rem;
+        }
+
+        .sidebar-footer {
+          padding: 10px 0;
+          font-size: 0.7rem;
+        }
+
+        .sidebar-footer span {
+          display: none;
+        }
+
+        .content {
+          margin-left: var(--sidebar-collapsed-width);
+          width: calc(100% - var(--sidebar-collapsed-width));
+        }
+
+        .table-responsive {
+          border: 0;
+          overflow-x: auto;
+        }
+
+        .table td,
+        .table th {
+          padding: 0.5rem;
+        }
+
+        /* Fix header in tablet view */
+        .header h1 {
+          font-size: 1.5rem;
+          max-width: 100%;
+          white-space: normal;
+          overflow: visible;
+        }
+      }
+
+      @media (max-width: 768px) {
+        /* Hide long content columns completely on mobile */
+        .content-column,
+        .description-column {
+          display: none !important;
+        }
+
+        /* Adjust table for vertical card-like layout on mobile */
+        .table-responsive .table,
+        .table-responsive .table tbody,
+        .table-responsive .table tr {
+          display: block;
+          width: 100%;
+        }
+
+        /* Hide table headers on mobile */
+        .table-responsive .table thead {
+          display: none;
+        }
+
+        .table-responsive .table tr {
+          margin-bottom: 1rem;
+          border: 1px solid rgba(0, 0, 0, 0.125);
+          border-radius: 0.25rem;
+          background-color: #fff;
+          box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+        }
+
+        .table-responsive .table td {
+          display: flex;
+          justify-content: space-between;
+          align-items: flex-start;
+          padding: 0.75rem;
+          border-top: none;
+          border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+          text-align: right;
+          position: relative;
+          flex-wrap: wrap;
+        }
+
+        .table-responsive .table td:last-child {
+          border-bottom: none;
+        }
+
+        .table-responsive .table td:before {
+          content: attr(data-label);
+          font-weight: 600;
+          margin-right: 1rem;
+          text-align: left;
+          min-width: 90px;
+          flex-shrink: 0;
+        }
+
+        /* Fix long text in tables */
+        .table-responsive .table td span.text-truncate,
+        .table-responsive .table td > span {
+          max-width: 65%;
+          word-break: break-word;
+          white-space: normal;
+        }
+
+        /* Adjust action buttons on mobile */
+        .table-responsive .table td .d-flex {
+          flex-direction: row;
+          width: 100%;
+          justify-content: flex-end;
+          margin-top: 0.5rem;
+        }
+
+        /* Fix content padding */
+        .content {
+          padding: 15px;
+        }
+
+        /* Fix header in mobile view */
+        .header h1 {
+          font-size: 1.25rem;
+          max-width: 100%;
+          white-space: normal;
+          overflow: visible;
+        }
+
+        /* Fix form inputs */
+        input,
+        select,
+        textarea {
+          max-width: 100%;
+        }
+
+        /* Toast UI Editor responsive fix */
+        .toastui-editor-defaultUI {
+          max-width: 100%;
+          overflow-x: auto;
+        }
+      }
+
+      /* Mobile view improvements */
+      @media (max-width: 576px) {
+        /* Header improvements */
+        .header {
+          position: fixed;
+          top: 0;
+          left: 0;
+          right: 0;
+          z-index: 999;
+          background: #fff;
+          margin: 0;
+          padding: 8px 15px;
+          box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .header h1 {
+          font-size: 1.1rem;
+          margin: 0;
+        }
+
+        .header small {
+          font-size: 0.7rem;
+        }
+
+        .header .mobile-toggle {
+          padding: 4px 8px;
+          margin-right: 8px;
+        }
+
+        .header .mobile-toggle i {
+          font-size: 1.2rem;
+        }
+
+        /* Adjust content to account for fixed header */
+        .content {
+          margin-left: 0;
+          width: 100%;
+          padding: 10px;
+          margin-top: 70px;
+        }
+
+        /* Make sidebar appear above header */
+        .sidebar {
+          z-index: 1000;
+        }
+
+        /* Show mobile toggle button */
+        .mobile-toggle {
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          background: transparent;
+          color: #212529;
+          border-radius: 4px;
+          padding: 8px;
+          margin-right: 10px;
+          position: static;
+        }
         
-        <!-- Bootstrap Bundle with Popper -->
-        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-        <!-- Toast UI Editor JS -->
-        <script src="https://uicdn.toast.com/editor/latest/toastui-editor-all.min.js"></script>
-        <script>
-            document.addEventListener('DOMContentLoaded', function() {
-                // No mobile toggle functionality needed
-            });
-        </script>
-        {% block additional_js %}{% endblock %}
-    </body>
-</html> 
+        .mobile-toggle:hover {
+          background: rgba(0, 0, 0, 0.05);
+        }
+        
+        /* Sidebar behavior on mobile */
+        .sidebar {
+          width: var(--sidebar-width);
+          transform: translateX(-100%);
+          transition: transform 0.3s ease;
+          padding: 10px 0;
+        }
+        
+        .sidebar.show {
+          transform: translateX(0);
+        }
+        
+        .sidebar h1 {
+          font-size: 1.2rem;
+          margin: 10px 0;
+          padding: 0 15px;
+        }
+        
+        .sidebar ul {
+          margin-top: 10px;
+        }
+        
+        .sidebar li {
+          margin-bottom: 2px;
+        }
+        
+        .sidebar li a {
+          padding: 8px 15px;
+          font-size: 0.9rem;
+        }
+        
+        .sidebar li a i {
+          font-size: 1rem;
+          min-width: 20px;
+          margin-right: 8px;
+        }
+        
+        .sidebar li a span {
+          display: inline;
+        }
+        
+        /* Card improvements */
+        .card {
+          margin-bottom: 15px;
+        }
+
+        .card-body {
+          padding: 12px;
+        }
+
+        /* Table improvements */
+        .table-responsive {
+          margin: 0 -12px;
+        }
+
+        .table td,
+        .table th {
+          padding: 8px;
+          font-size: 0.9rem;
+        }
+
+        /* Button improvements */
+        .btn {
+          padding: 0.375rem 0.75rem;
+          font-size: 0.9rem;
+        }
+
+        .action-buttons .btn {
+          margin-bottom: 5px;
+          width: 100%;
+        }
+
+        /* Form improvements */
+        .form-control,
+        .form-select {
+          font-size: 0.9rem;
+        }
+
+        /* Modal improvements */
+        .modal-dialog {
+          margin: 10px;
+        }
+
+        .modal-body {
+          padding: 12px;
+        }
+      }
+
+      /* Utility class to mark columns with description or content */
+      .td-description,
+      .td-content {
+        display: none !important;
+      }
+
+      @media (min-width: 992px) {
+        /* Only show content/description on larger screens */
+        .td-description,
+        .td-content {
+          display: table-cell !important;
+          max-width: 200px;
+        }
+      }
+    </style>
+    {% block additional_css %}{% endblock %}
+  </head>
+  <body>
+    <div class="dashboard">
+      <div class="sidebar" id="sidebar">
+        <h1>FastAPI CMS</h1>
+        <ul>
+          <li><a href="/admin/dashboard" {% if request.path == '/admin/dashboard' %}class="active"{% endif %}><i class="bi bi-speedometer2"></i> <span>Dashboard</span></a></li>
+          <li><a href="/admin/users" {% if '/admin/users' in request.path %}class="active"{% endif %}><i class="bi bi-people"></i> <span>Users</span></a></li>
+          <li><a href="/admin/categories" {% if '/admin/categories' in request.path %}class="active"{% endif %}><i class="bi bi-tags"></i> <span>Categories</span></a></li>
+          <li><a href="/admin/tags" {% if '/admin/tags' in request.path %}class="active"{% endif %}><i class="bi bi-tag"></i> <span>Tags</span></a></li>
+          <li><a href="/admin/articles" {% if '/admin/articles' in request.path %}class="active"{% endif %}><i class="bi bi-file-text"></i> <span>Articles</span></a></li>
+          <li><a href="/admin/products" {% if '/admin/products' in request.path %}class="active"{% endif %}><i class="bi bi-box"></i> <span>Products</span></a></li>
+          <li><a href="/admin/comments" {% if '/admin/comments' in request.path %}class="active"{% endif %}><i class="bi bi-chat-left-text"></i> <span>Comments</span></a></li>
+          <li class="mt-5"><a href="/admin/logout"><i class="bi bi-box-arrow-left"></i> <span>Logout</span></a></li>
+        </ul>
+        <div class="sidebar-footer">
+          <span>Developed by Duy Tran</span>
+          <a href="mailto:duytrander@gmail.com">duytrander@gmail.com</a>
+        </div>
+      </div>
+      <div class="content">
+        <div class="header">
+          <div class="d-flex align-items-center">
+            <button class="mobile-toggle" id="sidebarToggle">
+              <i class="bi bi-list"></i>
+            </button>
+            <div class="d-flex align-items-start flex-column">
+              <h1 class="mb-0">
+                {% block header_title %}Admin Dashboard{% endblock %}
+              </h1>
+              <small class="text-muted"
+                >&copy; Duy Tran -
+                <a href="mailto:duytrander@gmail.com"
+                  >duytrander@gmail.com</a
+                ></small
+              >
+            </div>
+          </div>
+          <div class="header-buttons">
+            {% block header_buttons %}{% endblock %}
+          </div>
+        </div>
+        {% block content %}{% endblock %}
+      </div>
+    </div>
+
+    <!-- Bootstrap Bundle with Popper -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Toast UI Editor JS -->
+    <script src="https://uicdn.toast.com/editor/latest/toastui-editor-all.min.js"></script>
+    <script>
+      document.addEventListener("DOMContentLoaded", function () {
+        const sidebarToggle = document.getElementById("sidebarToggle");
+        const sidebar = document.getElementById("sidebar");
+
+        if (sidebarToggle && sidebar) {
+          sidebarToggle.addEventListener("click", function () {
+            sidebar.classList.toggle("show");
+          });
+
+          // Close sidebar when clicking outside
+          document.addEventListener("click", function (event) {
+            if (
+              !sidebar.contains(event.target) &&
+              !sidebarToggle.contains(event.target)
+            ) {
+              sidebar.classList.remove("show");
+            }
+          });
+        }
+      });
+    </script>
+    {% block additional_js %}{% endblock %}
+  </body>
+</html>
