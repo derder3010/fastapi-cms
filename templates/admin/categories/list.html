@@ -529,8 +529,12 @@ block content %}
           >Create your first category</a
         >.
       </div>
-      {% endif %} {% set url_path = '/admin/categories' %} {% include
-      "admin/components/pagination.html" %}
+      {% endif %}
+
+      <div class="pagination-container">
+        {% set url_path = '/admin/categories' %} {% include
+        "admin/components/pagination.html" %}
+      </div>
     </div>
   </div>
 </div>

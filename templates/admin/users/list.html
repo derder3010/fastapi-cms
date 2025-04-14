@@ -643,8 +643,10 @@ content %}
       <div class="alert alert-info mb-0" role="alert">No users found.</div>
       {% endif %} 
       
-      {% set url_path = '/admin/users' %} 
-      {% include "admin/components/pagination.html" %}
+      <div class="pagination-container">
+        {% set url_path = '/admin/users' %} 
+        {% include "admin/components/pagination.html" %}
+      </div>
     </div>
   </div>
 </div>

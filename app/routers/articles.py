@@ -131,10 +131,14 @@ async def admin_articles(
         {
             "request": request,
             "articles": articles,
-            "current_page": page,
-            "total_pages": total_pages,
-            "total_items": total_records,
-            "items_per_page": page_size,
+            "pagination": {
+                "page": page,
+                "page_size": page_size,
+                "total_pages": total_pages,
+                "total_records": total_records,
+                "has_prev": page > 1,
+                "has_next": page < total_pages
+            },
             "user": user,
             "query": q,
             "message": request.query_params.get("message"),

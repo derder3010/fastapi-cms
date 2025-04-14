@@ -599,8 +599,12 @@ content %}
       <div class="alert alert-info mb-0" role="alert">
         No comments found yet.
       </div>
-      {% endif %} {% set url_path = '/admin/comments' %} {% include
-      "admin/components/pagination.html" %}
+      {% endif %}
+
+      <div class="pagination-container">
+        {% set url_path = '/admin/comments' %} {% include
+        "admin/components/pagination.html" %}
+      </div>
     </div>
   </div>
 </div>

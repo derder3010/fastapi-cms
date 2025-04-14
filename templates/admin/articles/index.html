@@ -232,74 +232,6 @@ content %}
     background-color: transparent !important;
   }
 
-  /* Pagination styles for dark mode */
-  [data-theme="dark"] .pagination {
-    background-color: var(--card-bg);
-    border-radius: 4px;
-  }
-
-  [data-theme="dark"] .pagination .page-item .page-link {
-    background-color: var(--card-bg);
-    border-color: var(--border-color);
-    color: var(--text-color);
-  }
-
-  [data-theme="dark"] .pagination .page-item .page-link:hover {
-    background-color: rgba(255, 255, 255, 0.08);
-    border-color: var(--border-color);
-    color: var(--text-color);
-  }
-
-  [data-theme="dark"] .pagination .page-item.active .page-link {
-    background-color: var(--primary-color);
-    border-color: var(--primary-color);
-    color: #fff;
-  }
-
-  [data-theme="dark"] .pagination .page-item.disabled .page-link {
-    background-color: var(--card-bg);
-    border-color: var(--border-color);
-    color: rgba(255, 255, 255, 0.3);
-  }
-
-  [data-theme="dark"] .pagination-info {
-    color: var(--text-color);
-  }
-
-  [data-theme="dark"] .pagination-info .text-muted {
-    color: rgba(255, 255, 255, 0.5) !important;
-  }
-
-  /* Base styles for both modes */
-  .pagination {
-    margin: 0;
-    border-radius: 4px;
-  }
-
-  .pagination .page-item .page-link {
-    padding: 0.375rem 0.75rem;
-    border-radius: 4px;
-    margin: 0 2px;
-  }
-
-  .pagination-info {
-    display: flex;
-    align-items: center;
-  }
-
-  .table tr td,
-  .table tr th {
-    padding: 0.5rem;
-  }
-
-  .table-responsive {
-    padding: 0;
-  }
-
-  .card-body {
-    padding: 0;
-  }
-
   /* Filter styles */
   .advanced-filters {
     background-color: var(--card-bg);
@@ -325,6 +257,11 @@ content %}
   [data-theme="dark"] .advanced-filters-title {
     color: var(--text-color);
     border-bottom-color: var(--border-color);
+  }
+
+  [data-theme="dark"] .card-footer {
+    background-color: transparent;
+    border-color: var(--border-color);
   }
 </style>
 
@@ -690,8 +627,12 @@ content %}
           >Create your first article</a
         >.
       </div>
-      {% endif %} {% set url_path = '/admin/articles' %} {% include
-      "admin/components/pagination.html" %}
+      {% endif %} 
+      
+      <div class="pagination-container">
+        {% set url_path = '/admin/articles' %} 
+        {% include "admin/components/pagination.html" %}
+      </div>
     </div>
   </div>
 </div>

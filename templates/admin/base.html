@@ -1888,6 +1888,48 @@
           border-color: var(--border-color);
         }
       }
+
+      /* Add pagination styles for dark mode */
+      [data-theme="dark"] .pagination {
+        border-radius: 4px;
+        background-color: transparent !important;
+      }
+
+      [data-theme="dark"] .pagination .page-item .page-link {
+        background-color: transparent !important;
+        border-color: var(--border-color);
+        color: var(--text-color);
+      }
+
+      [data-theme="dark"] .pagination .page-item .page-link:hover {
+        background-color: rgba(255, 255, 255, 0.08) !important;
+        border-color: var(--border-color);
+        color: var(--text-color);
+      }
+
+      [data-theme="dark"] .pagination .page-item.active .page-link {
+        background-color: var(--primary-color) !important;
+        border-color: var(--primary-color);
+        color: #fff;
+      }
+
+      [data-theme="dark"] .pagination .page-item.disabled .page-link {
+        background-color: transparent !important;
+        border-color: var(--border-color);
+        color: rgba(255, 255, 255, 0.3);
+      }
+
+      [data-theme="dark"] .card-footer {
+        background-color: transparent !important;
+        border-color: var(--border-color);
+      }
+      
+      /* More specific rule for pagination container */
+      [data-theme="dark"] .pagination-container .card-footer,
+      [data-theme="dark"] div > .card-footer {
+        background-color: transparent !important;
+        border-color: var(--border-color);
+      }
     </style>
     {% block additional_css %}{% endblock %}
   </head>
