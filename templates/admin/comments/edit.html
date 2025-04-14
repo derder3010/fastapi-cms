@@ -1,54 +1,105 @@
-{% extends "admin/base.html" %}
+{% extends "admin/base.html" %} {% block title %}Edit Comment - FastAPI CMS{%
+endblock %} {% block header_title %}Edit Comment{% endblock %} {% block
+additional_css %}
+<style>
+  /* Card header dark mode styles */
+  [data-theme="dark"] .card-header {
+    background-color: var(--card-bg);
+    border-bottom-color: var(--border-color);
+  }
 
-{% block title %}Edit Comment - Admin Dashboard{% endblock %}
+  [data-theme="dark"] .card-header h5 {
+    color: var(--text-color);
+  }
 
-{% block header_title %}Edit Comment{% endblock %}
+  [data-theme="dark"] .card-header a {
+    color: #5b9aff;
+  }
 
-{% block content %}
+  /* Form label and text styles for dark mode */
+  [data-theme="dark"] .form-label {
+    color: var(--text-color);
+  }
+
+  [data-theme="dark"] .form-text {
+    color: var(--text-muted, #cccccc);
+  }
+
+  /* Comment info styles for dark mode */
+  [data-theme="dark"] .fw-bold {
+    color: var(--text-color);
+  }
+</style>
+{% endblock %} {% block content %}
 <div class="container-fluid mt-4">
-    <div class="row">
-        <div class="col-12">
-            <div class="card">
-                <div class="card-header">
-                    <h5 class="card-title">Edit Comment on Article: <a href="/admin/articles/{{ comment.article.id }}/edit">{{ comment.article.title }}</a></h5>
-                </div>
-                <div class="card-body">
-                    {% if error %}
-                    <div class="alert alert-danger alert-dismissible fade show" role="alert">
-                        {{ error }}
-                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                    </div>
-                    {% endif %}
-
-                    <div class="mb-3">
-                        <div class="d-flex mb-2">
-                            <div class="fw-bold me-2">Author:</div>
-                            <div>{{ comment.author.username }}</div>
-                        </div>
-                        <div class="d-flex mb-2">
-                            <div class="fw-bold me-2">Created:</div>
-                            <div>{{ comment.created_at.strftime('%Y-%m-%d %H:%M') }}</div>
-                        </div>
-                        <div class="d-flex mb-2">
-                            <div class="fw-bold me-2">Last Updated:</div>
-                            <div>{{ comment.updated_at.strftime('%Y-%m-%d %H:%M') }}</div>
-                        </div>
-                    </div>
-
-                    <form method="POST" action="/admin/comments/{{ comment.id }}/edit">
-                        <div class="mb-3">
-                            <label for="content" class="form-label">Comment Content <span class="text-danger">*</span></label>
-                            <textarea class="form-control" id="content" name="content" rows="5" required>{{ comment.content }}</textarea>
-                        </div>
-                        
-                        <div class="d-flex justify-content-between">
-                            <a href="/admin/comments" class="btn btn-secondary">Cancel</a>
-                            <button type="submit" class="btn btn-primary">Update Comment</button>
-                        </div>
-                    </form>
-                </div>
-            </div>
+  <div class="row">
+    <div class="col-12">
+      <div class="card">
+        <div class="card-header">
+          <h5 class="card-title">
+            Edit Comment on Article:
+            <a href="/admin/articles/{{ comment.article.id }}/edit"
+              >{{ comment.article.title }}</a
+            >
+          </h5>
         </div>
+        <div class="card-body">
+          {% if error %}
+          <div
+            class="alert alert-danger alert-dismissible fade show"
+            role="alert"
+          >
+            {{ error }}
+            <button
+              type="button"
+              class="btn-close"
+              data-bs-dismiss="alert"
+              aria-label="Close"
+            ></button>
+          </div>
+          {% endif %}
+
+          <div class="mb-3">
+            <div class="d-flex mb-2">
+              <div class="fw-bold me-2">Author:</div>
+              <div>{{ comment.author.username }}</div>
+            </div>
+            <div class="d-flex mb-2">
+              <div class="fw-bold me-2">Created:</div>
+              <div>{{ comment.created_at.strftime('%Y-%m-%d %H:%M') }}</div>
+            </div>
+            <div class="d-flex mb-2">
+              <div class="fw-bold me-2">Last Updated:</div>
+              <div>{{ comment.updated_at.strftime('%Y-%m-%d %H:%M') }}</div>
+            </div>
+          </div>
+
+          <form method="POST" action="/admin/comments/{{ comment.id }}/edit">
+            <div class="mb-3">
+              <label for="content" class="form-label"
+                >Comment Content <span class="text-danger">*</span></label
+              >
+              <textarea
+                class="form-control"
+                id="content"
+                name="content"
+                rows="5"
+                required
+              >
+{{ comment.content }}</textarea
+              >
+            </div>
+
+            <div class="d-flex justify-content-between">
+              <a href="/admin/comments" class="btn btn-secondary">Cancel</a>
+              <button type="submit" class="btn btn-primary">
+                Update Comment
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
     </div>
+  </div>
 </div>
-{% endblock %} 
+{% endblock %}

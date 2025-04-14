@@ -56,7 +56,7 @@ async def admin_comments(
     
     # Render the admin comments template
     return templates.TemplateResponse(
-        "admin/comments/index.html",
+        "admin/comments/list.html",
         {
             "request": request,
             "user": user,
@@ -164,7 +164,7 @@ async def admin_delete_all_comments_confirm(request: Request, db: Session = Depe
     
     if count == 0:
         return templates.TemplateResponse(
-            "admin/comments/index.html",
+            "admin/comments/list.html",
             {
                 "request": request,
                 "user": user,

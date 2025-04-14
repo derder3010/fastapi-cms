@@ -127,22 +127,17 @@ async def admin_articles(
     
     # Render the admin articles template
     return templates.TemplateResponse(
-        "admin/articles/index.html",
+        "admin/articles/list.html",
         {
-            "request": request, 
-            "user": user, 
+            "request": request,
             "articles": articles,
+            "current_page": page,
+            "total_pages": total_pages,
+            "total_items": total_records,
+            "items_per_page": page_size,
+            "user": user,
             "query": q,
             "message": request.query_params.get("message"),
-            "pagination": {
-                "page": page,
-                "page_size": page_size,
-                "total_pages": total_pages,
-                "total_records": total_records,
-                "has_prev": page > 1,
-                "has_next": page < total_pages
-            },
-            # Filter variables
             "categories": categories,
             "authors": authors,
             "tags": tags,

@@ -100,4 +100,45 @@
     background-color: #6c757d;
     color: #fff;
   }
+
+  /* Dark mode styles for entity cards */
+  [data-theme="dark"] .entity-card {
+    background-color: var(--card-bg);
+    border-color: var(--border-color);
+  }
+
+  [data-theme="dark"] .entity-card .card-header {
+    background-color: rgba(0, 0, 0, 0.2);
+    border-bottom-color: var(--border-color);
+  }
+
+  [data-theme="dark"] .entity-card .card-row {
+    border-bottom-color: var(--border-color);
+  }
+
+  [data-theme="dark"] .entity-card .card-label {
+    color: rgba(255, 255, 255, 0.7);
+  }
+
+  [data-theme="dark"] .entity-card .card-value {
+    color: var(--text-color);
+  }
+
+  [data-theme="dark"] .entity-card .badge {
+    border: 1px solid rgba(255, 255, 255, 0.1);
+  }
+
+  /* Improve badge contrast in dark mode */
+  [data-theme="dark"] .entity-card .active-badge {
+    background-color: #2dbd4e !important;
+  }
+
+  [data-theme="dark"] .entity-card .inactive-badge {
+    background-color: #dc3545 !important;
+  }
+
+  /* Button styles in dark mode */
+  [data-theme="dark"] .entity-card .action-buttons .btn {
+    border-color: rgba(255, 255, 255, 0.1);
+  }
 </style>

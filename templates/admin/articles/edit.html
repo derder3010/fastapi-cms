@@ -1,8 +1,52 @@
 {% extends "admin/base.html" %}
 
-{% block title %}Edit Article - Admin Dashboard{% endblock %}
+{% block title %}Edit Article - FastAPI CMS{% endblock %}
 
 {% block header_title %}Edit Article{% endblock %}
+
+{% block additional_css %}
+<!-- Ensure Toast UI Editor CSS is loaded -->
+<link
+  rel="stylesheet"
+  href="https://uicdn.toast.com/editor/latest/toastui-editor.min.css"
+/>
+<link
+  rel="stylesheet"
+  href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css"
+/>
+<link
+  rel="stylesheet"
+  href="https://cdn.jsdelivr.net/npm/select2-bootstrap-5-theme@1.3.0/dist/select2-bootstrap-5-theme.min.css"
+/>
+<style>
+  /* Card header dark mode styles */
+  [data-theme="dark"] .card-header {
+    background-color: var(--card-bg);
+    border-bottom-color: var(--border-color);
+  }
+  
+  [data-theme="dark"] .card-header h5,
+  [data-theme="dark"] .card-header h6 {
+    color: var(--text-color);
+  }
+  
+  [data-theme="dark"] .card-header.bg-light {
+    background-color: var(--card-bg) !important;
+    border-bottom-color: var(--border-color);
+  }
+  
+  /* Form label and text styles for dark mode */
+  [data-theme="dark"] .form-label,
+  [data-theme="dark"] .form-check-label {
+    color: var(--text-color);
+  }
+  
+  [data-theme="dark"] .form-text,
+  [data-theme="dark"] .text-muted {
+    color: var(--text-muted, #cccccc) !important;
+  }
+</style>
+{% endblock %}
 
 {% block content %}
 <div class="container-fluid mt-4">

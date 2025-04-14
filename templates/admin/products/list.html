@@ -1,6 +1,6 @@
-{% extends "admin/base.html" %} {% block title %}Product Management - FastAPI
-CMS{% endblock %} {% block header_title %}Product Management{% endblock %} {%
-block content %}
+{% extends "admin/base.html" %} {% block title %}Products - Admin Dashboard{%
+endblock %} {% block header_title %}Product Management{% endblock %} {% block
+content %}
 
 <!-- Include card list styles -->
 {% include "admin/components/card_list_style.html" %}
@@ -13,6 +13,39 @@ block content %}
     border: 1px solid rgba(0, 0, 0, 0.1);
   }
 
+  /* Filter collapse styles */
+  .card-header {
+    background-color: var(--card-bg);
+    border-bottom: none;
+  }
+  
+  #filterCollapse.show + .card-header {
+    background-color: var(--card-bg);
+  }
+
+  .card-header.filter-header {
+    padding: 0.4rem 1rem;
+    background-color: rgba(0, 0, 0, 0.02);
+  }
+
+  [data-theme="dark"] .card-header.filter-header {
+    background-color: rgba(255, 255, 255, 0.02);
+    color: #fff;
+  }
+
+  [data-theme="dark"] .card-header.filter-header .text-muted {
+    color: #fff !important;
+  }
+
+  [data-theme="dark"] .card-header.filter-header .btn-outline-secondary {
+    color: #fff;
+    border-color: rgba(255, 255, 255, 0.2);
+  }
+
+  [data-theme="dark"] .card-header.filter-header .btn-outline-secondary:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+  }
+
   /* Fixed height card styles */
   .fixed-height-card {
     height: 100%;
@@ -21,10 +54,9 @@ block content %}
   }
 
   .fixed-height-card .card-header {
-    height: 120px;
     display: flex;
     align-items: center;
-    justify-content: center;
+    min-height: 60px;
   }
 
   .fixed-height-card .card-body {
@@ -41,6 +73,282 @@ block content %}
   .draft-badge {
     background-color: #ffc107;
     color: #212529 !important;
+  }
+
+  /* Dark mode specific styles */
+  [data-theme="dark"] .card-header.bg-light {
+    background-color: var(--card-bg) !important;
+    color: var(--text-color);
+  }
+
+  [data-theme="dark"] .entity-card {
+    background-color: var(--card-bg);
+    color: var(--text-color);
+    border-color: var(--border-color);
+  }
+
+  [data-theme="dark"] .card-label {
+    color: rgba(255, 255, 255, 0.7);
+  }
+
+  [data-theme="dark"] .badge {
+    border: 1px solid rgba(255, 255, 255, 0.1);
+  }
+
+  [data-theme="dark"] table {
+    color: var(--text-color);
+  }
+
+  [data-theme="dark"] .table-striped > tbody > tr:nth-of-type(odd) {
+    background-color: rgba(255, 255, 255, 0.05);
+  }
+
+  [data-theme="dark"] .table-hover > tbody > tr:hover {
+    background-color: rgba(255, 255, 255, 0.08);
+  }
+
+  [data-theme="dark"] .table thead th {
+    background-color: var(--card-bg);
+    color: var(--text-color);
+    border-bottom: 1px solid var(--border-color);
+  }
+
+  [data-theme="dark"] .table td {
+    border-bottom: 1px solid var(--border-color);
+    color: var(--text-color);
+  }
+
+  /* Enhanced table styles for dark mode */
+  [data-theme="dark"] .table {
+    background-color: var(--card-bg);
+    border-color: var(--border-color);
+  }
+
+  [data-theme="dark"] .table-striped > tbody > tr:nth-of-type(even) {
+    background-color: var(--card-bg);
+  }
+
+  [data-theme="dark"] .card .table {
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    overflow: hidden;
+  }
+
+  [data-theme="dark"] .table tr td,
+  [data-theme="dark"] .table tr th {
+    border-color: var(--border-color);
+  }
+
+  [data-theme="dark"] .card-body {
+    background-color: var(--card-bg);
+    color: var(--text-color);
+    padding: 0;
+  }
+
+  [data-theme="dark"] .table-responsive {
+    background-color: var(--card-bg);
+  }
+
+  [data-theme="dark"] .table-responsive .table {
+    margin-bottom: 0;
+  }
+
+  [data-theme="dark"] .modal-content {
+    background-color: var(--card-bg);
+    color: var(--text-color);
+    border-color: var(--border-color);
+  }
+
+  [data-theme="dark"] .modal-header,
+  [data-theme="dark"] .modal-footer {
+    border-color: var(--border-color);
+  }
+
+  [data-theme="dark"] .btn-close {
+    filter: invert(1) grayscale(100%) brightness(200%);
+  }
+
+  /* Additional dark mode styles */
+  [data-theme="dark"] .card {
+    background-color: var(--card-bg);
+    border-color: var(--border-color);
+  }
+
+  [data-theme="dark"] .card-header {
+    background-color: var(--card-bg);
+    border-bottom-color: var(--border-color);
+  }
+
+  [data-theme="dark"] .alert {
+    background-color: var(--card-bg);
+    border-color: var(--border-color);
+    color: var(--text-color);
+  }
+
+  [data-theme="dark"] .form-control {
+    background-color: var(--input-bg);
+    border-color: var(--border-color);
+    color: var(--input-text);
+  }
+
+  [data-theme="dark"] .form-control:focus {
+    background-color: var(--input-bg);
+    border-color: var(--primary-color);
+    color: var(--input-text);
+  }
+
+  [data-theme="dark"] .input-group-text {
+    background-color: var(--input-bg);
+    border-color: var(--border-color);
+    color: var(--input-text);
+  }
+
+  /* Override Bootstrap table styles for dark mode */
+  [data-theme="dark"] .table-striped tbody tr {
+    background-color: var(--card-bg) !important;
+  }
+
+  [data-theme="dark"] .table-striped tbody tr:nth-of-type(odd) {
+    background-color: rgba(255, 255, 255, 0.05) !important;
+  }
+
+  [data-theme="dark"] .table-striped tbody tr:nth-of-type(even) {
+    background-color: var(--card-bg) !important;
+  }
+
+  [data-theme="dark"] .table-hover tbody tr:hover {
+    background-color: rgba(255, 255, 255, 0.08) !important;
+  }
+
+  [data-theme="dark"] .table tbody tr {
+    background-color: var(--card-bg) !important;
+  }
+
+  [data-theme="dark"] .table tbody tr td {
+    background-color: transparent !important;
+  }
+
+  [data-theme="dark"] .table tbody tr th {
+    background-color: transparent !important;
+  }
+
+  /* Pagination styles for dark mode */
+  [data-theme="dark"] .pagination {
+    background-color: var(--card-bg);
+    border-radius: 4px;
+  }
+
+  [data-theme="dark"] .pagination .page-item .page-link {
+    background-color: var(--card-bg);
+    border-color: var(--border-color);
+    color: var(--text-color);
+  }
+
+  [data-theme="dark"] .pagination .page-item .page-link:hover {
+    background-color: rgba(255, 255, 255, 0.08);
+    border-color: var(--border-color);
+    color: var(--text-color);
+  }
+
+  [data-theme="dark"] .pagination .page-item.active .page-link {
+    background-color: var(--primary-color);
+    border-color: var(--primary-color);
+    color: #fff;
+  }
+
+  [data-theme="dark"] .pagination .page-item.disabled .page-link {
+    background-color: var(--card-bg);
+    border-color: var(--border-color);
+    color: rgba(255, 255, 255, 0.3);
+  }
+
+  [data-theme="dark"] .pagination-info {
+    color: var(--text-color);
+  }
+
+  [data-theme="dark"] .pagination-info .text-muted {
+    color: rgba(255, 255, 255, 0.5) !important;
+  }
+
+  /* Base styles for both modes */
+  .pagination {
+    margin: 0;
+    border-radius: 4px;
+  }
+
+  .pagination .page-item .page-link {
+    padding: 0.375rem 0.75rem;
+    border-radius: 4px;
+    margin: 0 2px;
+  }
+
+  .pagination-info {
+    display: flex;
+    align-items: center;
+  }
+
+  .table tr td,
+  .table tr th {
+    padding: 0.5rem;
+  }
+
+  .table-responsive {
+    padding: 0;
+  }
+
+  .card-body {
+    padding: 0;
+  }
+
+  /* Filter styles */
+  .advanced-filters {
+    background-color: var(--card-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    margin-bottom: 1rem;
+  }
+
+  .advanced-filters-title {
+    padding: 0.75rem 1rem;
+    border-bottom: 1px solid var(--border-color);
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  [data-theme="dark"] .advanced-filters {
+    background-color: var(--card-bg);
+    border-color: var(--border-color);
+  }
+
+  [data-theme="dark"] .advanced-filters-title {
+    color: var(--text-color);
+    border-bottom-color: var(--border-color);
+  }
+
+  /* Product specific styles */
+  .product-image {
+    width: 50px;
+    height: 50px;
+    object-fit: cover;
+    border-radius: 4px;
+  }
+
+  .price-badge {
+    background-color: #17a2b8;
+  }
+
+  .stock-badge {
+    background-color: #6c757d;
+  }
+
+  .out-of-stock-badge {
+    background-color: #dc3545;
+  }
+
+  [data-theme="dark"] .product-image {
+    border: 1px solid var(--border-color);
   }
 </style>
 
@@ -126,9 +434,58 @@ block content %}
     "admin/components/pagination_info.html" %}
   </div>
 
-  {% set url_path = '/admin/products' %} {% set filter_id = 'product-filters' %}
-  {% set entity_type = 'products' %} {% set show_date_range = true %} {% set
-  show_price_range = true %} {% include "admin/components/filter.html" %}
+  <div class="card mb-4">
+    <div class="card-header filter-header d-flex justify-content-between align-items-center">
+      <div class="d-flex align-items-center gap-2">
+        <div class="text-muted small d-flex align-items-center">
+          <i class="bi bi-funnel me-2"></i>Filters
+          {% if applied_filters > 0 %}
+          <span class="badge bg-primary ms-2 small">{{ applied_filters }}</span>
+          {% endif %}
+        </div>
+      </div>
+      <button class="btn btn-sm btn-outline-secondary" type="button" data-bs-toggle="collapse" data-bs-target="#filterCollapse" aria-expanded="false" aria-controls="filterCollapse">
+        <i class="bi bi-chevron-down"></i>
+      </button>
+    </div>
+    <div class="collapse" id="filterCollapse">
+      <div class="card-body p-3">
+        <form method="get" class="row g-2">
+          <div class="col-md-4">
+            <label for="category_id" class="form-label small">Category</label>
+            <select class="form-select form-select-sm" id="category_id" name="category_id">
+              <option value="">All Categories</option>
+              {% for category in categories %}
+              <option value="{{ category.id }}" {% if filter_category_id == category.id|string %}selected{% endif %}>
+                {{ category.name }}
+              </option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="col-md-4">
+            <label for="status" class="form-label small">Status</label>
+            <select class="form-select form-select-sm" id="status" name="status">
+              <option value="">All Status</option>
+              <option value="active" {% if filter_status == 'active' %}selected{% endif %}>Active</option>
+              <option value="inactive" {% if filter_status == 'inactive' %}selected{% endif %}>Inactive</option>
+            </select>
+          </div>
+          <div class="col-md-4">
+            <label for="date_from" class="form-label small">Date Range</label>
+            <div class="input-group input-group-sm">
+              <input type="date" class="form-control form-control-sm" id="date_from" name="date_from" value="{{ filter_date_from or '' }}" placeholder="From">
+              <span class="input-group-text">to</span>
+              <input type="date" class="form-control form-control-sm" id="date_to" name="date_to" value="{{ filter_date_to or '' }}" placeholder="To">
+            </div>
+          </div>
+          <div class="col-12 d-flex justify-content-end gap-2 mt-3">
+            <a href="/admin/products" class="btn btn-light btn-sm px-3">Clear</a>
+            <button type="submit" class="btn btn-primary btn-sm px-3">Apply</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
 
   <div class="row">
     <div class="col-12">

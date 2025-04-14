@@ -1,6 +1,28 @@
 {% extends "admin/base.html" %} {% block title %}Add User - FastAPI CMS{%
-endblock %} {% block header_title %}Add New User{% endblock %} {% block content
-%}
+endblock %} {% block header_title %}Add New User{% endblock %} {% block
+additional_css %}
+<style>
+  /* Card header dark mode styles */
+  [data-theme="dark"] .card-header {
+    background-color: var(--card-bg);
+    border-bottom-color: var(--border-color);
+  }
+
+  [data-theme="dark"] .card-header h5 {
+    color: var(--text-color);
+  }
+
+  /* Form label and text styles for dark mode */
+  [data-theme="dark"] .form-label,
+  [data-theme="dark"] .form-check-label {
+    color: var(--text-color);
+  }
+
+  [data-theme="dark"] .form-text {
+    color: var(--text-muted, #cccccc);
+  }
+</style>
+{% endblock %} {% block content %}
 <div class="container-fluid mt-4">
   <div class="row">
     <div class="col-12">

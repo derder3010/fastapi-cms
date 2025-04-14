@@ -28,14 +28,47 @@
         --danger-color: #dc3545;
         --sidebar-width: 200px;
         --sidebar-collapsed-width: 70px;
+        
+        /* Light mode colors (default) */
+        --bg-color: #f8f9fa;
+        --text-color: #212529;
+        --card-bg: #fff;
+        --border-color: #dee2e6;
+        --sidebar-bg: #212529;
+        --sidebar-text: rgba(255, 255, 255, 0.8);
+        --sidebar-active-bg: rgba(255, 255, 255, 0.1);
+        --card-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+        --input-bg: #fff;
+        --input-text: #212529;
+        --filter-bg: #f8f9fa;
+        --hover-bg: rgba(0, 0, 0, 0.02);
+      }
+
+      /* Dark mode colors */
+      [data-theme="dark"] {
+        --bg-color: #000000;
+        --text-color: #ffffff;
+        --card-bg: #121212;
+        --border-color: #333333;
+        --sidebar-bg: #000000;
+        --sidebar-text: #ffffff;
+        --sidebar-active-bg: rgba(255, 255, 255, 0.1);
+        --card-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+        --input-bg: #1a1a1a;
+        --input-text: #ffffff;
+        --filter-bg: #1a1a1a;
+        --header-text: #ffffff;
+        --hover-bg: rgba(255, 255, 255, 0.08);
       }
 
       body {
         font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
         margin: 0;
         padding: 0;
-        background-color: #f8f9fa;
+        background-color: var(--bg-color);
+        color: var(--text-color);
         overflow-x: hidden;
+        transition: background-color 0.3s ease, color 0.3s ease;
       }
 
       .dashboard {
@@ -46,7 +79,7 @@
 
       .sidebar {
         width: var(--sidebar-width);
-        background-color: #212529;
+        background-color: var(--sidebar-bg);
         color: white;
         height: 100vh;
         position: fixed;
@@ -112,7 +145,7 @@
         padding: 8px 15px;
         display: flex;
         align-items: center;
-        color: rgba(255, 255, 255, 0.8);
+        color: var(--sidebar-text);
         text-decoration: none;
         transition: all 0.3s;
         white-space: nowrap;
@@ -121,7 +154,7 @@
 
       .sidebar li a:hover,
       .sidebar li a.active {
-        background-color: rgba(255, 255, 255, 0.1);
+        background-color: var(--sidebar-active-bg);
         color: white;
         border-left: 3px solid var(--primary-color);
       }
@@ -170,6 +203,8 @@
         margin-left: var(--sidebar-width);
         transition: all 0.3s ease;
         width: calc(100% - var(--sidebar-width));
+        background-color: var(--bg-color);
+        color: var(--text-color);
       }
 
       .header {
@@ -178,7 +213,7 @@
         align-items: center;
         margin-bottom: 20px;
         padding-bottom: 10px;
-        border-bottom: 1px solid #dee2e6;
+        border-bottom: 1px solid var(--border-color);
         flex-wrap: wrap;
       }
 
@@ -189,7 +224,7 @@
       .header h1 {
         margin: 0;
         font-size: 1.75rem;
-        color: #212529;
+        color: var(--text-color);
         white-space: normal;
         overflow: visible;
         text-overflow: clip;
@@ -200,7 +235,7 @@
         display: none;
         background: none;
         border: none;
-        color: #212529;
+        color: var(--text-color);
         font-size: 1.5rem;
         cursor: pointer;
         padding: 0.5rem;
@@ -223,14 +258,16 @@
       .card {
         border: none;
         border-radius: 10px;
-        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+        box-shadow: var(--card-shadow);
         margin-bottom: 20px;
         overflow: hidden;
+        background-color: var(--card-bg);
+        color: var(--text-color);
       }
 
       .card-header {
-        background-color: #fff;
-        border-bottom: 1px solid rgba(0, 0, 0, 0.075);
+        background-color: var(--card-bg);
+        border-bottom: 1px solid var(--border-color);
         padding: 15px 20px;
       }
 
@@ -546,7 +583,7 @@
           width: calc(100% - 65px);
           padding: 15px;
           margin-top: 60px;
-          background-color: #fff;
+          background-color: var(--bg-color);
         }
 
         /* Fixed header */
@@ -556,7 +593,7 @@
           right: 0;
           left: 65px;
           z-index: 1000;
-          background: #fff;
+          background: var(--card-bg);
           margin: 0;
           padding: 12px 15px;
           box-shadow: 0 1px 2px rgba(0,0,0,0.05);
@@ -564,19 +601,21 @@
           display: flex;
           align-items: center;
           justify-content: space-between;
-          border-bottom: 1px solid #dee2e6;
+          border-bottom: 1px solid var(--border-color);
+          color: var(--text-color);
         }
 
         .header h1 {
           font-size: 1.2rem;
           font-weight: 500;
-          color: #2c3338;
+          color: var(--text-color);
           margin: 0;
         }
 
         .header small {
           font-size: 0.75rem;
           opacity: 0.6;
+          color: var(--text-muted, #cccccc);
         }
 
         /* Show mobile toggle for tablet */
@@ -587,9 +626,9 @@
           width: 32px;
           height: 32px;
           border-radius: 4px;
-          background-color: #f8f9fa;
-          border: 1px solid #dee2e6;
-          color: #212529;
+          background-color: var(--filter-bg);
+          border: 1px solid var(--border-color);
+          color: var(--text-color);
           font-size: 1.2rem;
           cursor: pointer;
           padding: 0;
@@ -598,7 +637,7 @@
         }
 
         .mobile-toggle:hover {
-          background-color: #e9ecef;
+          background-color: var(--input-bg);
         }
 
         .mobile-toggle:focus {
@@ -608,10 +647,10 @@
 
         /* Table improvements */
         .table-responsive {
-          background: #fff;
+          background: var(--card-bg);
           border-radius: 8px;
           box-shadow: 0 1px 3px rgba(0,0,0,0.05);
-          border: 1px solid rgba(0,0,0,0.05);
+          border: 1px solid var(--border-color);
           margin-top: 15px;
           overflow-x: auto;
         }
@@ -624,12 +663,12 @@
         }
 
         .table thead th {
-          background-color: #f8f9fa;
+          background-color: var(--card-bg);
           font-weight: 500;
           font-size: 0.85rem;
           padding: 10px 15px;
-          border-bottom: 1px solid rgba(0,0,0,0.05);
-          color: #666;
+          border-bottom: 1px solid var(--border-color);
+          color: var(--text-color);
           white-space: nowrap;
           text-transform: uppercase;
           letter-spacing: 0.5px;
@@ -642,24 +681,25 @@
           padding: 12px 15px;
           vertical-align: middle;
           font-size: 0.9rem;
-          color: #333;
-          border-bottom: 1px solid rgba(0,0,0,0.05);
+          color: var(--text-color);
+          border-bottom: 1px solid var(--border-color);
         }
 
         /* Category column styling */
         .category-column {
           font-weight: 500;
-          color: #444;
+          color: var(--text-color);
         }
 
         /* Make rows slightly different color for better readability */
         .table tbody tr:nth-of-type(odd) {
-          background-color: rgba(0, 0, 0, 0.01);
+          background-color: var(--bg-color);
         }
 
         /* Status column styling */
         .status-column {
           text-align: center;
+          color: var(--text-color);
         }
 
         /* Action buttons in table */
@@ -684,55 +724,8 @@
           color: white;
         }
 
-        .table .action-buttons .btn-primary {
-          background-color: #0d6efd;
-          border-color: #0d6efd;
-        }
-
-        .table .action-buttons .btn-danger {
-          background-color: #dc3545;
-          border-color: #dc3545;
-        }
-
-        .table .action-buttons .btn i {
-          font-size: 1rem;
-        }
-
-        /* Table row spacing */
-        .table tbody tr {
-          transition: all 0.2s ease;
-        }
-
-        .table tbody tr:hover {
-          background-color: rgba(0, 0, 0, 0.02);
-        }
-
-        /* Advanced filters section */
-        .advanced-filters {
-          margin-bottom: 15px;
-          padding: 10px 15px;
-          background-color: #f8f9fa;
-          border-radius: 8px;
-          border: 1px solid rgba(0,0,0,0.05);
-          display: flex;
-          flex-wrap: wrap;
-          align-items: center;
-          gap: 10px;
-        }
-
-        .advanced-filters label {
-          font-weight: 500;
-          font-size: 0.85rem;
-          margin-right: 5px;
-        }
-
-        .advanced-filters select,
-        .advanced-filters input {
-          height: 32px;
-          padding: 6px 12px;
-          font-size: 0.85rem;
-          border: 1px solid rgba(0,0,0,0.1);
-          border-radius: 4px;
+        [data-theme="dark"] .table .action-buttons .btn {
+          box-shadow: 0 1px 3px rgba(0,0,0,0.2);
         }
 
         /* Tag display in tables */
@@ -1090,24 +1083,29 @@
           left: 0;
           right: 0;
           z-index: 999;
-          background: #fff;
+          background: var(--card-bg);
           margin: 0;
           padding: 8px 15px;
           box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+          color: var(--text-color);
+          border-bottom: 1px solid var(--border-color);
         }
 
         .header h1 {
           font-size: 1.1rem;
           margin: 0;
+          color: var(--text-color);
         }
 
         .header small {
           font-size: 0.7rem;
+          color: var(--text-muted, #cccccc);
         }
 
         .header .mobile-toggle {
           padding: 4px 8px;
           margin-right: 8px;
+          color: var(--text-color);
         }
 
         .header .mobile-toggle i {
@@ -1502,11 +1500,11 @@
 
       /* Advanced filters */
       .advanced-filters {
-        background-color: #f8f9fa; 
+        background-color: var(--filter-bg); 
         border-radius: 6px;
         padding: 10px 15px;
         margin-bottom: 15px;
-        border: 1px solid rgba(0,0,0,0.05);
+        border: 1px solid var(--border-color);
       }
 
       .advanced-filters-title {
@@ -1536,7 +1534,7 @@
 
       /* Filter styles */
       .filter-container {
-        background-color: #f8f9fa;
+        background-color: var(--filter-bg);
         border-radius: 6px;
         padding: 15px;
         margin-bottom: 15px;
@@ -1545,7 +1543,7 @@
       .filter-container label {
         font-size: 0.85rem;
         font-weight: 500;
-        color: #555;
+        color: var(--text-color);
         margin-bottom: 5px;
       }
 
@@ -1554,8 +1552,10 @@
         height: 32px;
         padding: 5px 10px;
         font-size: 0.85rem;
-        border: 1px solid rgba(0,0,0,0.1);
+        border: 1px solid var(--border-color);
         border-radius: 4px;
+        background-color: var(--input-bg);
+        color: var(--input-text);
       }
 
       .filter-container .form-select:focus,
@@ -1642,6 +1642,252 @@
       .badge-robotics {
         background-color: #8690a0 !important;
       }
+
+      /* Dark mode toggle */
+      .dark-mode-toggle {
+        background: none;
+        border: none;
+        color: var(--text-color);
+        font-size: 1.2rem;
+        cursor: pointer;
+        padding: 0.3rem;
+        margin-right: 1rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: color 0.3s ease;
+      }
+
+      .dark-mode-toggle:hover {
+        color: var(--primary-color);
+      }
+
+      /* Table styles for dark mode */
+      .table {
+        color: var(--text-color);
+      }
+
+      /* Form controls for dark mode */
+      .form-control, .form-select {
+        background-color: var(--input-bg);
+        color: var(--input-text);
+        border-color: var(--border-color);
+      }
+
+      .form-control:focus, .form-select:focus {
+        background-color: var(--input-bg);
+        color: var(--input-text);
+      }
+
+      /* Toast UI Editor dark mode overrides */
+      [data-theme="dark"] .toastui-editor-defaultUI {
+        border-color: var(--border-color);
+      }
+
+      [data-theme="dark"] .toastui-editor-toolbar,
+      [data-theme="dark"] .toastui-editor-defaultUI-toolbar {
+        background-color: var(--card-bg);
+        border-bottom-color: var(--border-color);
+      }
+
+      [data-theme="dark"] .toastui-editor-dropdown-toolbar {
+        background-color: var(--card-bg);
+        border-color: var(--border-color);
+      }
+
+      [data-theme="dark"] .toastui-editor-contents,
+      [data-theme="dark"] .toastui-editor-ww-container {
+        background-color: var(--input-bg);
+        color: var(--input-text);
+      }
+
+      /* Specific header styles for dark mode */
+      [data-theme="dark"] .header h1 {
+        color: #ffffff;
+      }
+
+      [data-theme="dark"] .header small {
+        color: #cccccc !important;
+      }
+
+      [data-theme="dark"] .header a {
+        color: #5b9aff;
+      }
+
+      [data-theme="dark"] .header a:hover {
+        color: #7db0ff;
+      }
+
+      /* For tablet specific mobile toggle */
+      [data-theme="dark"] .mobile-toggle {
+        background-color: rgba(255, 255, 255, 0.1);
+        border-color: #333;
+        color: #fff;
+      }
+
+      [data-theme="dark"] .mobile-toggle:hover {
+        background-color: rgba(255, 255, 255, 0.15);
+      }
+
+      /* Override header background in dark mode for tablets and mobile */
+      @media (max-width: 1200px) {
+        [data-theme="dark"] .header {
+          background-color: var(--sidebar-bg);
+          box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+        }
+        
+        [data-theme="dark"] .mobile-toggle {
+          border-color: #333;
+        }
+      }
+
+      /* Dark mode improvements for sidebar */
+      [data-theme="dark"] .sidebar {
+        background-color: #000000;
+        box-shadow: 1px 0 5px rgba(0, 0, 0, 0.5);
+      }
+
+      [data-theme="dark"] .sidebar h1 {
+        color: #ffffff;
+      }
+
+      [data-theme="dark"] .sidebar li a {
+        color: #ffffff;
+      }
+
+      [data-theme="dark"] .sidebar li a:hover,
+      [data-theme="dark"] .sidebar li a.active {
+        background-color: rgba(255, 255, 255, 0.15);
+        border-left: 3px solid #5b9aff;
+      }
+      
+      /* Make active sidebar menu items and their icons colored in dark mode */
+      [data-theme="dark"] .sidebar li a.active {
+        color: #5b9aff;
+      }
+      
+      [data-theme="dark"] .sidebar li a.active i {
+        color: #5b9aff;
+      }
+
+      /* Colored icons for specific menu items when active */
+      [data-theme="dark"] .sidebar li a[href="/admin/dashboard"].active i {
+        color: #5b9aff;
+      }
+      
+      [data-theme="dark"] .sidebar li a[href="/admin/users"].active i {
+        color: #5b9aff;
+      }
+      
+      [data-theme="dark"] .sidebar li a[href="/admin/categories"].active i {
+        color: #4dda90;
+      }
+      
+      [data-theme="dark"] .sidebar li a[href="/admin/tags"].active i {
+        color: #a1a8ae;
+      }
+      
+      [data-theme="dark"] .sidebar li a[href="/admin/articles"].active i {
+        color: #5bdcfe;
+      }
+      
+      [data-theme="dark"] .sidebar li a[href="/admin/products"].active i {
+        color: #ff7b87;
+      }
+      
+      [data-theme="dark"] .sidebar li a[href="/admin/comments"].active i {
+        color: #ffd454;
+      }
+
+      [data-theme="dark"] .sidebar li a i {
+        color: #ffffff;
+      }
+
+      [data-theme="dark"] .sidebar-footer {
+        border-top: 1px solid rgba(255, 255, 255, 0.1);
+      }
+
+      [data-theme="dark"] .sidebar-footer,
+      [data-theme="dark"] .sidebar-footer a {
+        color: #cccccc;
+      }
+
+      [data-theme="dark"] .sidebar-footer a:hover {
+        color: #ffffff;
+      }
+
+      /* Tablet adjustments for dark mode sidebar */
+      @media (min-width: 768px) and (max-width: 1200px) {
+        [data-theme="dark"] .sidebar {
+          background-color: #000000;
+        }
+        
+        [data-theme="dark"] .sidebar li a:hover {
+          background-color: rgba(255, 255, 255, 0.15);
+        }
+        
+        [data-theme="dark"] .sidebar li a.active {
+          background-color: rgba(255, 255, 255, 0.2);
+        }
+        
+        [data-theme="dark"] .sidebar:not(.expanded):hover {
+          background-color: #000000;
+          box-shadow: 0 0 15px rgba(0, 0, 0, 0.5);
+        }
+        
+        [data-theme="dark"] .content {
+          background-color: var(--bg-color);
+        }
+        
+        [data-theme="dark"] .table-responsive {
+          background-color: var(--card-bg);
+          border-color: var(--border-color);
+        }
+        
+        [data-theme="dark"] table {
+          color: var(--text-color);
+        }
+        
+        [data-theme="dark"] .table thead th {
+          background-color: var(--card-bg);
+          color: var(--text-color);
+          border-color: var(--border-color);
+        }
+        
+        [data-theme="dark"] .table tbody td {
+          color: var(--text-color);
+          border-color: var(--border-color);
+        }
+        
+        [data-theme="dark"] .table tbody tr:nth-of-type(odd) {
+          background-color: rgba(255, 255, 255, 0.05);
+        }
+        
+        [data-theme="dark"] .table tbody tr:hover {
+          background-color: var(--hover-bg);
+        }
+        
+        [data-theme="dark"] .advanced-filters {
+          background-color: var(--card-bg);
+          border-color: var(--border-color);
+        }
+      }
+
+      /* Mobile adjustments for dark mode sidebar */
+      @media (max-width: 767px) {
+        [data-theme="dark"] .sidebar {
+          background-color: #000000;
+        }
+        
+        [data-theme="dark"] .content {
+          background-color: var(--bg-color);
+        }
+        
+        [data-theme="dark"] .table-responsive {
+          background-color: var(--card-bg);
+          border-color: var(--border-color);
+        }
+      }
     </style>
     {% block additional_css %}{% endblock %}
   </head>
@@ -1682,7 +1928,10 @@
               >
             </div>
           </div>
-          <div class="header-buttons">
+          <div class="header-buttons d-flex align-items-center">
+            <button id="darkModeToggle" class="dark-mode-toggle" aria-label="Toggle dark mode">
+              <i class="bi bi-moon-fill"></i>
+            </button>
             {% block header_buttons %}{% endblock %}
           </div>
         </div>
@@ -1748,6 +1997,41 @@
             }
           });
         }
+
+        // Dark mode toggle functionality
+        const darkModeToggle = document.getElementById('darkModeToggle');
+        const icon = darkModeToggle.querySelector('i');
+        
+        // Check for saved theme preference or use system preference
+        const savedTheme = localStorage.getItem('theme');
+        const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        
+        // Apply the saved theme or system preference
+        if (savedTheme === 'dark' || (!savedTheme && prefersDark)) {
+          document.documentElement.setAttribute('data-theme', 'dark');
+          icon.classList.remove('bi-moon-fill');
+          icon.classList.add('bi-sun-fill');
+        }
+        
+        // Toggle dark mode
+        darkModeToggle.addEventListener('click', () => {
+          const currentTheme = document.documentElement.getAttribute('data-theme');
+          if (currentTheme === 'dark') {
+            document.documentElement.removeAttribute('data-theme');
+            localStorage.setItem('theme', 'light');
+            icon.classList.remove('bi-sun-fill');
+            icon.classList.add('bi-moon-fill');
+            // Dispatch custom event for charts to update
+            document.dispatchEvent(new CustomEvent('themeChanged', { detail: { isDark: false } }));
+          } else {
+            document.documentElement.setAttribute('data-theme', 'dark');
+            localStorage.setItem('theme', 'dark');
+            icon.classList.remove('bi-moon-fill');
+            icon.classList.add('bi-sun-fill');
+            // Dispatch custom event for charts to update
+            document.dispatchEvent(new CustomEvent('themeChanged', { detail: { isDark: true } }));
+          }
+        });
       });
     </script>
     {% block additional_js %}{% endblock %}

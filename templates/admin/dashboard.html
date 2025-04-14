@@ -18,7 +18,7 @@ head_scripts %}
     <div class="col-12">
       <div class="card shadow-sm">
         <div
-          class="card-header bg-white d-flex justify-content-between align-items-center"
+          class="card-header d-flex justify-content-between align-items-center"
         >
           <h5 class="card-title mb-0 text-primary">
             <i class="bi bi-bar-chart-line me-2"></i>Article Performance
@@ -40,6 +40,11 @@ head_scripts %}
             document.addEventListener('DOMContentLoaded', function() {
               const ctx = document.getElementById('articleViewsChart').getContext('2d');
               const articleIds = {{ article_chart_data.ids|tojson }};
+              const isDarkMode = document.documentElement.getAttribute('data-theme') === 'dark';
+
+              const gridColor = isDarkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.05)';
+              const fontColor = isDarkMode ? 'rgba(255, 255, 255, 0.7)' : 'rgba(0, 0, 0, 0.7)';
+
               const chart = new Chart(ctx, {
                 type: 'bar',
                 data: {
@@ -81,10 +86,13 @@ head_scripts %}
                   maintainAspectRatio: false,
                   plugins: {
                     legend: {
-                      display: false
+                      display: false,
+                      labels: {
+                        color: fontColor
+                      }
                     },
                     tooltip: {
-                      backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                      backgroundColor: isDarkMode ? 'rgba(0, 0, 0, 0.8)' : 'rgba(0, 0, 0, 0.8)',
                       padding: 12,
                       titleFont: {
                         size: 14
@@ -111,13 +119,15 @@ head_scripts %}
                         text: 'Number of Views',
                         font: {
                           weight: 'bold'
-                        }
+                        },
+                        color: fontColor
                       },
                       grid: {
-                        color: 'rgba(0, 0, 0, 0.05)'
+                        color: gridColor
                       },
                       ticks: {
-                        precision: 0
+                        precision: 0,
+                        color: fontColor
                       }
                     },
                     x: {
@@ -126,10 +136,14 @@ head_scripts %}
                         text: 'Articles',
                         font: {
                           weight: 'bold'
-                        }
+                        },
+                        color: fontColor
                       },
                       grid: {
                         display: false
+                      },
+                      ticks: {
+                        color: fontColor
                       }
                     }
                   },
@@ -141,6 +155,20 @@ head_scripts %}
                     }
                   },
                 }
+              });
+
+              // Listen for dark mode changes and update chart
+              document.addEventListener('themeChanged', function(e) {
+                const isDarkMode = e.detail.isDark;
+                const gridColor = isDarkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.05)';
+                const fontColor = isDarkMode ? 'rgba(255, 255, 255, 0.7)' : 'rgba(0, 0, 0, 0.7)';
+
+                chart.options.scales.y.grid.color = gridColor;
+                chart.options.scales.y.ticks.color = fontColor;
+                chart.options.scales.y.title.color = fontColor;
+                chart.options.scales.x.ticks.color = fontColor;
+                chart.options.scales.x.title.color = fontColor;
+                chart.update();
               });
             });
           </script>
@@ -263,7 +291,7 @@ head_scripts %}
         </div>
         <div class="card-body">
           {% if recent_articles %}
-          <div class="list-group">
+          <div class="list-group list-group-flush">
             {% for article in recent_articles %}
             <a
               href="/admin/articles/{{ article.id }}/edit"
@@ -300,7 +328,7 @@ head_scripts %}
         </div>
         <div class="card-body">
           {% if recent_comments %}
-          <div class="list-group">
+          <div class="list-group list-group-flush">
             {% for comment in recent_comments %}
             <a
               href="/admin/comments/{{ comment.id }}/edit"
@@ -347,7 +375,10 @@ head_scripts %}
                     style="height: 150px; object-fit: cover"
                   />
                   {% else %}
-                  <div class="bg-light mb-2 text-center py-5">
+                  <div
+                    class="bg-light mb-2 text-center py-5"
+                    style="background-color: var(--filter-bg) !important"
+                  >
                     <i
                       class="bi bi-image text-muted"
                       style="font-size: 3rem"
@@ -384,4 +415,143 @@ head_scripts %}
     </div>
   </div>
 </div>
+
+<style>
+  /* Dark mode styles for list groups */
+  [data-theme="dark"] .list-group-item {
+    background-color: var(--card-bg);
+    border-color: var(--border-color);
+    color: var(--text-color);
+  }
+
+  [data-theme="dark"] .list-group-item-action:hover {
+    background-color: rgba(255, 255, 255, 0.08);
+  }
+
+  [data-theme="dark"] .alert-light {
+    background-color: var(--card-bg);
+    border-color: var(--border-color);
+    color: var(--text-color);
+  }
+
+  [data-theme="dark"] .bg-light {
+    background-color: var(--filter-bg) !important;
+  }
+
+  /* Card title color adjustments for dark mode */
+  [data-theme="dark"] .card-title.text-primary {
+    color: #5b9aff !important;
+  }
+
+  [data-theme="dark"] .card-title.text-success {
+    color: #4dda90 !important;
+  }
+
+  [data-theme="dark"] .card-title.text-secondary {
+    color: #a1a8ae !important;
+  }
+
+  [data-theme="dark"] .card-title.text-info {
+    color: #5bdcfe !important;
+  }
+
+  [data-theme="dark"] .card-title.text-warning {
+    color: #ffd454 !important;
+  }
+
+  [data-theme="dark"] .card-title.text-danger {
+    color: #ff7b87 !important;
+  }
+
+  /* Make small text in dark mode more visible */
+  [data-theme="dark"] .text-muted {
+    color: #cccccc !important;
+  }
+
+  /* Enhanced icon and title visibility in dark mode */
+  [data-theme="dark"] .card-title {
+    font-weight: 600 !important;
+  }
+
+  [data-theme="dark"] .bi-people {
+    color: #5b9aff !important;
+  }
+
+  [data-theme="dark"] .bi-tags {
+    color: #4dda90 !important;
+  }
+
+  [data-theme="dark"] .bi-tag {
+    color: #a1a8ae !important;
+  }
+
+  [data-theme="dark"] .bi-file-text {
+    color: #5bdcfe !important;
+  }
+
+  [data-theme="dark"] .bi-chat-left-text {
+    color: #ffd454 !important;
+  }
+
+  [data-theme="dark"] .bi-box {
+    color: #ff7b87 !important;
+  }
+
+  [data-theme="dark"] .bi-bar-chart-line {
+    color: #5b9aff !important;
+  }
+
+  /* Increased contrast for card titles */
+  [data-theme="dark"] .card-body h5.card-title {
+    font-size: 1.1rem;
+    text-shadow: 0px 0px 3px rgba(0, 0, 0, 0.5);
+  }
+
+  /* Make card headers in dark mode more distinct */
+  [data-theme="dark"] .card-header {
+    background-color: #0a0a0a !important;
+    border-bottom-color: rgba(255, 255, 255, 0.1) !important;
+  }
+
+  /* Product price in dark mode */
+  [data-theme="dark"] .card-text.text-success {
+    color: #4dda90 !important;
+  }
+
+  /* Display numbers with better contrast */
+  [data-theme="dark"] .display-4 {
+    color: #ffffff;
+    text-shadow: 0px 0px 5px rgba(0, 0, 0, 0.5);
+  }
+
+  /* Alert styling */
+  [data-theme="dark"] .alert-info {
+    background-color: rgba(13, 110, 253, 0.15);
+    border-color: rgba(13, 110, 253, 0.4);
+    color: #ffffff;
+  }
+
+  /* Card styles */
+  [data-theme="dark"] .card {
+    background-color: #101010;
+  }
+</style>
+
+<script>
+  // Add event listener for dark mode toggle to update chart
+  document.addEventListener("DOMContentLoaded", function () {
+    const darkModeToggle = document.getElementById("darkModeToggle");
+    if (darkModeToggle) {
+      darkModeToggle.addEventListener("click", () => {
+        const isDark =
+          document.documentElement.getAttribute("data-theme") === "dark";
+        // Create and dispatch a custom event for the chart to listen to
+        const event = new CustomEvent("themeChanged", {
+          detail: { isDark: !isDark },
+        });
+        document.dispatchEvent(event);
+      });
+    }
+  });
+</script>
 {% endblock %}
