@@ -311,7 +311,7 @@ block content %}
   {% endif %}
 
   <div class="row mb-3">
-    <div class="col-md-6">
+    <div class="col-12 col-md-6 mb-3 mb-md-0">
       <form action="/admin/categories" method="get" class="search-form d-flex">
         <div class="input-group">
           <input
@@ -340,8 +340,12 @@ block content %}
         </div>
       </form>
     </div>
-    {% set item_name = 'categories' %} {% include
-    "admin/components/pagination_info.html" %}
+    <div
+      class="col-12 col-md-6 d-flex justify-content-md-end align-items-center mt-2 mt-md-0"
+    >
+      {% set item_name = 'categories' %} {% set url_path = '/admin/categories'
+      %} {% include "admin/components/pagination_info.html" %}
+    </div>
   </div>
 
   <div class="row">
@@ -525,9 +529,7 @@ block content %}
       {% endfor %} {% else %}
       <div class="alert alert-info mb-0" role="alert">
         No categories found.
-        <a href="/admin/categories/add" class="alert-link"
-          >Create your first category</a
-        >.
+        <a href="/admin/categories/add" class="alert-link">Create a new one</a>
       </div>
       {% endif %}
 

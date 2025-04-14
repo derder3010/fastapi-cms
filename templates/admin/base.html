@@ -1930,6 +1930,44 @@
         background-color: transparent !important;
         border-color: var(--border-color);
       }
+
+      /* Page size selector */
+      .page-size-selector {
+        margin-bottom: 1rem;
+      }
+      
+      .page-size-selector .btn-group {
+        border-radius: 4px;
+        overflow: hidden;
+      }
+      
+      .page-size-selector .btn {
+        padding: 0.25rem 0.5rem;
+        border-radius: 0;
+        font-size: 0.8rem;
+      }
+      
+      .page-size-selector .btn.active {
+        background-color: var(--primary-color);
+        border-color: var(--primary-color);
+        color: #fff;
+      }
+      
+      [data-theme="dark"] .page-size-selector .btn {
+        background-color: transparent;
+        border-color: var(--border-color);
+        color: var(--text-color);
+      }
+      
+      [data-theme="dark"] .page-size-selector .btn:hover {
+        background-color: rgba(255, 255, 255, 0.08);
+      }
+      
+      [data-theme="dark"] .page-size-selector .btn.active {
+        background-color: var(--primary-color);
+        border-color: var(--primary-color);
+        color: #fff;
+      }
     </style>
     {% block additional_css %}{% endblock %}
   </head>

@@ -300,7 +300,7 @@ content %}
   {% endif %}
 
   <div class="row mb-3">
-    <div class="col-md-6">
+    <div class="col-12 col-md-6 mb-3 mb-md-0">
       <form action="/admin/articles" method="get" class="search-form d-flex">
         <div class="input-group">
           <input
@@ -329,9 +329,13 @@ content %}
         </div>
       </form>
     </div>
-    {% if pagination and pagination.total_records > 0 %} {% set item_name =
-    'articles' %} {% include "admin/components/pagination_info.html" %} {% endif
-    %}
+    {% if pagination and pagination.total_records > 0 %} 
+    <div class="col-12 col-md-6 d-flex justify-content-md-end align-items-center mt-2 mt-md-0">
+      {% set item_name = 'articles' %} 
+      {% set url_path = '/admin/articles' %}
+      {% include "admin/components/pagination_info.html" %}
+    </div>
+    {% endif %}
   </div>
 
   <div class="row mb-3">
@@ -624,13 +628,13 @@ content %}
       <div class="alert alert-info mb-0" role="alert">
         No articles found.
         <a href="/admin/articles/add" class="alert-link"
-          >Create your first article</a
-        >.
+          >Create a new one</a
+        >
       </div>
       {% endif %} 
       
       <div class="pagination-container">
-        {% set url_path = '/admin/articles' %} 
+        {% set url_path = '/admin/articles' %}
         {% include "admin/components/pagination.html" %}
       </div>
     </div>

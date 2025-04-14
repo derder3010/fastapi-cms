@@ -1,11 +1,56 @@
-{% if pagination and pagination.total_records > 0 %}
-<div class="col-md-6 text-md-end mt-3 mt-md-0">
-  <small class="text-muted">
-    {% set item_name = item_name|default('items') %} Showing {% if
-    pagination.total_records > 0 %} {{ (pagination.page - 1) *
-    pagination.page_size + 1 }} to {{ [pagination.page * pagination.page_size,
-    pagination.total_records]|min }} of {{ pagination.total_records }} {% else
-    %} 0 of 0 {% endif %} {{ item_name }}
-  </small>
+{% if pagination and pagination.total_records > 0 %} {% set from_record =
+(pagination.page - 1) * pagination.page_size + 1 %} {% set calculated_to =
+pagination.page * pagination.page_size %} {% set to_record = calculated_to if
+calculated_to <= pagination.total_records else pagination.total_records %}
+
+<div class="dropdown">
+  <button
+    class="btn btn-sm btn-outline-secondary dropdown-toggle"
+    type="button"
+    id="paginationDropdown"
+    data-bs-toggle="dropdown"
+    aria-expanded="false"
+  >
+    Showing {{ from_record }}-{{ to_record }} of {{ pagination.total_records }}
+    {{ item_name }}
+  </button>
+  <ul
+    class="dropdown-menu dropdown-menu-end"
+    aria-labelledby="paginationDropdown"
+  >
+    <li><h6 class="dropdown-header">Items per page</h6></li>
+    <li>
+      <a
+        href="{{ url_path }}?page=1&page_size=10{% if query %}&q={{ query }}{% endif %}{% if filter_category_id %}&category_id={{ filter_category_id }}{% endif %}{% if filter_author_id %}&author_id={{ filter_author_id }}{% endif %}{% if filter_tag_id %}&tag_id={{ filter_tag_id }}{% endif %}{% if filter_status %}&status={{ filter_status }}{% endif %}{% if filter_date_from %}&date_from={{ filter_date_from }}{% endif %}{% if filter_date_to %}&date_to={{ filter_date_to }}{% endif %}{% if filter_price_min %}&price_min={{ filter_price_min }}{% endif %}{% if filter_price_max %}&price_max={{ filter_price_max }}{% endif %}{% if filter_role %}&role={{ filter_role }}{% endif %}"
+        class="dropdown-item {% if pagination.page_size == 10 %}active{% endif %}"
+      >
+        10 items
+      </a>
+    </li>
+    <li>
+      <a
+        href="{{ url_path }}?page=1&page_size=20{% if query %}&q={{ query }}{% endif %}{% if filter_category_id %}&category_id={{ filter_category_id }}{% endif %}{% if filter_author_id %}&author_id={{ filter_author_id }}{% endif %}{% if filter_tag_id %}&tag_id={{ filter_tag_id }}{% endif %}{% if filter_status %}&status={{ filter_status }}{% endif %}{% if filter_date_from %}&date_from={{ filter_date_from }}{% endif %}{% if filter_date_to %}&date_to={{ filter_date_to }}{% endif %}{% if filter_price_min %}&price_min={{ filter_price_min }}{% endif %}{% if filter_price_max %}&price_max={{ filter_price_max }}{% endif %}{% if filter_role %}&role={{ filter_role }}{% endif %}"
+        class="dropdown-item {% if pagination.page_size == 20 %}active{% endif %}"
+      >
+        20 items
+      </a>
+    </li>
+    <li>
+      <a
+        href="{{ url_path }}?page=1&page_size=50{% if query %}&q={{ query }}{% endif %}{% if filter_category_id %}&category_id={{ filter_category_id }}{% endif %}{% if filter_author_id %}&author_id={{ filter_author_id }}{% endif %}{% if filter_tag_id %}&tag_id={{ filter_tag_id }}{% endif %}{% if filter_status %}&status={{ filter_status }}{% endif %}{% if filter_date_from %}&date_from={{ filter_date_from }}{% endif %}{% if filter_date_to %}&date_to={{ filter_date_to }}{% endif %}{% if filter_price_min %}&price_min={{ filter_price_min }}{% endif %}{% if filter_price_max %}&price_max={{ filter_price_max }}{% endif %}{% if filter_role %}&role={{ filter_role }}{% endif %}"
+        class="dropdown-item {% if pagination.page_size == 50 %}active{% endif %}"
+      >
+        50 items
+      </a>
+    </li>
+    <li>
+      <a
+        href="{{ url_path }}?page=1&page_size=100{% if query %}&q={{ query }}{% endif %}{% if filter_category_id %}&category_id={{ filter_category_id }}{% endif %}{% if filter_author_id %}&author_id={{ filter_author_id }}{% endif %}{% if filter_tag_id %}&tag_id={{ filter_tag_id }}{% endif %}{% if filter_status %}&status={{ filter_status }}{% endif %}{% if filter_date_from %}&date_from={{ filter_date_from }}{% endif %}{% if filter_date_to %}&date_to={{ filter_date_to }}{% endif %}{% if filter_price_min %}&price_min={{ filter_price_min }}{% endif %}{% if filter_price_max %}&price_max={{ filter_price_max }}{% endif %}{% if filter_role %}&role={{ filter_role }}{% endif %}"
+        class="dropdown-item {% if pagination.page_size == 100 %}active{% endif %}"
+      >
+        100 items
+      </a>
+    </li>
+  </ul>
 </div>
 {% endif %}

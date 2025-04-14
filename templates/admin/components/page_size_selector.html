@@ -1,0 +1,42 @@
+{% macro page_size_query_params(size) %} {% set params = {} %} {% set params =
+params | dictsort %} {% if query %}{% set params = params | selectattr("0",
+"eq", "query") | list %}{% endif %} {% if category %}{% set params = params |
+selectattr("0", "eq", "category") | list %}{% endif %} {% if author %}{% set
+params = params | selectattr("0", "eq", "author") | list %}{% endif %} {% if tag
+%}{% set params = params | selectattr("0", "eq", "tag") | list %}{% endif %} {%
+if status %}{% set params = params | selectattr("0", "eq", "status") | list %}{%
+endif %} {% if date_from %}{% set params = params | selectattr("0", "eq",
+"date_from") | list %}{% endif %} {% if date_to %}{% set params = params |
+selectattr("0", "eq", "date_to") | list %}{% endif %} {% if price_from %}{% set
+params = params | selectattr("0", "eq", "price_from") | list %}{% endif %} {% if
+price_to %}{% set params = params | selectattr("0", "eq", "price_to") | list
+%}{% endif %} page=1&page_size={{ size }}{% for param, value in params %}&{{
+param }}={{ value }}{% endfor %} {% endmacro %}
+
+<div
+  class="page-size-selector d-flex flex-wrap justify-content-center align-items-center"
+>
+  <label class="me-2 mb-2">Items per page:</label>
+  <div class="btn-group mb-2">
+    <a
+      href="{{ url_path }}?{{ page_size_query_params(10) }}"
+      class="btn {% if not pagination.page_size or pagination.page_size == 10 %}active{% endif %}"
+      >10</a
+    >
+    <a
+      href="{{ url_path }}?{{ page_size_query_params(20) }}"
+      class="btn {% if pagination.page_size == 20 %}active{% endif %}"
+      >20</a
+    >
+    <a
+      href="{{ url_path }}?{{ page_size_query_params(50) }}"
+      class="btn {% if pagination.page_size == 50 %}active{% endif %}"
+      >50</a
+    >
+    <a
+      href="{{ url_path }}?{{ page_size_query_params(100) }}"
+      class="btn {% if pagination.page_size == 100 %}active{% endif %}"
+      >100</a
+    >
+  </div>
+</div>

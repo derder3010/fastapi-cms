@@ -344,7 +344,7 @@ content %}
   {% endif %}
 
   <div class="row mb-3">
-    <div class="col-md-6">
+    <div class="col-12 col-md-6 mb-3 mb-md-0">
       <form action="/admin/users" method="get" class="search-form d-flex">
         <div class="input-group">
           <input
@@ -373,8 +373,11 @@ content %}
         </div>
       </form>
     </div>
-    {% set item_name = 'users' %} {% include
-    "admin/components/pagination_info.html" %}
+    <div class="col-12 col-md-6 d-flex justify-content-md-end align-items-center mt-2 mt-md-0">
+      {% set item_name = 'users' %} 
+      {% set url_path = '/admin/users' %}
+      {% include "admin/components/pagination_info.html" %}
+    </div>
   </div>
 
   <div class="card mb-4">
@@ -644,7 +647,10 @@ content %}
       {% endif %} 
       
       <div class="pagination-container">
-        {% set url_path = '/admin/users' %} 
+        {% set url_path = '/admin/users' %}
+        <div class="d-flex justify-content-center mb-3">
+          {% include "admin/components/page_size_selector.html" %}
+        </div>
         {% include "admin/components/pagination.html" %}
       </div>
     </div>

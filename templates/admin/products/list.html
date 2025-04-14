@@ -401,7 +401,7 @@ content %}
   {% endif %}
 
   <div class="row mb-3">
-    <div class="col-md-6">
+    <div class="col-12 col-md-6 mb-3 mb-md-0">
       <form action="/admin/products" method="get" class="search-form d-flex">
         <div class="input-group">
           <input
@@ -430,8 +430,11 @@ content %}
         </div>
       </form>
     </div>
-    {% set item_name = 'products' %} {% include
-    "admin/components/pagination_info.html" %}
+    <div class="col-12 col-md-6 d-flex justify-content-md-end align-items-center">
+      {% set item_name = 'products' %} 
+      {% set url_path = '/admin/products' %}
+      {% include "admin/components/pagination_info.html" %}
+    </div>
   </div>
 
   <div class="card mb-4">
@@ -698,13 +701,16 @@ content %}
       <div class="alert alert-info mb-0" role="alert">
         No products found.
         <a href="/admin/products/add" class="alert-link"
-          >Create your first product</a
-        >.
+          >Create a new one</a
+        >
       </div>
       {% endif %} 
       
       <div class="pagination-container">
-        {% set url_path = '/admin/products' %} 
+        {% set url_path = '/admin/products' %}
+        <div class="d-flex justify-content-center mb-3">
+          {% include "admin/components/page_size_selector.html" %}
+        </div>
         {% include "admin/components/pagination.html" %}
       </div>
     </div>
