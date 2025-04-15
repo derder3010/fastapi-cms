@@ -32,7 +32,7 @@ def create_test_data():
             admin = User(
                 username="admin",
                 email="admin@example.com",
-                password=get_password_hash("admin123"),
+                password=get_password_hash("admin"),
                 is_active=True,
                 is_superuser=True,
                 first_name="Admin",
