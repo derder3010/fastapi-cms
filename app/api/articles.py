@@ -1,11 +1,11 @@
 from fastapi import APIRouter, Depends, HTTPException, Form, UploadFile, File
-from sqlmodel import Session, select
+from sqlmodel import Session, select, delete
 from typing import List, Optional
 import json
 
 from app.database import get_db
 from app.models import Article, ArticleCreate, ArticleRead, ArticleUpdate
-from app.auth.deps import get_current_active_user
+from app.auth.deps import get_current_active_user, get_current_active_superuser
 from app.utils.text import generate_unique_slug
 from app.utils.media import save_upload
 
@@ -166,18 +166,65 @@ async def delete_article(
     current_user = Depends(get_current_active_user),
     db: Session = Depends(get_db)
 ):
-    article = db.get(Article, article_id)
-    if not article:
-        raise HTTPException(status_code=404, detail="Article not found")
-    
-    # Only allow the author or superuser to delete the article
-    if article.author_id != current_user.id and not current_user.is_superuser:
-        raise HTTPException(status_code=403, detail="Not authorized to delete this article")
-    
-    # Delete associated comments first (cascade delete)
-    for comment in article.comments:
-        db.delete(comment)
-    
-    db.delete(article)
-    db.commit()
-    return None 
+    try:
+        article = db.get(Article, article_id)
+        if not article:
+            raise HTTPException(status_code=404, detail="Article not found")
+        
+        # Only allow the author or superuser to delete the article
+        if article.author_id != current_user.id and not current_user.is_superuser:
+            raise HTTPException(status_code=403, detail="Not authorized to delete this article")
+        
+        # Import these models here to avoid circular imports
+        from app.models import Comment, ArticleTagLink, ProductArticleLink
+        
+        # Delete article-tag links for this article
+        db.execute(delete(ArticleTagLink).where(ArticleTagLink.article_id == article_id))
+        
+        # Delete article-product links for this article
+        db.execute(delete(ProductArticleLink).where(ProductArticleLink.article_id == article_id))
+        
+        # Delete all comments on this article
+        db.execute(delete(Comment).where(Comment.article_id == article_id))
+        
+        # Delete the article
+        db.delete(article)
+        db.commit()
+        
+        return None
+    except Exception as e:
+        # Roll back transaction on error
+        db.rollback()
+        raise HTTPException(status_code=500, detail=f"Error deleting article: {str(e)}")
+
+@router.delete("/", status_code=204)
+async def delete_all_articles(
+    current_user = Depends(get_current_active_superuser),
+    db: Session = Depends(get_db)
+):
+    try:
+        # Import these models here to avoid circular imports
+        from app.models import Comment, ArticleTagLink, ProductArticleLink
+        
+        # Get all article IDs
+        article_ids = [row[0] for row in db.execute(select(Article.id)).all()]
+        
+        if article_ids:
+            # Delete all article-tag links
+            db.execute(delete(ArticleTagLink).where(ArticleTagLink.article_id.in_(article_ids)))
+            
+            # Delete all article-product links
+            db.execute(delete(ProductArticleLink).where(ProductArticleLink.article_id.in_(article_ids)))
+            
+            # Delete all comments on all articles
+            db.execute(delete(Comment).where(Comment.article_id.in_(article_ids)))
+        
+        # Delete all articles
+        db.execute(delete(Article))
+        
+        db.commit()
+        return None
+    except Exception as e:
+        # Roll back transaction on error
+        db.rollback()
+        raise HTTPException(status_code=500, detail=f"Error deleting all articles: {str(e)}") 

@@ -88,4 +88,20 @@ async def get_user_from_cookie(request: Request, db: Session):
         return user
     except Exception as e:
         print(f"Error getting user from cookie: {str(e)}")
-        return None 
+        return None
+
+
+def get_client_ip(request: Request) -> str:
+    """
+    Get the client's IP address from various possible headers
+    """
+    x_forwarded_for = request.headers.get("X-Forwarded-For")
+    if x_forwarded_for:
+        # X-Forwarded-For can contain multiple IPs, the client IP is the first one
+        return x_forwarded_for.split(",")[0].strip()
+    
+    # If no X-Forwarded-For header, try to get from client.host
+    if hasattr(request, "client") and request.client and hasattr(request.client, "host"):
+        return request.client.host
+    
+    return "unknown" 

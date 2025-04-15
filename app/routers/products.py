@@ -14,6 +14,7 @@ from app.auth.utils import get_user_from_cookie
 from app.utils.text import generate_unique_slug
 from app.config import settings
 from app.utils.storage import StorageManager
+from app.utils.logging import log_admin_action
 
 router = APIRouter(prefix="/products")
 
@@ -288,6 +289,16 @@ async def admin_add_product(
             social_links=social_links
         )
         db.add(product)
+        
+        # Log the action
+        log_admin_action(
+            db=db,
+            user_id=user.id,
+            action="Create Product",
+            details=f"Created product: {name} (Price: {price})",
+            request=request
+        )
+        
         db.commit()
         db.refresh(product)
         
@@ -361,6 +372,10 @@ async def admin_edit_product(
                 status_code=303
             )
         
+        # Store original values for logging
+        old_name = product.name
+        old_price = product.price
+        
         # Validate social_links as valid JSON if provided
         if social_links:
             try:
@@ -433,6 +448,22 @@ async def admin_edit_product(
         
         # Update product
         db.add(product)
+        
+        # Log the action
+        changes = []
+        if old_name != name:
+            changes.append(f"name: '{old_name}' → '{name}'")
+        if old_price != price:
+            changes.append(f"price: {old_price} → {price}")
+        
+        log_admin_action(
+            db=db,
+            user_id=user.id,
+            action="Update Product",
+            details=f"Updated product: {name} (ID: {id}). Changes: {', '.join(changes) if changes else 'minor updates'}",
+            request=request
+        )
+        
         db.commit()
         
         # Update article associations
@@ -491,17 +522,29 @@ async def admin_delete_product(request: Request, product_id: int, db: Session = 
         # Get product
         product = db.get(Product, product_id)
         if not product:
-            return HTMLResponse("Product not found", status_code=404)
+            return RedirectResponse(
+                url="/admin/products?message=Product not found",
+                status_code=303
+            )
         
-        # Delete product-article links first
-        db.execute(delete(ProductArticleLink).where(ProductArticleLink.product_id == product_id))
-        db.commit()
-        
-        # Get product name before deletion for success message
+        # Store product info for logging
         product_name = product.name
+        
+        # Delete product-article links
+        db.execute(delete(ProductArticleLink).where(ProductArticleLink.product_id == product_id))
         
         # Delete product
         db.delete(product)
+        
+        # Log the action
+        log_admin_action(
+            db=db,
+            user_id=user.id,
+            action="Delete Product",
+            details=f"Deleted product: {product_name} (ID: {product_id})",
+            request=request
+        )
+        
         db.commit()
         
         return RedirectResponse(url=f"/admin/products?message=Product '{product_name}' deleted successfully", status_code=303)
@@ -540,12 +583,22 @@ async def admin_delete_all_products(request: Request, db: Session = Depends(get_
         return RedirectResponse(url="/admin/login", status_code=303)
     
     try:
-        # Delete all product-article links first
-        db.execute(delete(ProductArticleLink))
-        db.commit()
+        # Count products before deletion
+        products_count = db.execute(select(func.count()).select_from(Product)).scalar() or 0
         
-        # Delete all products
+        # Delete all product-article links and products
+        db.execute(delete(ProductArticleLink))
         db.execute(delete(Product))
+        
+        # Log the action
+        log_admin_action(
+            db=db,
+            user_id=user.id,
+            action="Delete All Products",
+            details=f"Deleted all products (total: {products_count})",
+            request=request
+        )
+        
         db.commit()
         
         return RedirectResponse(

@@ -23,6 +23,7 @@ class User(UserBase, table=True):
     # Relationships
     articles: List["Article"] = Relationship(back_populates="author")
     comments: List["Comment"] = Relationship(back_populates="author")
+    logs: List["SystemLog"] = Relationship(back_populates="user")
 
 
 class UserCreate(UserBase):
@@ -287,8 +288,59 @@ class ProductReadWithParsedLinks(SQLModel):
                 "slug": "sample-product",
                 "description": "This is a sample product",
                 "featured_image": "products/sample.jpg",
-                "social_links": {"shopee": "https://shopee.com/product1", "lazada": "https://lazada.com/product1"},
-                "created_at": "2023-01-01T00:00:00",
-                "updated_at": "2023-01-01T00:00:00"
+                "social_links": {"facebook": "https://facebook.com/sample"},
+                "created_at": "2023-01-01T12:00:00",
+                "updated_at": "2023-01-01T12:00:00"
             }
-        } 
+        }
+
+
+class SystemLogBase(SQLModel):
+    action: str
+    details: Optional[str] = None
+    user_id: int = Field(foreign_key="user.id")
+    ip_address: Optional[str] = None
+
+
+class SystemLog(SystemLogBase, table=True):
+    id: Optional[int] = Field(default=None, primary_key=True)
+    created_at: datetime = Field(default_factory=datetime.utcnow)
+    
+    # Relationships
+    user: User = Relationship(back_populates="logs")
+
+
+class SystemLogCreate(SystemLogBase):
+    pass
+
+
+class SystemLogRead(SystemLogBase):
+    id: int
+    created_at: datetime
+
+
+class SystemSettingsBase(SQLModel):
+    key: str = Field(max_length=100, index=True, unique=True)
+    value: str
+    description: Optional[str] = None
+
+
+class SystemSettings(SystemSettingsBase, table=True):
+    id: Optional[int] = Field(default=None, primary_key=True)
+    created_at: datetime = Field(default_factory=datetime.utcnow)
+    updated_at: datetime = Field(default_factory=datetime.utcnow, sa_column_kwargs={"onupdate": datetime.utcnow})
+
+
+class SystemSettingsCreate(SystemSettingsBase):
+    pass
+
+
+class SystemSettingsRead(SystemSettingsBase):
+    id: int
+    created_at: datetime
+    updated_at: datetime
+
+
+class SystemSettingsUpdate(SQLModel):
+    value: Optional[str] = None
+    description: Optional[str] = None 

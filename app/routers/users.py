@@ -8,6 +8,7 @@ from datetime import datetime
 from app.database import get_db
 from app.models import User, Article, Comment
 from app.auth.utils import get_user_from_cookie, get_password_hash
+from app.utils.logging import log_admin_action
 
 router = APIRouter(prefix="/users")
 
@@ -182,6 +183,18 @@ async def admin_add_user(
         is_superuser=is_superuser,
     )
     db.add(new_user)
+    
+    # Log the action
+    role_text = "Admin" if is_superuser else "Regular user"
+    status_text = "Active" if is_active else "Inactive"
+    log_admin_action(
+        db=db,
+        user_id=user.id,
+        action="Create User",
+        details=f"Created user: {username} (Email: {email}, Role: {role_text}, Status: {status_text})",
+        request=request
+    )
+    
     db.commit()
     
     # Redirect to users list with success message
@@ -260,6 +273,12 @@ async def admin_edit_user(
                 status_code=400
             )
     
+    # Save original values for logging
+    old_username = user_to_edit.username
+    old_email = user_to_edit.email
+    old_is_active = user_to_edit.is_active
+    old_is_superuser = user_to_edit.is_superuser
+    
     # Update user fields
     user_to_edit.username = username
     user_to_edit.email = email
@@ -271,6 +290,27 @@ async def admin_edit_user(
     # Update password if provided
     if password:
         user_to_edit.password = get_password_hash(password)
+    
+    # Log the action
+    changes = []
+    if old_username != username:
+        changes.append(f"username: {old_username} → {username}")
+    if old_email != email:
+        changes.append(f"email: {old_email} → {email}")
+    if old_is_active != is_active:
+        changes.append(f"status: {'Active' if old_is_active else 'Inactive'} → {'Active' if is_active else 'Inactive'}")
+    if old_is_superuser != is_superuser:
+        changes.append(f"role: {'Admin' if old_is_superuser else 'Regular user'} → {'Admin' if is_superuser else 'Regular user'}")
+    if password:
+        changes.append("password: updated")
+    
+    log_admin_action(
+        db=db,
+        user_id=user.id,
+        action="Update User",
+        details=f"Updated user: {username} (ID: {user_id}). Changes: {', '.join(changes) if changes else 'minor updates'}",
+        request=request
+    )
     
     db.add(user_to_edit)
     db.commit()
@@ -288,38 +328,57 @@ async def admin_delete_user(request: Request, user_id: int, db: Session = Depend
     if not user or not user.is_superuser:
         return RedirectResponse(url="/admin/login", status_code=303)
     
-    # Get the user to delete
-    user_to_delete = db.get(User, user_id)
-    if not user_to_delete:
-        return RedirectResponse(url="/admin/users?message=User not found", status_code=303)
-    
-    # Prevent deleting your own account
-    if user_to_delete.id == user.id:
-        return RedirectResponse(
-            url="/admin/users?message=You cannot delete your own account",
-            status_code=303
-        )
-    
-    # Delete articles and comments authored by this user first
     try:
-        # Delete comments by this user
+        # Get the user to delete
+        user_to_delete = db.get(User, user_id)
+        if not user_to_delete:
+            return RedirectResponse(url="/admin/users?message=User not found", status_code=303)
+        
+        # Cannot delete yourself
+        if user_to_delete.id == user.id:
+            return RedirectResponse(url="/admin/users?message=You cannot delete your own account", status_code=303)
+        
+        # Store info for logging
+        username = user_to_delete.username
+        
+        # First get the IDs of all articles by this user
+        article_ids_query = select(Article.id).where(Article.author_id == user_id)
+        article_ids = [row[0] for row in db.execute(article_ids_query).all()]
+        
+        # Import relationship models to avoid circular imports
+        from app.models import SystemLog, ArticleTagLink, ProductArticleLink
+        
+        # Delete article-tag links for this user's articles
+        if article_ids:
+            db.execute(delete(ArticleTagLink).where(ArticleTagLink.article_id.in_(article_ids)))
+            
+            # Delete article-product links for this user's articles
+            db.execute(delete(ProductArticleLink).where(ProductArticleLink.article_id.in_(article_ids)))
+            
+            # Delete ALL comments on the user's articles (regardless of commenter)
+            db.execute(delete(Comment).where(Comment.article_id.in_(article_ids)))
+        
+        # Delete system logs for this user
+        db.execute(delete(SystemLog).where(SystemLog.user_id == user_id))
+        
+        # Delete all comments made by the user on any article
         db.execute(delete(Comment).where(Comment.author_id == user_id))
-        db.commit()
         
-        # Get articles by this user
-        articles_by_user = db.execute(select(Article.id).where(Article.author_id == user_id)).scalars().all()
-        
-        # Delete comments on articles by this user
-        for article_id in articles_by_user:
-            db.execute(delete(Comment).where(Comment.article_id == article_id))
-        db.commit()
-        
-        # Delete articles by this user
+        # Delete all articles by the user
         db.execute(delete(Article).where(Article.author_id == user_id))
-        db.commit()
         
-        # Delete user
+        # Now delete the user
         db.delete(user_to_delete)
+        
+        # Log the action for the admin (not the deleted user)
+        log_admin_action(
+            db=db,
+            user_id=user.id,
+            action="Delete User",
+            details=f"Deleted user: {username}",
+            request=request
+        )
+        
         db.commit()
         
         return RedirectResponse(
@@ -327,15 +386,13 @@ async def admin_delete_user(request: Request, user_id: int, db: Session = Depend
             status_code=303
         )
     except Exception as e:
-        return templates.TemplateResponse(
-            "admin/users/list.html",
-            {
-                "request": request,
-                "user": user,
-                "users": db.execute(select(User)).scalars().all(),
-                "error": f"Error deleting user: {str(e)}"
-            },
-            status_code=500
+        # Roll back the transaction on error
+        db.rollback()
+        print(f"Error deleting user: {str(e)}")  # Log the error for debugging
+        
+        return RedirectResponse(
+            url=f"/admin/users?message=Error deleting user: {str(e)}",
+            status_code=303
         )
 
 @router.get("/delete-all", response_class=HTMLResponse)
@@ -356,7 +413,16 @@ async def admin_delete_all_users_confirm(request: Request, db: Session = Depends
                 "request": request,
                 "user": user,
                 "users": db.execute(select(User)).scalars().all(),
-                "error": "There are no other users to delete."
+                "error": "There are no other users to delete.",
+                "applied_filters": 0,  # Add the missing parameter
+                "pagination": {  # Add pagination data
+                    "page": 1,
+                    "page_size": 10,
+                    "total_pages": 1,
+                    "total_records": count,
+                    "has_prev": False,
+                    "has_next": False
+                }
             }
         )
     
@@ -381,33 +447,59 @@ async def admin_delete_all_users(request: Request, db: Session = Depends(get_db)
         return RedirectResponse(url="/admin/login", status_code=303)
     
     try:
-        # Get IDs of users to delete (all except current user)
-        users_to_delete = db.execute(select(User.id).where(User.id != user.id)).scalars().all()
+        # Count users before deletion
+        users_count = db.execute(select(func.count()).select_from(User).where(User.id != user.id)).scalar() or 0
         
-        # Delete all content related to these users
-        for user_id in users_to_delete:
-            # Delete comments by this user
-            db.execute(delete(Comment).where(Comment.author_id == user_id))
-            
-            # Get articles by this user
-            articles_by_user = db.execute(select(Article.id).where(Article.author_id == user_id)).scalars().all()
-            
-            # Delete comments on articles by this user
-            for article_id in articles_by_user:
-                db.execute(delete(Comment).where(Comment.article_id == article_id))
-            
-            # Delete articles by this user
-            db.execute(delete(Article).where(Article.author_id == user_id))
+        # First get the IDs of all articles by users other than the current admin
+        article_ids_query = select(Article.id).join(User).where(User.id != user.id)
+        article_ids = [row[0] for row in db.execute(article_ids_query).all()]
         
-        db.commit()
+        # Import relationship models to avoid circular imports
+        from app.models import SystemLog, ArticleTagLink, ProductArticleLink
         
-        # Delete all users except current user
+        # Delete article-tag links for other users' articles
+        if article_ids:
+            db.execute(delete(ArticleTagLink).where(ArticleTagLink.article_id.in_(article_ids)))
+            
+            # Delete article-product links for other users' articles
+            db.execute(delete(ProductArticleLink).where(ProductArticleLink.article_id.in_(article_ids)))
+            
+            # Delete ALL comments on these articles (regardless of commenter)
+            db.execute(delete(Comment).where(Comment.article_id.in_(article_ids)))
+        
+        # Delete system logs for all users except current
+        db.execute(delete(SystemLog).where(SystemLog.user_id != user.id))
+        
+        # Delete remaining comments by users other than the current admin
+        db.execute(delete(Comment).where(Comment.author_id != user.id))
+        
+        # Delete articles by users other than the current admin
+        db.execute(delete(Article).where(Article.author_id != user.id))
+        
+        # Finally delete all users except the current one
         db.execute(delete(User).where(User.id != user.id))
+        
+        # Log the action
+        log_admin_action(
+            db=db,
+            user_id=user.id,
+            action="Delete All Users",
+            details=f"Deleted all users except current admin (total deleted: {users_count})",
+            request=request
+        )
+        
         db.commit()
         
         return RedirectResponse(
-            url="/admin/users?message=All users (except your account) have been deleted successfully",
+            url="/admin/users?message=All users (except you) have been deleted",
             status_code=303
         )
     except Exception as e:
-        return HTMLResponse(f"Error deleting users: {str(e)}. <a href='/admin/users'>Go back</a>", status_code=500) 
+        # Roll back the transaction on error
+        db.rollback()
+        print(f"Error deleting all users: {str(e)}")  # Log the error for debugging
+        
+        return RedirectResponse(
+            url=f"/admin/users?message=Error deleting all users: {str(e)}",
+            status_code=303
+        ) 

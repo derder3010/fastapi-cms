@@ -10,6 +10,7 @@ from app.models import Article, Category, Comment, Tag, ArticleTagLink
 from app.auth.utils import get_user_from_cookie
 from app.utils.text import generate_unique_slug
 from app.utils.media import save_upload
+from app.utils.logging import log_admin_action
 
 router = APIRouter(prefix="/articles")
 
@@ -239,8 +240,7 @@ async def admin_add_article(
             footer_content=footer_content if footer_content and footer_content.strip() else None
         )
         db.add(article)
-        db.commit()
-        db.refresh(article)
+        db.flush()  # Get the article ID
         
         # Add tags to article
         if tag_ids:
@@ -249,7 +249,18 @@ async def admin_add_article(
                 if tag:
                     article_tag_link = ArticleTagLink(article_id=article.id, tag_id=tag_id)
                     db.add(article_tag_link)
-            db.commit()
+        
+        # Log the action
+        status_text = "Published" if published else "Draft"
+        log_admin_action(
+            db=db,
+            user_id=user.id,
+            action="Create Article",
+            details=f"Created article: {title} (ID: {article.id}, Status: {status_text})",
+            request=request
+        )
+        
+        db.commit()
         
         return RedirectResponse(url=f"/admin/articles?message=Article '{title}' created successfully", status_code=303)
     except Exception as e:
@@ -369,6 +380,26 @@ async def admin_edit_article(
         article.excerpt = excerpt if excerpt and excerpt.strip() else None
         article.footer_content = footer_content if footer_content and footer_content.strip() else None
         
+        # Log the action
+        old_title = article.title
+        old_status = "Published" if article.published else "Draft"
+        new_status = "Published" if published else "Draft"
+        status_changed = old_status != new_status
+        
+        change_details = []
+        if old_title != title:
+            change_details.append(f"title: '{old_title}' → '{title}'")
+        if status_changed:
+            change_details.append(f"status: {old_status} → {new_status}")
+        
+        log_admin_action(
+            db=db,
+            user_id=user.id,
+            action="Update Article",
+            details=f"Updated article: {title} (ID: {article_id}). Changes: {', '.join(change_details) if change_details else 'minor updates'}",
+            request=request
+        )
+        
         db.add(article)
         db.commit()
         
@@ -403,15 +434,26 @@ async def admin_delete_article(request: Request, article_id: int, db: Session = 
         if not article:
             return HTMLResponse("Article not found", status_code=404)
         
+        # Store article info for logging
+        article_title = article.title
+        article_id_val = article.id
+        
         # Delete all comments for this article first
         db.execute(delete(Comment).where(Comment.article_id == article_id))
         db.commit()
         
-        # Get article title before deletion for success message
-        article_title = article.title
-        
         # Delete article
         db.delete(article)
+        
+        # Log the action
+        log_admin_action(
+            db=db,
+            user_id=user.id,
+            action="Delete Article",
+            details=f"Deleted article: {article_title} (ID: {article_id_val})",
+            request=request
+        )
+        
         db.commit()
         
         return RedirectResponse(url=f"/admin/articles?message=Article '{article_title}' deleted successfully", status_code=303)
@@ -450,12 +492,23 @@ async def admin_delete_all_articles(request: Request, db: Session = Depends(get_
         return RedirectResponse(url="/admin/login", status_code=303)
     
     try:
-        # Delete all comments first (they depend on articles)
-        db.execute(delete(Comment))
-        db.commit()
+        # Count articles before deletion
+        article_count = db.execute(select(func.count()).select_from(Article)).scalar() or 0
         
-        # Delete all articles
+        # Delete all articles and related entries
+        db.execute(delete(ArticleTagLink))
+        db.execute(delete(Comment))
         db.execute(delete(Article))
+        
+        # Log the action
+        log_admin_action(
+            db=db,
+            user_id=user.id,
+            action="Delete All Articles",
+            details=f"Deleted all articles (total: {article_count})",
+            request=request
+        )
+        
         db.commit()
         
         return RedirectResponse(

@@ -6,6 +6,7 @@ from sqlmodel import Session, select, func, delete, or_
 from app.database import get_db
 from app.models import Category, Article, Comment
 from app.auth.utils import get_user_from_cookie
+from app.utils.logging import log_admin_action
 
 router = APIRouter(prefix="/categories")
 
@@ -118,6 +119,16 @@ async def admin_add_category(
             description=description,
         )
         db.add(category)
+        
+        # Log the action
+        log_admin_action(
+            db=db,
+            user_id=user.id,
+            action="Create Category",
+            details=f"Created category: {name}",
+            request=request
+        )
+        
         db.commit()
         
         return RedirectResponse(
@@ -205,8 +216,18 @@ async def admin_edit_category(
                 )
         
         # Update category
+        old_name = category.name
         category.name = name
         category.description = description
+        
+        # Log the action
+        log_admin_action(
+            db=db,
+            user_id=user.id,
+            action="Update Category",
+            details=f"Updated category: {old_name} → {name}",
+            request=request
+        )
         
         db.add(category)
         db.commit()
@@ -243,34 +264,58 @@ async def admin_delete_category(request: Request, category_id: int, db: Session 
                 status_code=303
             )
         
-        # Check if category has articles
-        article_count = db.execute(
-            select(func.count()).select_from(Article).where(Article.category_id == category_id)
-        ).scalar() or 0
-        
-        if article_count > 0:
-            return templates.TemplateResponse(
-                "admin/categories/list.html",
-                {
-                    "request": request,
-                    "user": user,
-                    "categories": db.execute(select(Category)).scalars().all(),
-                    "error": f"Cannot delete category '{category.name}' because it has {article_count} articles. Remove the articles first."
-                }
-            )
-        
-        # Get category name before deletion for success message
+        # Get category name for logging
         category_name = category.name
+        
+        # Find all articles in this category
+        article_query = select(Article.id).where(Article.category_id == category_id)
+        article_ids = [row[0] for row in db.execute(article_query).all()]
+        
+        # If there are articles, delete related data
+        if article_ids:
+            # Import these models here to avoid circular imports
+            from app.models import ArticleTagLink, ProductArticleLink, SystemLog
+            
+            # Delete article-tag links for these articles
+            db.execute(delete(ArticleTagLink).where(ArticleTagLink.article_id.in_(article_ids)))
+            
+            # Delete article-product links for these articles
+            db.execute(delete(ProductArticleLink).where(ProductArticleLink.article_id.in_(article_ids)))
+            
+            # Delete comments on these articles
+            db.execute(delete(Comment).where(Comment.article_id.in_(article_ids)))
+            
+            # Delete all articles in this category
+            db.execute(delete(Article).where(Article.category_id == category_id))
         
         # Delete category
         db.delete(category)
+        
+        # Log the action
+        article_count = len(article_ids)
+        log_details = f"Deleted category: {category_name}"
+        if article_count > 0:
+            log_details += f" and {article_count} related articles with all their data"
+            
+        log_admin_action(
+            db=db,
+            user_id=user.id,
+            action="Delete Category",
+            details=log_details,
+            request=request
+        )
+        
         db.commit()
         
         return RedirectResponse(
-            url=f"/admin/categories?message=Category '{category_name}' deleted successfully",
+            url=f"/admin/categories?message=Category '{category_name}' and all related data deleted successfully",
             status_code=303
         )
     except Exception as e:
+        # Roll back transaction on error
+        db.rollback()
+        print(f"Error deleting category: {str(e)}")
+        
         return templates.TemplateResponse(
             "admin/categories/list.html",
             {
@@ -288,30 +333,9 @@ async def admin_delete_all_categories_confirm(request: Request, db: Session = De
     if not user or not user.is_superuser:
         return RedirectResponse(url="/admin/login", status_code=303)
     
-    # Check if any categories have articles
-    categories_with_articles = db.execute(
-        select(Category.id, Category.name, func.count(Article.id).label("article_count"))
-        .join(Article, Category.id == Article.category_id, isouter=True)
-        .group_by(Category.id)
-        .having(func.count(Article.id) > 0)
-    ).all()
-    
-    if categories_with_articles:
-        # Some categories have articles, show error message
-        category_list = ", ".join([f"'{cat.name}' ({cat.article_count} articles)" for cat in categories_with_articles])
-        return templates.TemplateResponse(
-            "admin/categories/list.html",
-            {
-                "request": request,
-                "user": user,
-                "categories": db.execute(select(Category)).scalars().all(),
-                "error": f"Cannot delete all categories because some have articles: {category_list}. Delete the articles first."
-            }
-        )
-    
-    # Count categories
-    category_count = db.execute(select(Category)).all()
-    count = len(category_count)
+    # Get category count and article count for display
+    category_count = db.execute(select(func.count()).select_from(Category)).scalar() or 0
+    article_count = db.execute(select(func.count()).select_from(Article)).scalar() or 0
     
     # Render confirmation page
     return templates.TemplateResponse(
@@ -319,10 +343,11 @@ async def admin_delete_all_categories_confirm(request: Request, db: Session = De
         {
             "request": request,
             "user": user,
-            "count": count,
+            "count": category_count,
             "item_type": "categories",
             "back_url": "/admin/categories",
-            "confirm_url": "/admin/categories/delete-all-confirm"
+            "confirm_url": "/admin/categories/delete-all-confirm",
+            "additional_info": f"This will also delete {article_count} articles and all their related data."
         }
     )
 
@@ -334,26 +359,58 @@ async def admin_delete_all_categories(request: Request, db: Session = Depends(ge
         return RedirectResponse(url="/admin/login", status_code=303)
     
     try:
-        # Check again if any categories have articles
-        categories_with_articles = db.execute(
-            select(Category.id)
-            .join(Article, Category.id == Article.category_id)
-            .group_by(Category.id)
-        ).all()
+        # Count categories before deletion
+        categories_count = db.execute(select(func.count()).select_from(Category)).scalar() or 0
         
-        if categories_with_articles:
-            return RedirectResponse(
-                url="/admin/categories?message=Cannot delete all categories because some have articles. Delete the articles first.",
-                status_code=303
-            )
+        # Find all articles to be deleted
+        article_ids = [row[0] for row in db.execute(select(Article.id)).all()]
+        articles_count = len(article_ids)
+        
+        # Import models to avoid circular imports
+        from app.models import ArticleTagLink, ProductArticleLink, SystemLog
+        
+        # If articles exist, delete all related data first
+        if article_ids:
+            # Delete article-tag links
+            db.execute(delete(ArticleTagLink).where(ArticleTagLink.article_id.in_(article_ids)))
+            
+            # Delete article-product links
+            db.execute(delete(ProductArticleLink).where(ProductArticleLink.article_id.in_(article_ids)))
+            
+            # Delete all comments on these articles
+            db.execute(delete(Comment).where(Comment.article_id.in_(article_ids)))
+        
+        # Delete all articles
+        db.execute(delete(Article))
         
         # Delete all categories
         db.execute(delete(Category))
+        
+        # Log the action
+        log_details = f"Deleted all categories (total: {categories_count})"
+        if articles_count > 0:
+            log_details += f" and all related articles (total: {articles_count}) with their data"
+            
+        log_admin_action(
+            db=db,
+            user_id=user.id,
+            action="Delete All Categories",
+            details=log_details,
+            request=request
+        )
+        
         db.commit()
         
         return RedirectResponse(
-            url="/admin/categories?message=All categories have been deleted successfully",
+            url="/admin/categories?message=All categories and related data have been deleted successfully",
             status_code=303
         )
     except Exception as e:
-        return HTMLResponse(f"Error deleting all categories: {str(e)}. <a href='/admin/categories'>Go back</a>", status_code=500) 
+        # Roll back transaction on error
+        db.rollback()
+        print(f"Error deleting all categories: {str(e)}")
+        
+        return RedirectResponse(
+            url=f"/admin/categories?message=Error deleting all categories: {str(e)}",
+            status_code=303
+        ) 

@@ -3,10 +3,13 @@ from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.templating import Jinja2Templates
 from sqlmodel import Session, select, desc, delete, func
 from sqlalchemy.orm import selectinload
+from typing import List, Optional
+from datetime import datetime
 
 from app.database import get_db
-from app.models import Comment, Article
+from app.models import Comment, Article, User
 from app.auth.utils import get_user_from_cookie
+from app.utils.logging import log_admin_action
 
 router = APIRouter(prefix="/comments")
 
@@ -115,9 +118,22 @@ async def admin_edit_comment(
     if not comment:
         return RedirectResponse(url="/admin/comments?message=Comment not found", status_code=303)
     
+    # Lưu nội dung cũ để so sánh
+    old_content = comment.content
+    
     # Update the comment
     comment.content = content
     db.add(comment)
+    
+    # Log the action
+    log_admin_action(
+        db=db,
+        user_id=user.id,
+        action="Edit Comment",
+        details=f"Edited comment ID: {comment_id}, from article: {comment.article.title if comment.article else 'Unknown'}",
+        request=request
+    )
+    
     db.commit()
     
     # Redirect to comments list with success message
@@ -139,8 +155,23 @@ async def admin_delete_comment(request: Request, comment_id: int, db: Session = 
         if not comment:
             return RedirectResponse(url="/admin/comments?message=Comment not found", status_code=303)
         
+        # Store comment information for logging
+        comment_id_val = comment.id
+        article_title = comment.article.title if comment.article else "Unknown"
+        comment_author = comment.author.username if comment.author else "Unknown"
+        
         # Delete the comment
         db.delete(comment)
+        
+        # Log the action
+        log_admin_action(
+            db=db,
+            user_id=user.id,
+            action="Delete Comment",
+            details=f"Deleted comment ID: {comment_id_val}, from article: {article_title}, by: {comment_author}",
+            request=request
+        )
+        
         db.commit()
         
         # Redirect to comments list with success message
@@ -194,8 +225,21 @@ async def admin_delete_all_comments(request: Request, db: Session = Depends(get_
         return RedirectResponse(url="/admin/login", status_code=303)
     
     try:
+        # Count comments before deleting
+        comment_count = db.execute(select(func.count()).select_from(Comment)).scalar_one_or_none() or 0
+        
         # Delete all comments
         db.execute(delete(Comment))
+        
+        # Log the action
+        log_admin_action(
+            db=db,
+            user_id=user.id,
+            action="Delete All Comments",
+            details=f"Deleted all comments ({comment_count} total)",
+            request=request
+        )
+        
         db.commit()
         
         return RedirectResponse(

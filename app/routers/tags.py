@@ -4,8 +4,9 @@ from fastapi.templating import Jinja2Templates
 from sqlmodel import Session, select, func, delete, or_
 
 from app.database import get_db
-from app.models import Tag, Article
+from app.models import Tag, Article, ArticleTagLink
 from app.auth.utils import get_user_from_cookie
+from app.utils.logging import log_admin_action
 
 router = APIRouter(prefix="/tags")
 
@@ -111,6 +112,16 @@ async def admin_add_tag(
         # Create new tag
         tag = Tag(name=name)
         db.add(tag)
+        
+        # Log the action
+        log_admin_action(
+            db=db,
+            user_id=user.id,
+            action="Create Tag",
+            details=f"Created tag: {name}",
+            request=request
+        )
+        
         db.commit()
         
         return RedirectResponse(
@@ -196,10 +207,19 @@ async def admin_edit_tag(
                     status_code=400
                 )
         
+        old_name = tag.name
         # Update tag
         tag.name = name
         
-        db.add(tag)
+        # Log the action
+        log_admin_action(
+            db=db,
+            user_id=user.id,
+            action="Update Tag",
+            details=f"Updated tag: {old_name} → {name}",
+            request=request
+        )
+        
         db.commit()
         
         return RedirectResponse(
@@ -234,8 +254,19 @@ async def admin_delete_tag(request: Request, tag_id: int, db: Session = Depends(
                 status_code=303
             )
         
-        # Delete tag
+        # Delete the tag
+        tag_name = tag.name
         db.delete(tag)
+        
+        # Log the action
+        log_admin_action(
+            db=db,
+            user_id=user.id,
+            action="Delete Tag",
+            details=f"Deleted tag: {tag_name}",
+            request=request
+        )
+        
         db.commit()
         
         return RedirectResponse(
@@ -265,14 +296,15 @@ async def admin_delete_all_tags_confirm(request: Request, db: Session = Depends(
     
     # Render confirmation page
     return templates.TemplateResponse(
-        "admin/confirm_delete.html",
+        "admin/confirm_delete_all.html",
         {
             "request": request,
             "user": user,
             "count": tags_count,
             "item_type": "tags",
-            "cancel_url": "/admin/tags",
-            "confirm_url": "/admin/tags/delete-all-confirm"
+            "back_url": "/admin/tags",
+            "confirm_url": "/admin/tags/delete-all-confirm",
+            "additional_info": "This will also delete all tag associations with articles."
         }
     )
 
@@ -284,8 +316,22 @@ async def admin_delete_all_tags(request: Request, db: Session = Depends(get_db))
         return RedirectResponse(url="/admin/login", status_code=303)
     
     try:
+        # Count tags before deletion
+        tags_count = db.execute(select(func.count()).select_from(Tag)).scalar() or 0
+        
         # Delete all tags
+        db.execute(delete(ArticleTagLink))
         db.execute(delete(Tag))
+        
+        # Log the action
+        log_admin_action(
+            db=db,
+            user_id=user.id,
+            action="Delete All Tags",
+            details=f"Deleted all tags (total: {tags_count})",
+            request=request
+        )
+        
         db.commit()
         
         return RedirectResponse(

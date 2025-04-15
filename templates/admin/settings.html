@@ -1,0 +1,927 @@
+{% extends "admin/base.html" %} {% block title %}Settings - Admin Dashboard{%
+endblock %} {% block header_title %}Settings{% endblock %} {% block content %}
+
+<!-- Include card list styles -->
+{% include "admin/components/card_list_style.html" %}
+<style>
+  /* Ensure badge text is visible */
+  .badge {
+    color: #fff !important;
+    text-shadow: 0 0 1px rgba(0, 0, 0, 0.5);
+    border: 1px solid rgba(0, 0, 0, 0.1);
+  }
+
+  /* Filter collapse styles */
+  .card-header {
+    background-color: var(--card-bg);
+    border-bottom: none;
+  }
+
+  #filterCollapse.show + .card-header {
+    background-color: var(--card-bg);
+  }
+
+  .card-header.filter-header {
+    padding: 0.4rem 1rem;
+    background-color: rgba(0, 0, 0, 0.02);
+  }
+
+  [data-theme="dark"] .card-header.filter-header {
+    background-color: rgba(255, 255, 255, 0.02);
+    color: #fff;
+  }
+
+  [data-theme="dark"] .card-header.filter-header .text-muted {
+    color: #fff !important;
+  }
+
+  [data-theme="dark"] .card-header.filter-header .btn-outline-secondary {
+    color: #fff;
+    border-color: rgba(255, 255, 255, 0.2);
+  }
+
+  [data-theme="dark"] .card-header.filter-header .btn-outline-secondary:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+  }
+
+  /* Fixed height card styles */
+  .fixed-height-card {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .fixed-height-card .card-header {
+    display: flex;
+    align-items: center;
+    min-height: 60px;
+  }
+
+  .fixed-height-card .card-body {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    padding: 1rem;
+  }
+
+  .card-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.75rem;
+    padding: 0.25rem 0;
+  }
+
+  .card-label {
+    font-weight: 500;
+    color: var(--text-muted);
+    margin-right: 1rem;
+  }
+
+  .card-value {
+    text-align: right;
+    flex-grow: 1;
+  }
+
+  .action-buttons {
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.5rem;
+  }
+
+  /* Status badge styles */
+  .published-badge {
+    background-color: #28a745;
+  }
+
+  .draft-badge {
+    background-color: #ffc107;
+    color: #212529 !important;
+  }
+
+  /* Dark mode specific styles */
+  [data-theme="dark"] .card-header.bg-light {
+    background-color: var(--card-bg) !important;
+    color: var(--text-color);
+  }
+
+  [data-theme="dark"] .entity-card {
+    background-color: var(--card-bg);
+    color: var(--text-color);
+    border-color: var(--border-color);
+  }
+
+  [data-theme="dark"] .card-label {
+    color: rgba(255, 255, 255, 0.7);
+  }
+
+  [data-theme="dark"] .badge {
+    border: 1px solid rgba(255, 255, 255, 0.1);
+  }
+
+  [data-theme="dark"] table {
+    color: var(--text-color);
+  }
+
+  [data-theme="dark"] .table-striped > tbody > tr:nth-of-type(odd) {
+    background-color: rgba(255, 255, 255, 0.05);
+  }
+
+  [data-theme="dark"] .table-hover > tbody > tr:hover {
+    background-color: rgba(255, 255, 255, 0.08);
+  }
+
+  [data-theme="dark"] .table thead th {
+    background-color: var(--card-bg);
+    color: var(--text-color);
+    border-bottom: 1px solid var(--border-color);
+  }
+
+  [data-theme="dark"] .table td {
+    border-bottom: 1px solid var(--border-color);
+    color: var(--text-color);
+  }
+
+  /* Enhanced table styles for dark mode */
+  [data-theme="dark"] .table {
+    background-color: var(--card-bg);
+    border-color: var(--border-color);
+  }
+
+  [data-theme="dark"] .table-striped > tbody > tr:nth-of-type(even) {
+    background-color: var(--card-bg);
+  }
+
+  [data-theme="dark"] .card .table {
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    overflow: hidden;
+  }
+
+  [data-theme="dark"] .table tr td,
+  [data-theme="dark"] .table tr th {
+    border-color: var(--border-color);
+  }
+
+  [data-theme="dark"] .card-body {
+    background-color: var(--card-bg);
+    color: var(--text-color);
+    padding: 0;
+  }
+
+  [data-theme="dark"] .table-responsive {
+    background-color: var(--card-bg);
+  }
+
+  [data-theme="dark"] .table-responsive .table {
+    margin-bottom: 0;
+  }
+
+  [data-theme="dark"] .modal-content {
+    background-color: var(--card-bg);
+    color: var(--text-color);
+    border-color: var(--border-color);
+  }
+
+  [data-theme="dark"] .modal-header,
+  [data-theme="dark"] .modal-footer {
+    border-color: var(--border-color);
+  }
+
+  [data-theme="dark"] .btn-close {
+    filter: invert(1) grayscale(100%) brightness(200%);
+  }
+
+  /* Additional dark mode styles */
+  [data-theme="dark"] .card {
+    background-color: var(--card-bg);
+    border-color: var(--border-color);
+  }
+
+  [data-theme="dark"] .card-header {
+    background-color: var(--card-bg);
+    border-bottom-color: var(--border-color);
+  }
+
+  [data-theme="dark"] .alert {
+    background-color: var(--card-bg);
+    border-color: var(--border-color);
+    color: var(--text-color);
+  }
+
+  [data-theme="dark"] .form-control {
+    background-color: var(--input-bg);
+    border-color: var(--border-color);
+    color: var(--input-text);
+  }
+
+  [data-theme="dark"] .form-control:focus {
+    background-color: var(--input-bg);
+    border-color: var(--primary-color);
+    color: var(--input-text);
+  }
+
+  [data-theme="dark"] .input-group-text {
+    background-color: var(--input-bg);
+    border-color: var(--border-color);
+    color: var(--input-text);
+  }
+
+  /* Override Bootstrap table styles for dark mode */
+  [data-theme="dark"] .table-striped tbody tr {
+    background-color: var(--card-bg) !important;
+  }
+
+  [data-theme="dark"] .table-striped tbody tr:nth-of-type(odd) {
+    background-color: rgba(255, 255, 255, 0.05) !important;
+  }
+
+  [data-theme="dark"] .table-striped tbody tr:nth-of-type(even) {
+    background-color: var(--card-bg) !important;
+  }
+
+  [data-theme="dark"] .table-hover tbody tr:hover {
+    background-color: rgba(255, 255, 255, 0.08) !important;
+  }
+
+  [data-theme="dark"] .table tbody tr {
+    background-color: var(--card-bg) !important;
+  }
+
+  [data-theme="dark"] .table tbody tr td {
+    background-color: transparent !important;
+  }
+
+  [data-theme="dark"] .table tbody tr th {
+    background-color: transparent !important;
+  }
+
+  /* Pagination styles for dark mode */
+  [data-theme="dark"] .pagination {
+    background-color: var(--card-bg);
+    border-radius: 4px;
+  }
+
+  [data-theme="dark"] .pagination .page-item .page-link {
+    background-color: var(--card-bg);
+    border-color: var(--border-color);
+    color: var(--text-color);
+  }
+
+  [data-theme="dark"] .pagination .page-item .page-link:hover {
+    background-color: rgba(255, 255, 255, 0.08);
+    border-color: var(--border-color);
+    color: var(--text-color);
+  }
+
+  [data-theme="dark"] .pagination .page-item.active .page-link {
+    background-color: var(--primary-color);
+    border-color: var(--primary-color);
+    color: #fff;
+  }
+
+  [data-theme="dark"] .pagination .page-item.disabled .page-link {
+    background-color: var(--card-bg);
+    border-color: var(--border-color);
+    color: rgba(255, 255, 255, 0.3);
+  }
+
+  [data-theme="dark"] .pagination-info {
+    color: var(--text-color);
+  }
+
+  [data-theme="dark"] .pagination-info .text-muted {
+    color: rgba(255, 255, 255, 0.5) !important;
+  }
+
+  /* Base styles for both modes */
+  .pagination {
+    margin: 0;
+    border-radius: 4px;
+  }
+
+  .pagination .page-item .page-link {
+    padding: 0.375rem 0.75rem;
+    border-radius: 4px;
+    margin: 0 2px;
+  }
+
+  .pagination-info {
+    display: flex;
+    align-items: center;
+  }
+
+  .table tr td,
+  .table tr th {
+    padding: 0.5rem;
+  }
+
+  .table-responsive {
+    padding: 0;
+  }
+
+  .card-body {
+    padding: 0;
+  }
+
+  /* Filter styles */
+  .advanced-filters {
+    background-color: var(--card-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    margin-bottom: 1rem;
+  }
+
+  .advanced-filters-title {
+    padding: 0.75rem 1rem;
+    border-bottom: 1px solid var(--border-color);
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  [data-theme="dark"] .advanced-filters {
+    background-color: var(--card-bg);
+    border-color: var(--border-color);
+  }
+
+  [data-theme="dark"] .advanced-filters-title {
+    color: var(--text-color);
+    border-bottom-color: var(--border-color);
+  }
+
+  /* Product specific styles */
+  .product-image {
+    width: 50px;
+    height: 50px;
+    object-fit: cover;
+    border-radius: 4px;
+  }
+
+  .price-badge {
+    background-color: #17a2b8;
+  }
+
+  .stock-badge {
+    background-color: #6c757d;
+  }
+
+  .out-of-stock-badge {
+    background-color: #dc3545;
+  }
+
+  [data-theme="dark"] .product-image {
+    border: 1px solid var(--border-color);
+  }
+
+  /* Vertical alignment fixes for tables */
+  .table td,
+  .table th {
+    vertical-align: middle;
+  }
+
+  .table-responsive {
+    margin-bottom: 0;
+  }
+
+  .table td.align-middle {
+    vertical-align: middle !important;
+  }
+
+  /* Fixed height card responsive adjustments */
+  @media (max-width: 767.98px) {
+    .fixed-height-card {
+      min-height: auto;
+    }
+  }
+
+  /* Make small text in dark mode more visible */
+  [data-theme="dark"] .text-muted {
+    color: rgba(255, 255, 255, 0.6) !important;
+  }
+
+  /* Make secondary text visible in dark mode */
+  [data-theme="dark"] .text-secondary {
+    color: rgba(255, 255, 255, 0.7) !important;
+  }
+
+  /* Terminal logs styling - consolidated */
+  .terminal-logs {
+    background-color: #1e1e1e;
+    color: #f1f1f1;
+    font-family: "Consolas", "Monaco", "Courier New", monospace;
+    padding: 0;
+    overflow-x: hidden;
+    max-height: 750px; /* Khoảng 20 log */
+    overflow-y: auto;
+    margin: 0;
+    line-height: 1.7;
+    border-radius: 0;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(255, 255, 255, 0.2) rgba(0, 0, 0, 0.1);
+  }
+
+  /* Scrollbar styles cho webkit browsers */
+  .terminal-logs::-webkit-scrollbar {
+    width: 6px;
+  }
+
+  .terminal-logs::-webkit-scrollbar-track {
+    background: rgba(0, 0, 0, 0.1);
+  }
+
+  .terminal-logs::-webkit-scrollbar-thumb {
+    background-color: rgba(255, 255, 255, 0.2);
+    border-radius: 0;
+  }
+
+  /* Desktop styles */
+  .terminal-logs .log-entry {
+    padding: 10px;
+    white-space: nowrap;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    margin-bottom: 0;
+  }
+
+  /* Log entry parts styling */
+  .terminal-logs .log-timestamp {
+    color: #6c9;
+    margin-right: 8px;
+  }
+
+  .terminal-logs .log-user {
+    color: #69f;
+    font-weight: bold;
+    text-transform: uppercase;
+    margin-right: 8px;
+  }
+
+  .terminal-logs .log-action {
+    margin-right: 8px;
+    padding: 2px 6px;
+    border-radius: 3px;
+    font-weight: 500;
+  }
+
+  /* Action type styling */
+  .terminal-logs .action-create {
+    background-color: rgba(40, 167, 69, 0.2);
+    color: #4cd964;
+  }
+
+  .terminal-logs .action-update {
+    background-color: rgba(23, 162, 184, 0.2);
+    color: #5ac8fa;
+  }
+
+  .terminal-logs .action-delete {
+    background-color: rgba(220, 53, 69, 0.2);
+    color: #ff3b30;
+  }
+
+  .terminal-logs .action-login {
+    background-color: rgba(255, 193, 7, 0.2);
+    color: #ffcc00;
+  }
+
+  .terminal-logs .action-logout {
+    background-color: rgba(108, 117, 125, 0.2);
+    color: #8e8e93;
+  }
+
+  .terminal-logs .action-clear {
+    background-color: rgba(111, 66, 193, 0.2);
+    color: #af52de;
+  }
+
+  .terminal-logs .action-other {
+    background-color: rgba(0, 123, 255, 0.2);
+    color: #007aff;
+  }
+
+  .terminal-logs .log-separator {
+    color: #777;
+    margin: 0 8px;
+  }
+
+  .terminal-logs .log-details {
+    color: #ddd;
+    margin-right: 8px;
+  }
+
+  .terminal-logs .log-ip {
+    color: #999;
+    font-size: 0.9em;
+  }
+
+  .terminal-logs .empty-logs {
+    color: #888;
+    font-style: italic;
+    text-align: center;
+    padding: 20px;
+  }
+
+  /* Light theme styles */
+  [data-theme="light"] .terminal-logs {
+    background-color: #f5f5f5;
+    color: #333;
+    border: 1px solid #ddd;
+  }
+
+  [data-theme="light"] .terminal-logs::-webkit-scrollbar-track {
+    background: rgba(0, 0, 0, 0.05);
+  }
+
+  [data-theme="light"] .terminal-logs::-webkit-scrollbar-thumb {
+    background-color: rgba(0, 0, 0, 0.2);
+  }
+
+  [data-theme="light"] .terminal-logs .log-timestamp {
+    color: #0a6;
+  }
+
+  [data-theme="light"] .terminal-logs .log-user {
+    color: #06c;
+  }
+
+  [data-theme="light"] .terminal-logs .log-separator {
+    color: #999;
+  }
+
+  [data-theme="light"] .terminal-logs .log-details {
+    color: #333;
+  }
+
+  [data-theme="light"] .terminal-logs .log-ip {
+    color: #666;
+  }
+
+  /* Light theme action colors */
+  [data-theme="light"] .terminal-logs .action-create {
+    background-color: rgba(40, 167, 69, 0.15);
+    color: #28a745;
+  }
+
+  [data-theme="light"] .terminal-logs .action-update {
+    background-color: rgba(23, 162, 184, 0.15);
+    color: #17a2b8;
+  }
+
+  [data-theme="light"] .terminal-logs .action-delete {
+    background-color: rgba(220, 53, 69, 0.15);
+    color: #dc3545;
+  }
+
+  [data-theme="light"] .terminal-logs .action-login {
+    background-color: rgba(255, 193, 7, 0.15);
+    color: #ffc107;
+  }
+
+  [data-theme="light"] .terminal-logs .action-logout {
+    background-color: rgba(108, 117, 125, 0.15);
+    color: #6c757d;
+  }
+
+  [data-theme="light"] .terminal-logs .action-clear {
+    background-color: rgba(111, 66, 193, 0.15);
+    color: #6f42c1;
+  }
+
+  [data-theme="light"] .terminal-logs .action-other {
+    background-color: rgba(0, 123, 255, 0.15);
+    color: #007bff;
+  }
+
+  /* System logs card header */
+  .system-logs-header {
+    background-color: #222;
+    padding: 12px 15px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-radius: 0;
+  }
+
+  .system-logs-header h5 {
+    margin: 0;
+    color: #fff;
+    font-size: 16px;
+    font-weight: 500;
+  }
+
+  [data-theme="light"] .system-logs-header {
+    background-color: #343a40;
+  }
+
+  .system-logs-header .btn-danger {
+    font-size: 14px;
+    padding: 5px 12px;
+    border-radius: 4px;
+  }
+
+  /* Responsive styles for terminal logs */
+  @media (max-width: 767px) {
+    .system-logs-header {
+      padding: 10px 15px;
+      border-radius: 0;
+    }
+
+    .system-logs-header h5 {
+      font-size: 15px;
+      color: white;
+    }
+
+    .system-logs-header .btn-danger {
+      font-size: 12px;
+      padding: 4px 10px;
+      border-radius: 4px;
+    }
+
+    /* Mobile styles */
+    .terminal-logs {
+      font-size: 12px;
+      padding: 0;
+      border-radius: 0;
+      background-color: #181818;
+      max-height: 600px; /* Khoảng 20 log trên mobile */
+      scrollbar-width: thin;
+    }
+
+    .terminal-logs .log-entry {
+      padding: 15px;
+      white-space: normal;
+      word-break: break-word;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+      margin-bottom: 0;
+      position: relative;
+      height: auto;
+    }
+
+    .terminal-logs .log-entry:last-child {
+      border-bottom: none;
+    }
+
+    /* Timestamp - bên trái, color giống mẫu */
+    .terminal-logs .log-timestamp {
+      display: block;
+      font-weight: normal;
+      color: #5c5;
+      margin: 0 0 12px 0;
+      float: left;
+      clear: both;
+    }
+
+    /* Username - bên phải, color giống mẫu */
+    .terminal-logs .log-user {
+      display: block;
+      margin: 0 0 12px 0;
+      font-weight: bold;
+      text-transform: uppercase;
+      color: #4080ff;
+      float: right;
+    }
+
+    /* Action - full width, style giống mẫu */
+    .terminal-logs .log-action {
+      display: block;
+      width: auto;
+      margin: 0 0 12px 0;
+      font-weight: normal;
+      padding: 6px 10px;
+      border-radius: 0;
+      text-align: left;
+      box-shadow: none;
+      border-left: 4px solid transparent;
+      clear: both;
+    }
+
+    /* Details - under action, style giống mẫu */
+    .terminal-logs .log-details {
+      display: block;
+      color: white;
+      margin: 0 0 10px 0;
+      line-height: 1.4;
+      clear: both;
+    }
+
+    /* IP - right aligned, style giống mẫu */
+    .terminal-logs .log-ip {
+      display: block;
+      text-align: right;
+      font-size: 0.85em;
+      color: #888;
+      margin: 0;
+    }
+
+    /* Separator - hidden */
+    .terminal-logs .log-separator {
+      display: none;
+    }
+
+    /* Action specific styles */
+    .terminal-logs .action-update {
+      background-color: rgba(64, 192, 255, 0.15);
+      border-left-color: #40c0ff;
+      color: #40c0ff;
+    }
+
+    .terminal-logs .action-create {
+      background-color: rgba(64, 192, 64, 0.15);
+      border-left-color: #40c040;
+      color: #40c040;
+    }
+
+    .terminal-logs .action-clear {
+      background-color: rgba(176, 64, 255, 0.15);
+      border-left-color: #b040ff;
+      color: #b040ff;
+    }
+
+    .terminal-logs .action-login {
+      background-color: rgba(255, 192, 0, 0.15);
+      border-left-color: #ffc000;
+      color: #ffc000;
+    }
+
+    .terminal-logs .action-logout {
+      background-color: rgba(128, 128, 128, 0.15);
+      border-left-color: #808080;
+      color: #808080;
+    }
+
+    .terminal-logs .action-delete {
+      background-color: rgba(255, 64, 64, 0.15);
+      border-left-color: #ff4040;
+      color: #ff4040;
+    }
+
+    /* Light theme - custom adjustments for mobile */
+    [data-theme="light"] .terminal-logs {
+      background-color: #f5f5f5;
+    }
+
+    [data-theme="light"] .terminal-logs .log-entry {
+      border-bottom-color: rgba(0, 0, 0, 0.05);
+    }
+
+    [data-theme="light"] .terminal-logs .log-timestamp {
+      color: #0a6;
+    }
+
+    [data-theme="light"] .terminal-logs .log-details {
+      color: #333;
+    }
+
+    [data-theme="light"] .terminal-logs .log-user {
+      color: #06c;
+    }
+  }
+
+  @media (min-width: 768px) and (max-width: 991px) {
+    /* Tablet styles */
+    .terminal-logs {
+      font-size: 13px;
+    }
+
+    .terminal-logs .log-entry {
+      padding: 3px 8px;
+    }
+
+    .terminal-logs .log-timestamp {
+      margin-right: 6px;
+    }
+
+    .terminal-logs .log-user {
+      margin-right: 6px;
+    }
+
+    .terminal-logs .log-action {
+      margin-right: 6px;
+      padding: 1px 4px;
+    }
+  }
+</style>
+
+<div class="container-fluid">
+  {% if success_message %}
+  <div class="alert alert-success alert-dismissible fade show" role="alert">
+    {{ success_message }}
+    <button
+      type="button"
+      class="btn-close"
+      data-bs-dismiss="alert"
+      aria-label="Close"
+    ></button>
+  </div>
+  {% endif %} {% if error_message %}
+  <div class="alert alert-danger alert-dismissible fade show" role="alert">
+    {{ error_message }}
+    <button
+      type="button"
+      class="btn-close"
+      data-bs-dismiss="alert"
+      aria-label="Close"
+    ></button>
+  </div>
+  {% endif %}
+
+  <!-- Authentication Settings -->
+  <div class="card mb-4">
+    <div class="card-header bg-info">
+      <h5 class="text-white mb-0">
+        <i class="mdi mdi-account-key me-2"></i>Authentication Settings
+      </h5>
+    </div>
+    <div class="card-body p-4">
+      <form method="post" action="/admin/settings/update_token_expiry">
+        <div class="form-group">
+          <label for="token_expiry_minutes" class="form-label"
+            >Token Expiry (minutes)</label
+          >
+          <input
+            type="number"
+            class="form-control mb-2"
+            id="token_expiry_minutes"
+            name="token_expiry_minutes"
+            value="{{ token_expiry.value }}"
+            required
+            min="1"
+            max="10080"
+          />
+          <small class="text-gray">
+            The time (in minutes) before authentication tokens expire. Maximum 7
+            days (10080 minutes).
+          </small>
+        </div>
+        <button type="submit" class="btn btn-info mt-3">
+          <i class="mdi mdi-content-save me-1"></i>Save Changes
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Database Management -->
+  <div class="card mb-4">
+    <div class="card-header bg-danger">
+      <h5 class="text-white mb-0">
+        <i class="mdi mdi-database me-2"></i>Database Management
+      </h5>
+    </div>
+    <div class="card-body p-4">
+      <p class="text-gray mb-4">
+        Reset the entire database. This will remove all data including users,
+        articles, products, etc. This action cannot be undone.
+      </p>
+      <a href="/admin/settings/confirm_reset_database" class="btn btn-danger">
+        <i class="mdi mdi-delete me-1"></i>Reset Database
+      </a>
+    </div>
+  </div>
+
+  <!-- System Logs -->
+  <div class="card">
+    <div class="system-logs-header">
+      <h5 class="mb-0">
+        <i class="mdi mdi-clipboard-text me-2"></i>System Logs
+      </h5>
+      <a href="/admin/settings/confirm_clear_logs" class="btn btn-danger">
+        <i class="mdi mdi-delete me-1"></i>Clear Logs
+      </a>
+    </div>
+    <div class="card-body p-0">
+      <div class="terminal-logs">
+        {% for log in logs %} {% if 'Delete Comment' not in log.action %}
+        <div class="log-entry">
+          <span class="log-timestamp"
+            >[{{ log.created_at.strftime('%Y-%m-%d %H:%M:%S') }}]</span
+          >
+          <span class="log-user">{{ log.user.username }}</span>
+          <span
+            class="log-action {% if 'create' in log.action.lower() or 'add' in log.action.lower() %}action-create {% elif 'update' in log.action.lower() or 'edit' in log.action.lower() %}action-update {% elif 'delete' in log.action.lower() or 'remove' in log.action.lower() %}action-delete {% elif 'login' in log.action.lower() %}action-login {% elif 'logout' in log.action.lower() %}action-logout {% elif 'clear' in log.action.lower() %}action-clear {% else %}action-other{% endif %}"
+            >{{ log.action }}</span
+          >
+          <span class="log-separator">|</span>
+          <span class="log-details">{{ log.details }}</span>
+          <span class="log-ip">from {{ log.ip_address }}</span>
+        </div>
+        {% endif %} {% else %}
+        <div class="empty-logs">No logs available</div>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %} {% block custom_js %}
+<script>
+  // Auto-dismiss alerts after 5 seconds
+  $(document).ready(function () {
+    setTimeout(function () {
+      $(".alert").alert("close");
+    }, 5000);
+
+    // No need for manual JavaScript styling -
+    // The CSS will handle all the table styling in both light and dark modes
+  });
+</script>
+{% endblock %}

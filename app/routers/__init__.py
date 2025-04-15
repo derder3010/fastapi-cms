@@ -11,7 +11,9 @@ from app.routers.articles import router as articles_router
 from app.routers.comments import router as comments_router
 from app.routers.tags import router as tags_router
 from app.routers.products import router as products_router
+from app.routers.settings import router as settings_router
 
+# Tạo router chính cho admin với tiền tố /admin
 admin_router = APIRouter(prefix="/admin", include_in_schema=False)
 
 # Root admin route redirect to dashboard or login
@@ -24,10 +26,12 @@ async def admin_root(request: Request, db=Depends(get_db)):
     else:
         return RedirectResponse(url="/admin/login", status_code=303)
 
+# Đăng ký các router con
 admin_router.include_router(dashboard_router)
 admin_router.include_router(users_router)
 admin_router.include_router(categories_router)
 admin_router.include_router(articles_router)
 admin_router.include_router(comments_router)
 admin_router.include_router(tags_router)
-admin_router.include_router(products_router) 
+admin_router.include_router(products_router)
+admin_router.include_router(settings_router) 

@@ -608,9 +608,27 @@ content %}
                 <i class="bi bi-exclamation-triangle-fill me-2"></i>You
                 cannot delete your own account!
               </div>
-              {% else %} Are you sure you want to delete the user "{{
-              user_item.username }}"? This action cannot be undone. {%
-              endif %}
+              {% else %}
+              <div class="alert alert-warning">
+                <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                <strong>Warning:</strong> This is a destructive action.
+              </div>
+              <p>Are you sure you want to delete the user "<strong>{{ user_item.username }}</strong>"?</p>
+              
+              <div class="alert alert-danger">
+                <p><strong>The following data will also be permanently deleted:</strong></p>
+                <ul class="mb-0">
+                  <li>All articles created by this user</li>
+                  <li>All comments made by this user on any article</li>
+                  <li>All comments made by other users on this user's articles</li>
+                  <li>All tag associations with this user's articles</li>
+                  <li>All product associations with this user's articles</li>
+                  <li>All system logs related to this user</li>
+                </ul>
+              </div>
+              
+              <p class="mb-0"><strong>This action cannot be undone.</strong></p>
+              {% endif %}
             </div>
             <div class="modal-footer">
               <button

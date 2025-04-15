@@ -501,9 +501,34 @@ block content %}
               ></button>
             </div>
             <div class="modal-body">
-              Are you sure you want to delete the category "{{ category.name
-              }}"? This action cannot be undone and will also delete all
-              articles in this category.
+              <div class="alert alert-warning">
+                <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                <strong>Warning:</strong> This is a destructive action.
+              </div>
+              <p>
+                Are you sure you want to delete the category "<strong
+                  >{{ category.name }}</strong
+                >"?
+              </p>
+
+              <div class="alert alert-danger">
+                <p>
+                  <strong
+                    >The following data will also be permanently
+                    deleted:</strong
+                  >
+                </p>
+                <ul class="mb-0">
+                  <li>All articles in this category</li>
+                  <li>All comments on articles in this category</li>
+                  <li>All tag associations with articles in this category</li>
+                  <li>
+                    All product associations with articles in this category
+                  </li>
+                </ul>
+              </div>
+
+              <p class="mb-0"><strong>This action cannot be undone.</strong></p>
             </div>
             <div class="modal-footer">
               <button

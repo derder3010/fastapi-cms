@@ -1,31 +1,68 @@
 {% extends "admin/base.html" %} {% block title %}Confirm Delete All{% endblock
 %} {% block content %}
-<div class="card">
-  <div class="card-header">
-    <h5 class="card-title mb-0">Confirm Delete All</h5>
-  </div>
-  <div class="card-body">
-    <div class="alert alert-danger">
-      <h4 class="alert-heading">
-        <i class="bi bi-exclamation-triangle-fill me-2"></i>Warning!
-      </h4>
-      <p>
-        You are about to delete
-        <strong>ALL {{ count }} {{ item_type }}</strong> from the database.
-      </p>
-      <p>
-        This action <strong>cannot be undone</strong>. Are you sure you want to
-        proceed?
-      </p>
+<div class="container-fluid">
+  <div class="card">
+    <div class="card-header bg-dark">
+      <h5 class="card-title text-white mb-0">
+        <i class="mdi mdi-alert-circle-outline me-2"></i>Warning!
+      </h5>
     </div>
+    <div class="card-body">
+      <div class="alert alert-danger">
+        <h4 class="alert-heading">
+          <i class="mdi mdi-alert-octagon me-2"></i>Warning!
+        </h4>
+        <p>
+          You are about to delete
+          <strong>ALL {{ count }} {{ item_type }}</strong> from the database.
+        </p>
+        {% if additional_info %}
+        <p><strong>Note:</strong> {{ additional_info }}</p>
+        {% endif %}
+        <p>
+          This action <strong>cannot be undone</strong>. Are you sure you want
+          to proceed?
+        </p>
+      </div>
 
-    <div class="d-flex justify-content-between mt-4">
-      <a href="{{ back_url }}" class="btn btn-secondary">
-        <i class="bi bi-arrow-left me-2"></i>Cancel
-      </a>
-      <a href="{{ confirm_url }}" class="btn btn-danger">
-        <i class="bi bi-trash me-2"></i>Yes, Delete All {{ item_type }}
-      </a>
+      {% if 'users' in item_type %}
+      <div class="alert alert-warning">
+        <h5 class="alert-heading">
+          <i class="mdi mdi-information-outline me-2"></i>The following data
+          will also be deleted:
+        </h5>
+        <ul class="mb-0">
+          <li>All articles created by these users</li>
+          <li>All comments made by these users on any article</li>
+          <li>All comments made by other users on these users' articles</li>
+          <li>All tag associations with these users' articles</li>
+          <li>All product associations with these users' articles</li>
+          <li>All system logs related to these users</li>
+        </ul>
+      </div>
+      {% endif %} {% if 'categories' in item_type %}
+      <div class="alert alert-warning">
+        <h5 class="alert-heading">
+          <i class="mdi mdi-information-outline me-2"></i>The following data
+          will also be deleted:
+        </h5>
+        <ul class="mb-0">
+          <li>All articles in these categories</li>
+          <li>All comments on articles in these categories</li>
+          <li>All tag associations with articles in these categories</li>
+          <li>All product associations with articles in these categories</li>
+        </ul>
+      </div>
+      {% endif %}
+
+      <div class="d-flex justify-content-between mt-4">
+        <a href="{{ back_url }}" class="btn btn-secondary">
+          <i class="mdi mdi-arrow-left me-2"></i>Cancel
+        </a>
+        <a href="{{ confirm_url }}" class="btn btn-danger">
+          <i class="mdi mdi-delete me-2"></i>Yes, Delete All {{ item_type }}
+        </a>
+      </div>
     </div>
   </div>
 </div>

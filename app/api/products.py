@@ -127,8 +127,48 @@ async def delete_product(
     if not product:
         raise HTTPException(status_code=404, detail="Product not found")
     
-    db.delete(product)
-    db.commit()
+    try:
+        # First delete all ProductArticleLink entries associated with this product
+        from app.models import ProductArticleLink
+        db.execute(
+            select(ProductArticleLink)
+            .where(ProductArticleLink.product_id == product_id)
+            .delete()
+        )
+        
+        # Then delete the product
+        db.delete(product)
+        db.commit()
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(status_code=500, detail=f"Failed to delete product: {str(e)}")
+    
+    return None
+
+@router.delete("/", status_code=204)
+async def delete_all_products(
+    current_user = Depends(get_current_active_user),
+    db: Session = Depends(get_db)
+):
+    # Only allow superusers to delete all products
+    if not current_user.is_superuser:
+        raise HTTPException(status_code=403, detail="Not authorized to delete all products")
+    
+    try:
+        # First delete all ProductArticleLink entries
+        from app.models import ProductArticleLink
+        db.execute(select(ProductArticleLink).delete())
+        
+        # Then delete all products
+        products = db.execute(select(Product)).scalars().all()
+        for product in products:
+            db.delete(product)
+        
+        db.commit()
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(status_code=500, detail=f"Failed to delete all products: {str(e)}")
+    
     return None
 
 @router.post("/{product_id}/add-to-article/{article_id}", status_code=200)
