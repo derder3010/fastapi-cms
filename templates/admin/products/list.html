@@ -63,6 +63,32 @@ content %}
     flex: 1;
     display: flex;
     flex-direction: column;
+    padding: 1rem;
+  }
+
+  .card-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.75rem;
+    padding: 0.25rem 0;
+  }
+
+  .card-label {
+    font-weight: 500;
+    color: var(--text-muted);
+    margin-right: 1rem;
+  }
+
+  .card-value {
+    text-align: right;
+    flex-grow: 1;
+  }
+
+  .action-buttons {
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.5rem;
   }
 
   /* Status badge styles */
@@ -350,6 +376,36 @@ content %}
   [data-theme="dark"] .product-image {
     border: 1px solid var(--border-color);
   }
+
+  /* Vertical alignment fixes for tables */
+  .table td, .table th {
+    vertical-align: middle;
+  }
+
+  .table-responsive {
+    margin-bottom: 0;
+  }
+
+  .table td.align-middle {
+    vertical-align: middle !important;
+  }
+
+  /* Fixed height card responsive adjustments */
+  @media (max-width: 767.98px) {
+    .fixed-height-card {
+      min-height: auto;
+    }
+  }
+
+  /* Make small text in dark mode more visible */
+  [data-theme="dark"] .text-muted {
+    color: rgba(255, 255, 255, 0.6) !important;
+  }
+  
+  /* Make secondary text visible in dark mode */
+  [data-theme="dark"] .text-secondary {
+    color: rgba(255, 255, 255, 0.7) !important;
+  }
 </style>
 
 <div class="container-fluid">
@@ -516,21 +572,21 @@ content %}
                 <tbody>
                   {% for product in products %}
                   <tr>
-                    <td>
+                    <td class="align-middle">
                       {% if product.featured_image %}
                       <img
-                        src="{{ product.featured_image | media_url }}"
+                        src="{% if product.featured_image %}{% if 'http' in product.featured_image %}{{ product.featured_image }}{% else %}/media/{{ product.featured_image }}{% endif %}{% else %}{{ '/static/img/placeholder.jpg' }}{% endif %}"
                         alt="{{ product.name }}"
                         width="50"
                       />
                       {% else %}
-                      <span class="text-muted">No image</span>
+                      <span class="text-secondary">No image</span>
                       {% endif %}
                     </td>
-                    <td>{{ product.name }}</td>
-                    <td>${{ product.price }}</td>
-                    <td>{{ product.created_at.strftime('%Y-%m-%d') }}</td>
-                    <td>
+                    <td class="align-middle">{{ product.name }}</td>
+                    <td class="align-middle">${{ product.price }}</td>
+                    <td class="align-middle">{{ product.created_at.strftime('%Y-%m-%d') }}</td>
+                    <td class="align-middle">
                       <div class="d-flex gap-2">
                         <a
                           href="/admin/products/{{ product.id }}/edit"
@@ -581,37 +637,37 @@ content %}
           {% for product in products %}
           <div class="col-md-6 col-sm-6 col-12 mb-3">
             <div class="entity-card fixed-height-card">
-              <div class="card-header">
+              <div class="card-header d-flex align-items-center justify-content-center">
                 {% if product.featured_image %}
                 <img
-                  src="{{ product.featured_image | media_url }}"
+                  src="{% if product.featured_image %}{% if 'http' in product.featured_image %}{{ product.featured_image }}{% else %}/media/{{ product.featured_image }}{% endif %}{% else %}{{ '/static/img/placeholder.jpg' }}{% endif %}"
                   alt="{{ product.name }}"
                   style="max-height: 100px; width: auto"
                 />
                 {% else %}
-                <div class="text-muted">No image</div>
+                <div class="text-secondary">No image</div>
                 {% endif %}
               </div>
 
-              <div class="card-body">
-                <div class="card-row">
+              <div class="card-body d-flex flex-column justify-content-center">
+                <div class="card-row d-flex align-items-center">
                   <div class="card-label">Name</div>
                   <div class="card-value">{{ product.name }}</div>
                 </div>
 
-                <div class="card-row">
+                <div class="card-row d-flex align-items-center">
                   <div class="card-label">Price</div>
                   <div class="card-value">${{ product.price }}</div>
                 </div>
 
-                <div class="card-row">
+                <div class="card-row d-flex align-items-center">
                   <div class="card-label">Created</div>
                   <div class="card-value">
                     {{ product.created_at.strftime('%Y-%m-%d') }}
                   </div>
                 </div>
 
-                <div class="card-row">
+                <div class="card-row d-flex align-items-center">
                   <div class="card-label">Actions</div>
                   <div class="card-value">
                     <div class="action-buttons">

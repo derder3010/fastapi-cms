@@ -45,7 +45,7 @@ async def admin_dashboard(request: Request, db: Session = Depends(get_db)):
     
     # Get recent products
     recent_products = db.execute(
-        select(Product).order_by(desc(Product.created_at)).limit(5)
+        select(Product).order_by(desc(Product.created_at)).limit(8)
     ).scalars().all()
     
     # Get top 10 articles by views for the chart

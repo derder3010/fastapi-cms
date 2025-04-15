@@ -133,7 +133,7 @@ app.add_middleware(
 # Set up templates
 templates = Jinja2Templates(directory="templates")
 
-# Add a filter for media URLs
+# Add the filter to Jinja2 environment
 templates.env.filters["media_url"] = StorageManager.get_file_url
 
 # Mount static files

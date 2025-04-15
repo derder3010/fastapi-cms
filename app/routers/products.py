@@ -29,7 +29,9 @@ async def admin_products(
     price_min: Optional[str] = None,
     price_max: Optional[str] = None,
     date_from: Optional[str] = None,
-    date_to: Optional[str] = None,  
+    date_to: Optional[str] = None,
+    category_id: Optional[str] = None,
+    status: Optional[str] = None,
     db: Session = Depends(get_db)
 ):
     # Verify user is logged in and is an admin
@@ -82,6 +84,16 @@ async def admin_products(
             except ValueError:
                 pass
         
+        # Apply category filter (if implemented)
+        if category_id and category_id.isdigit():
+            # If you add category functionality, add filter here
+            applied_filters += 1
+        
+        # Apply status filter (if implemented)
+        if status:
+            # If you add status functionality, add filter here
+            applied_filters += 1
+        
         # Count total records for pagination
         count_query = select(func.count()).select_from(query.subquery())
         total_records = db.execute(count_query).scalar_one()
@@ -119,7 +131,10 @@ async def admin_products(
                 "filter_price_max": price_max,
                 "filter_date_from": date_from,
                 "filter_date_to": date_to,
-                "applied_filters": applied_filters
+                "filter_category_id": category_id,
+                "filter_status": status,
+                "applied_filters": applied_filters,
+                "categories": []  # Empty list as categories are not implemented yet
             }
         )
     except Exception as e:
@@ -129,7 +144,9 @@ async def admin_products(
                 "request": request,
                 "user": user,
                 "products": [],
-                "error": f"Error: {str(e)}"
+                "error": f"Error: {str(e)}",
+                "categories": [], # Add empty categories list
+                "applied_filters": 0 # Add applied_filters with default 0
             }
         )
 
