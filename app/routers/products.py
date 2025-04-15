@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, Form, Request, UploadFile, File
+from fastapi import APIRouter, Depends, Form, Request, UploadFile, File, HTTPException
 from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.templating import Jinja2Templates
 from sqlmodel import Session, select, func, or_, delete
@@ -20,6 +20,29 @@ router = APIRouter(prefix="/products")
 # Set up templates
 templates = Jinja2Templates(directory="templates")
 
+# Define custom filter for media URLs
+def media_url_filter(path: str) -> str:
+    """Get URL for media file path, handling both local and cloud storage"""
+    if not path:
+        return ""
+    
+    # If it's already a full URL (starts with http/https), return as is
+    if path.startswith(("http://", "https://")):
+        return path
+        
+    # If using cloud storage and we have a public URL configured
+    if settings.USE_CLOUD_STORAGE:
+        if settings.R2_PUBLIC_URL:
+            return f"{settings.R2_PUBLIC_URL.rstrip('/')}/{path}"
+        else:
+            return f"{settings.R2_ENDPOINT_URL.rstrip('/')}/{settings.R2_BUCKET_NAME}/{path}"
+        
+    # Otherwise, it's a local file
+    return f"/media/{path}"
+
+# Add custom filter to Jinja2 environment
+templates.env.filters["media_url"] = media_url_filter
+
 @router.get("/", response_class=HTMLResponse)
 async def admin_products(
     request: Request, 
@@ -30,8 +53,7 @@ async def admin_products(
     price_max: Optional[str] = None,
     date_from: Optional[str] = None,
     date_to: Optional[str] = None,
-    category_id: Optional[str] = None,
-    status: Optional[str] = None,
+    sort: Optional[str] = None,
     db: Session = Depends(get_db)
 ):
     # Verify user is logged in and is an admin
@@ -84,16 +106,6 @@ async def admin_products(
             except ValueError:
                 pass
         
-        # Apply category filter (if implemented)
-        if category_id and category_id.isdigit():
-            # If you add category functionality, add filter here
-            applied_filters += 1
-        
-        # Apply status filter (if implemented)
-        if status:
-            # If you add status functionality, add filter here
-            applied_filters += 1
-        
         # Count total records for pagination
         count_query = select(func.count()).select_from(query.subquery())
         total_records = db.execute(count_query).scalar_one()
@@ -103,8 +115,29 @@ async def admin_products(
         page = max(1, min(page, total_pages) if total_pages > 0 else 1)
         offset = (page - 1) * page_size
         
+        # Apply sorting
+        if sort:
+            if sort == "name_asc":
+                query = query.order_by(Product.name.asc())
+            elif sort == "name_desc":
+                query = query.order_by(Product.name.desc())
+            elif sort == "price_asc":
+                query = query.order_by(Product.price.asc())
+            elif sort == "price_desc":
+                query = query.order_by(Product.price.desc())
+            elif sort == "date_asc":
+                query = query.order_by(Product.created_at.asc())
+            elif sort == "date_desc":
+                query = query.order_by(Product.created_at.desc())
+            else:
+                # Default sort - newest first
+                query = query.order_by(Product.created_at.desc())
+        else:
+            # Default sort - newest first
+            query = query.order_by(Product.created_at.desc())
+        
         # Add pagination
-        paginated_query = query.order_by(Product.name).offset(offset).limit(page_size)
+        paginated_query = query.offset(offset).limit(page_size)
         
         # Get products
         products = db.execute(paginated_query).scalars().all()
@@ -131,10 +164,9 @@ async def admin_products(
                 "filter_price_max": price_max,
                 "filter_date_from": date_from,
                 "filter_date_to": date_to,
-                "filter_category_id": category_id,
-                "filter_status": status,
+                "sort": sort,
                 "applied_filters": applied_filters,
-                "categories": []  # Empty list as categories are not implemented yet
+                "categories": []  # Keep empty list for backward compatibility
             }
         )
     except Exception as e:
@@ -170,7 +202,14 @@ async def admin_add_product_form(request: Request, q: Optional[str] = None, db: 
     # Render the add product form
     return templates.TemplateResponse(
         "admin/products/add.html",
-        {"request": request, "user": user, "articles": articles, "search_query": q}
+        {
+            "request": request, 
+            "user": user, 
+            "articles": articles, 
+            "search_query": q,
+            "applied_filters": 0,
+            "categories": []
+        }
     )
 
 @router.post("/add")
@@ -267,62 +306,38 @@ async def admin_add_product(
             status_code=500
         )
 
-@router.get("/{product_id}/edit", response_class=HTMLResponse)
-async def admin_edit_product_form(request: Request, product_id: int, q: Optional[str] = None, db: Session = Depends(get_db)):
+@router.get("/edit/{id}", response_class=HTMLResponse)
+async def admin_edit_product_form(request: Request, id: int, db: Session = Depends(get_db)):
     # Verify user is logged in and is an admin
     user = await get_user_from_cookie(request, db)
     if not user or not user.is_superuser:
         return RedirectResponse(url="/admin/login", status_code=303)
     
-    try:
-        # Get the product to edit
-        product = db.get(Product, product_id)
-        if not product:
-            return RedirectResponse(
-                url="/admin/products?message=Product not found",
-                status_code=303
-            )
-        
-        # Get articles, filtered if search query is provided
-        if q:
-            # Filter articles by title containing the search query
-            search_term = f"%{q}%"
-            articles_query = select(Article).where(Article.title.ilike(search_term))
-            articles = db.execute(articles_query).scalars().all()
-        else:
-            # Get all articles if no search query
-            articles = db.execute(select(Article)).scalars().all()
-        
-        # Get the articles associated with this product
-        associated_article_ids = [article.id for article in product.articles]
-        
-        # Render the edit product form
-        return templates.TemplateResponse(
-            "admin/products/edit.html",
-            {
-                "request": request, 
-                "user": user, 
-                "product": product,
-                "articles": articles,
-                "associated_article_ids": associated_article_ids,
-                "search_query": q
-            }
-        )
-    except Exception as e:
-        return templates.TemplateResponse(
-            "admin/products/list.html",
-            {
-                "request": request,
-                "user": user,
-                "products": db.execute(select(Product)).scalars().all(),
-                "error": f"Error loading product: {str(e)}"
-            }
-        )
+    # Get the product to edit
+    product = db.get(Product, id)
+    if not product:
+        raise HTTPException(status_code=404, detail="Product not found")
+    
+    # Get all articles for selection
+    articles = db.execute(select(Article)).scalars().all()
+    
+    # Render the edit product form
+    return templates.TemplateResponse(
+        "admin/products/edit.html",
+        {
+            "request": request,
+            "user": user,
+            "product": product,
+            "articles": articles,
+            "categories": [],
+            "applied_filters": 0
+        }
+    )
 
-@router.post("/{product_id}/edit")
+@router.post("/edit/{id}")
 async def admin_edit_product(
     request: Request,
-    product_id: int,
+    id: int,
     name: str = Form(...),
     price: int = Form(0),
     slug: str = Form(None),
@@ -339,7 +354,7 @@ async def admin_edit_product(
     
     try:
         # Get product
-        product = db.get(Product, product_id)
+        product = db.get(Product, id)
         if not product:
             return RedirectResponse(
                 url="/admin/products?message=Product not found",
@@ -357,14 +372,16 @@ async def admin_edit_product(
                         "request": request,
                         "user": user,
                         "product": product,
-                        "error": "Social links must be valid JSON."
+                        "error": "Social links must be valid JSON.",
+                        "applied_filters": 0,
+                        "categories": []
                     },
                     status_code=400
                 )
         
         # Generate slug if not provided
         if not slug:
-            existing_slugs = db.execute(select(Product.slug).where(Product.id != product_id)).scalars().all()
+            existing_slugs = db.execute(select(Product.slug).where(Product.id != product.id)).scalars().all()
             slug = generate_unique_slug(name, existing_slugs)
         
         # Check if product slug already exists (excluding current product)
@@ -377,7 +394,9 @@ async def admin_edit_product(
                         "request": request,
                         "user": user,
                         "product": product,
-                        "error": f"Product with slug '{slug}' already exists."
+                        "error": f"Product with slug '{slug}' already exists.",
+                        "applied_filters": 0,
+                        "categories": []
                     },
                     status_code=400
                 )
@@ -424,7 +443,7 @@ async def admin_edit_product(
             if article_id not in article_ids:
                 link = db.execute(
                     select(ProductArticleLink).where(
-                        (ProductArticleLink.product_id == product_id) & 
+                        (ProductArticleLink.product_id == product.id) & 
                         (ProductArticleLink.article_id == article_id)
                     )
                 ).scalar_one_or_none()
@@ -437,7 +456,7 @@ async def admin_edit_product(
                 # Check if article exists
                 article = db.get(Article, article_id)
                 if article:
-                    link = ProductArticleLink(product_id=product_id, article_id=article_id)
+                    link = ProductArticleLink(product_id=product.id, article_id=article_id)
                     db.add(link)
         
         db.commit()
@@ -454,7 +473,9 @@ async def admin_edit_product(
                 "request": request,
                 "user": user,
                 "product": product,
-                "error": f"Error: {str(e)}."
+                "error": f"Error: {str(e)}.",
+                "applied_filters": 0,
+                "categories": []
             },
             status_code=500
         )
@@ -586,6 +607,8 @@ async def admin_product_articles(
                 "request": request,
                 "user": user,
                 "products": db.execute(select(Product)).scalars().all(),
-                "error": f"Error: {str(e)}"
+                "error": f"Error: {str(e)}",
+                "applied_filters": 0,
+                "categories": []
             }
         ) 

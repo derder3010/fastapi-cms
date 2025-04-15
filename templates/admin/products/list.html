@@ -494,22 +494,24 @@ content %}
       <div class="card-body p-3">
         <form method="get" class="row g-2">
           <div class="col-md-4">
-            <label for="category_id" class="form-label small">Category</label>
-            <select class="form-select form-select-sm" id="category_id" name="category_id">
-              <option value="">All Categories</option>
-              {% for category in categories %}
-              <option value="{{ category.id }}" {% if filter_category_id == category.id|string %}selected{% endif %}>
-                {{ category.name }}
-              </option>
-              {% endfor %}
-            </select>
+            <label for="price_min" class="form-label small">Price Range</label>
+            <div class="input-group input-group-sm">
+              <span class="input-group-text">$</span>
+              <input type="number" class="form-control form-control-sm" id="price_min" name="price_min" value="{{ filter_price_min or '' }}" placeholder="Min">
+              <span class="input-group-text">to</span>
+              <span class="input-group-text">$</span>
+              <input type="number" class="form-control form-control-sm" id="price_max" name="price_max" value="{{ filter_price_max or '' }}" placeholder="Max">
+            </div>
           </div>
           <div class="col-md-4">
-            <label for="status" class="form-label small">Status</label>
-            <select class="form-select form-select-sm" id="status" name="status">
-              <option value="">All Status</option>
-              <option value="active" {% if filter_status == 'active' %}selected{% endif %}>Active</option>
-              <option value="inactive" {% if filter_status == 'inactive' %}selected{% endif %}>Inactive</option>
+            <label for="sort" class="form-label small">Sort By</label>
+            <select class="form-select form-select-sm" id="sort" name="sort">
+              <option value="date_desc" {% if sort == 'date_desc' or not sort %}selected{% endif %}>Newest First</option>
+              <option value="date_asc" {% if sort == 'date_asc' %}selected{% endif %}>Oldest First</option>
+              <option value="name_asc" {% if sort == 'name_asc' %}selected{% endif %}>Name (A-Z)</option>
+              <option value="name_desc" {% if sort == 'name_desc' %}selected{% endif %}>Name (Z-A)</option>
+              <option value="price_asc" {% if sort == 'price_asc' %}selected{% endif %}>Price (Low to High)</option>
+              <option value="price_desc" {% if sort == 'price_desc' %}selected{% endif %}>Price (High to Low)</option>
             </select>
           </div>
           <div class="col-md-4">
@@ -589,7 +591,7 @@ content %}
                     <td class="align-middle">
                       <div class="d-flex gap-2">
                         <a
-                          href="/admin/products/{{ product.id }}/edit"
+                          href="/admin/products/edit/{{ product.id }}"
                           class="btn btn-sm btn-primary"
                           title="Edit"
                         >
@@ -672,7 +674,7 @@ content %}
                   <div class="card-value">
                     <div class="action-buttons">
                       <a
-                        href="/admin/products/{{ product.id }}/edit"
+                        href="/admin/products/edit/{{ product.id }}"
                         class="btn btn-primary"
                         title="Edit"
                       >

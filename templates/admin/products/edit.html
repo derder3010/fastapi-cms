@@ -41,6 +41,92 @@ additional_css %}
   [data-theme="dark"] .text-muted {
     color: var(--text-muted, #cccccc) !important;
   }
+
+  /* Make Toast UI Editor have consistent styling in both light and dark modes */
+  #editor {
+    border-radius: 5px;
+    overflow: hidden;
+  }
+
+  /* Toast UI Editor overrides to keep consistent colors */
+  .toastui-editor-defaultUI {
+    border: 1px solid #e2e2e2 !important;
+  }
+
+  .toastui-editor-defaultUI-toolbar {
+    background-color: #f8f9fa !important;
+    border-bottom: 1px solid #e2e2e2 !important;
+  }
+
+  .toastui-editor-toolbar-item-wrapper {
+    border: 0 !important;
+  }
+
+  .toastui-editor-toolbar-icons {
+    background-color: transparent !important;
+    border: 0 !important;
+  }
+
+  .toastui-editor-defaultUI .toastui-editor-main {
+    background-color: #fff !important;
+  }
+
+  .toastui-editor-defaultUI .toastui-editor-main .toastui-editor-md-container,
+  .toastui-editor-defaultUI .toastui-editor-main .toastui-editor-ww-container {
+    background-color: #fff !important;
+  }
+
+  .toastui-editor-defaultUI
+    .toastui-editor-main
+    .toastui-editor-md-container
+    .toastui-editor-md-line,
+  .toastui-editor-defaultUI
+    .toastui-editor-main
+    .toastui-editor-ww-container
+    .toastui-editor-ww-line {
+    color: #333 !important;
+  }
+
+  .toastui-editor-popup,
+  .toastui-editor-context-menu {
+    background-color: #fff !important;
+    border-color: #e2e2e2 !important;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1) !important;
+  }
+
+  /* Ensure editor content area always has a white background and dark text */
+  .toastui-editor-contents,
+  .ProseMirror {
+    background-color: #fff !important;
+    color: #333 !important;
+  }
+
+  /* Ensure the code blocks have proper styling */
+  .toastui-editor-contents pre {
+    background-color: #f5f7f8 !important;
+    color: #333 !important;
+  }
+
+  /* Fix issue with editor scrollbars in dark mode */
+  .toastui-editor-defaultUI
+    .toastui-editor-main
+    .toastui-editor-md-container::-webkit-scrollbar,
+  .toastui-editor-defaultUI
+    .toastui-editor-main
+    .toastui-editor-ww-container::-webkit-scrollbar {
+    background-color: #f1f1f1 !important;
+    width: 10px !important;
+  }
+
+  .toastui-editor-defaultUI
+    .toastui-editor-main
+    .toastui-editor-md-container::-webkit-scrollbar-thumb,
+  .toastui-editor-defaultUI
+    .toastui-editor-main
+    .toastui-editor-ww-container::-webkit-scrollbar-thumb {
+    background-color: #c1c1c1 !important;
+    border-radius: 5px !important;
+  }
 </style>
 {% endblock %} {% block content %}
 <div class="container-fluid mt-4">
@@ -70,7 +156,7 @@ additional_css %}
 
           <!-- Main Product Form -->
           <form
-            action="/admin/products/{{ product.id }}/edit"
+            action="/admin/products/edit/{{ product.id }}"
             method="post"
             enctype="multipart/form-data"
             id="product-edit-form"
@@ -185,7 +271,7 @@ additional_css %}
                 <div class="mt-2">
                   <p class="mb-1">Current image:</p>
                   <img
-                    src="{{ product.featured_image | media_url }}"
+                    src="{{ product.featured_image|media_url }}"
                     alt="{{ product.name }}"
                     class="img-thumbnail"
                     style="max-height: 150px"
