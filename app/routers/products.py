@@ -13,6 +13,7 @@ from app.models import Product, Article, ProductArticleLink
 from app.auth.utils import get_user_from_cookie
 from app.utils.text import generate_unique_slug
 from app.config import settings
+from app.utils.storage import StorageManager
 
 router = APIRouter(prefix="/products")
 
@@ -208,22 +209,18 @@ async def admin_add_product(
         # Handle featured image upload
         featured_image_path = None
         if featured_image and featured_image.filename:
-            # Create uploads directory if it doesn't exist
-            upload_dir = os.path.join("media", "products")
-            os.makedirs(upload_dir, exist_ok=True)
+            # Save image using StorageManager
+            success, path, error = await StorageManager.save_file(
+                file=featured_image,
+                folder="products",
+                public=True
+            )
             
-            # Generate a unique filename
-            timestamp = datetime.now().strftime("%Y%m%d%H%M%S")
-            file_extension = os.path.splitext(featured_image.filename)[1]
-            new_filename = f"product_{slug}_{timestamp}{file_extension}"
-            file_path = os.path.join(upload_dir, new_filename)
+            if not success:
+                raise Exception(f"Failed to upload image: {error}")
             
-            # Save the file
-            with open(file_path, "wb") as buffer:
-                shutil.copyfileobj(featured_image.file, buffer)
-            
-            # Save the relative path
-            featured_image_path = os.path.join("products", new_filename)
+            # Save the path or URL to the product
+            featured_image_path = path
         
         # Create new product
         product = Product(
@@ -371,19 +368,15 @@ async def admin_edit_product(
         # Handle featured image upload
         featured_image_path = product.featured_image
         if featured_image and featured_image.filename:
-            # Create uploads directory if it doesn't exist
-            upload_dir = os.path.join("media", "products")
-            os.makedirs(upload_dir, exist_ok=True)
+            # Save image using StorageManager
+            success, path, error = await StorageManager.save_file(
+                file=featured_image,
+                folder="products",
+                public=True
+            )
             
-            # Generate a unique filename
-            timestamp = datetime.now().strftime("%Y%m%d%H%M%S")
-            file_extension = os.path.splitext(featured_image.filename)[1]
-            new_filename = f"product_{slug}_{timestamp}{file_extension}"
-            file_path = os.path.join(upload_dir, new_filename)
-            
-            # Save the file
-            with open(file_path, "wb") as buffer:
-                shutil.copyfileobj(featured_image.file, buffer)
+            if not success:
+                raise Exception(f"Failed to upload image: {error}")
             
             # Remove old image if it exists
             if product.featured_image:
@@ -392,7 +385,7 @@ async def admin_edit_product(
                     os.remove(old_file_path)
             
             # Update featured image path
-            featured_image_path = os.path.join("products", new_filename)
+            featured_image_path = path
         
         # Update product fields
         product.name = name

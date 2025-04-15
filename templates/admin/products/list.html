@@ -519,7 +519,7 @@ content %}
                     <td>
                       {% if product.featured_image %}
                       <img
-                        src="/media/{{ product.featured_image }}"
+                        src="{{ product.featured_image | media_url }}"
                         alt="{{ product.name }}"
                         width="50"
                       />
@@ -584,7 +584,7 @@ content %}
               <div class="card-header">
                 {% if product.featured_image %}
                 <img
-                  src="/media/{{ product.featured_image }}"
+                  src="{{ product.featured_image | media_url }}"
                   alt="{{ product.name }}"
                   style="max-height: 100px; width: auto"
                 />

@@ -185,7 +185,7 @@ additional_css %}
                 <div class="mt-2">
                   <p class="mb-1">Current image:</p>
                   <img
-                    src="/media/{{ product.featured_image }}"
+                    src="{{ product.featured_image | media_url }}"
                     alt="{{ product.name }}"
                     class="img-thumbnail"
                     style="max-height: 150px"

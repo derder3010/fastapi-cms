@@ -47,6 +47,16 @@ class Settings(BaseSettings):
     ADMIN_SITE_URL: str = "/"
     ADMIN_INDEX_TITLE: str = "Dashboard"
     ADMIN_FOOTER_HTML: str = "FastAPI Admin CMS - Powered by FastAPI"
+    
+    # Cloudflare R2 Storage Settings
+    USE_CLOUD_STORAGE: bool = False
+    R2_ACCOUNT_ID: str = ""
+    R2_ACCESS_KEY_ID: str = ""
+    R2_SECRET_ACCESS_KEY: str = ""
+    R2_BUCKET_NAME: str = ""
+    R2_ENDPOINT_URL: str = ""  # https://{account_id}.r2.cloudflarestorage.com
+    R2_PUBLIC_URL: str = ""    # Your public URL for the bucket (e.g., cdn.yourdomain.com)
+    R2_REGION_NAME: str = "auto"  # Usually "auto" for Cloudflare R2
 
     class Config:
         env_file = ".env"

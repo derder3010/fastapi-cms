@@ -369,7 +369,7 @@ head_scripts %}
                 <div class="card-body">
                   {% if product.featured_image %}
                   <img
-                    src="/media/{{ product.featured_image }}"
+                    src="{{ product.featured_image | media_url }}"
                     class="card-img-top mb-2"
                     alt="{{ product.name }}"
                     style="height: 150px; object-fit: cover"

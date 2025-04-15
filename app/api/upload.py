@@ -11,6 +11,7 @@ from app.auth.deps import get_current_active_user
 from app.auth.utils import get_user_from_cookie
 from app.models import User
 from app.config import settings
+from app.utils.storage import StorageManager
 
 # Set up OAuth2
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/token")
@@ -64,25 +65,24 @@ async def process_image_upload(file: UploadFile):
         )
     
     try:
-        # Create media directory if it doesn't exist
-        upload_dir = os.path.join("media", "uploads", "images")
-        os.makedirs(upload_dir, exist_ok=True)
+        success, path, error = await StorageManager.save_file(
+            file=file, 
+            folder="uploads/images",
+            public=True
+        )
         
-        # Generate a unique filename
-        unique_id = uuid.uuid4().hex
-        timestamp = datetime.now().strftime("%Y%m%d%H%M%S")
-        new_filename = f"image_{timestamp}_{unique_id}{file_ext}"
-        file_path = os.path.join(upload_dir, new_filename)
+        if not success:
+            raise HTTPException(
+                status_code=500, 
+                detail=f"Upload failed: {error}"
+            )
         
-        # Save the file
-        with open(file_path, "wb") as buffer:
-            shutil.copyfileobj(file.file, buffer)
-        
-        # Generate the relative URL
-        relative_path = os.path.join("uploads", "images", new_filename).replace("\\", "/")
-        
-        # Return the URL to the uploaded file
-        file_url = f"/media/{relative_path}"
+        # If path is already a full URL (cloud storage case)
+        if path.startswith(("http://", "https://")):
+            file_url = path
+        else:
+            # Otherwise, it's a local file path
+            file_url = f"/media/{path}"
         
         return {"url": file_url, "success": True}
     
