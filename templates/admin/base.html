@@ -120,6 +120,22 @@
         box-shadow: none;
       }
 
+      /* Global dark mode placeholder styling */
+      [data-theme="dark"] .form-control::placeholder {
+        color: rgba(255, 255, 255, 0.5);
+        opacity: 1;
+      }
+      
+      [data-theme="dark"] .form-control::-webkit-input-placeholder {
+        color: rgba(255, 255, 255, 0.5);
+        opacity: 1;
+      }
+      
+      [data-theme="dark"] .form-control::-moz-placeholder {
+        color: rgba(255, 255, 255, 0.5);
+        opacity: 1;
+      }
+
       .sidebar-search .btn {
         background-color: rgba(255, 255, 255, 0.1);
         border: none;
@@ -135,6 +151,13 @@
         list-style: none;
         padding: 0;
         margin-top: 20px;
+      }
+      
+      .sidebar ul.mt-auto {
+        position: absolute;
+        bottom: 60px;
+        width: 100%;
+        margin-top: 0;
       }
 
       .sidebar li {
@@ -1679,58 +1702,26 @@
         color: var(--input-text);
       }
 
-      /* Toast UI Editor overrides - keep consistent in both light and dark modes */
-      .toastui-editor-defaultUI {
-        border-color: #e2e2e2;
-        background-color: #ffffff;
+      /* Toast UI Editor dark mode overrides */
+      [data-theme="dark"] .toastui-editor-defaultUI {
+        border-color: var(--border-color);
       }
 
-      .toastui-editor-toolbar,
-      .toastui-editor-defaultUI-toolbar {
-        background-color: #f7f9fc;
-        border-bottom-color: #e2e2e2;
+      [data-theme="dark"] .toastui-editor-toolbar,
+      [data-theme="dark"] .toastui-editor-defaultUI-toolbar {
+        background-color: var(--card-bg);
+        border-bottom-color: var(--border-color);
       }
 
-      .toastui-editor-dropdown-toolbar {
-        background-color: #ffffff;
-        border-color: #e2e2e2;
+      [data-theme="dark"] .toastui-editor-dropdown-toolbar {
+        background-color: var(--card-bg);
+        border-color: var(--border-color);
       }
 
-      .toastui-editor-contents,
-      .toastui-editor-ww-container {
-        background-color: #ffffff;
-        color: #222222;
-      }
-
-      /* Ensure editor uses consistent colors regardless of theme */
-      .toastui-editor-md-container,
-      .toastui-editor-ww-container {
-        background-color: #ffffff !important;
-      }
-
-      .toastui-editor-contents p,
-      .toastui-editor-contents h1,
-      .toastui-editor-contents h2,
-      .toastui-editor-contents h3,
-      .toastui-editor-contents h4,
-      .toastui-editor-contents h5,
-      .toastui-editor-contents h6,
-      .toastui-editor-contents ul,
-      .toastui-editor-contents ol,
-      .toastui-editor-contents blockquote {
-        color: #222222 !important;
-      }
-
-      /* Force default colors for UI elements in the editor */
-      .toastui-editor-toolbar-icons {
-        color: #333 !important;
-      }
-
-      .toastui-editor-popup,
-      .toastui-editor-context-menu {
-        background-color: #fff !important;
-        color: #222 !important;
-        border-color: #e2e2e2 !important;
+      [data-theme="dark"] .toastui-editor-contents,
+      [data-theme="dark"] .toastui-editor-ww-container {
+        background-color: var(--input-bg);
+        color: var(--input-text);
       }
 
       /* Specific header styles for dark mode */
@@ -2008,15 +1999,19 @@
       <div class="sidebar" id="sidebar">
         <h1>FastAPI CMS</h1>
         <ul>
-          <li><a href="/admin/dashboard" {% if request.path == '/admin/dashboard' %}class="active"{% endif %}><i class="bi bi-speedometer2"></i> <span>Dashboard</span></a></li>
+          <li><a href="/admin/dashboard" {% if '/admin/dashboard' in request.path %}class="active"{% endif %}><i class="bi bi-speedometer2"></i> <span>Dashboard</span></a></li>
           <li><a href="/admin/users" {% if '/admin/users' in request.path %}class="active"{% endif %}><i class="bi bi-people"></i> <span>Users</span></a></li>
           <li><a href="/admin/categories" {% if '/admin/categories' in request.path %}class="active"{% endif %}><i class="bi bi-tags"></i> <span>Categories</span></a></li>
           <li><a href="/admin/tags" {% if '/admin/tags' in request.path %}class="active"{% endif %}><i class="bi bi-tag"></i> <span>Tags</span></a></li>
           <li><a href="/admin/articles" {% if '/admin/articles' in request.path %}class="active"{% endif %}><i class="bi bi-file-text"></i> <span>Articles</span></a></li>
           <li><a href="/admin/products" {% if '/admin/products' in request.path %}class="active"{% endif %}><i class="bi bi-box"></i> <span>Products</span></a></li>
           <li><a href="/admin/comments" {% if '/admin/comments' in request.path %}class="active"{% endif %}><i class="bi bi-chat-left-text"></i> <span>Comments</span></a></li>
-          <li class="mt-5"><a href="/admin/logout"><i class="bi bi-box-arrow-left"></i> <span>Logout</span></a></li>
         </ul>
+        
+        <ul class="mt-auto mb-3">
+          <li><a href="/admin/logout"><i class="bi bi-box-arrow-left"></i> <span>Logout</span></a></li>
+        </ul>
+        
         <div class="sidebar-footer">
           <span>Developed by Duy Tran</span>
           <a href="mailto:duytrander@gmail.com">duytrander@gmail.com</a>
@@ -2138,8 +2133,8 @@
           } else {
             document.documentElement.setAttribute('data-theme', 'dark');
             localStorage.setItem('theme', 'dark');
-            icon.classList.remove('bi-moon-fill');
-            icon.classList.add('bi-sun-fill');
+            icon.classList.remove('bi-sun-fill');
+            icon.classList.add('bi-moon-fill');
             // Dispatch custom event for charts to update
             document.dispatchEvent(new CustomEvent('themeChanged', { detail: { isDark: true } }));
           }

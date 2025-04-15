@@ -46,7 +46,7 @@
     color: var(--text-muted, #cccccc) !important;
   }
 
-  /* Additional Toast UI Editor styles to maintain consistent appearance */
+  /* Additional Toast UI Editor styles */
   .toastui-editor-defaultUI {
     border-color: #e2e2e2 !important;
     background-color: #ffffff !important;
@@ -86,6 +86,132 @@
     background-color: #fff !important;
     color: #222 !important;
     border-color: #e2e2e2 !important;
+  }
+
+  /* Article preview styles */
+  .article-preview {
+    padding: 2rem;
+    background-color: #ffffff;
+    color: #333;
+    border-radius: 8px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.05);
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+
+  .article-preview h1 {
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: #212529;
+    margin-bottom: 1rem;
+    line-height: 1.2;
+  }
+
+  .article-preview img {
+    border: 1px solid #eee;
+    max-width: 100%;
+    border-radius: 5px;
+    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
+  }
+  
+  .article-preview .badge {
+    font-size: 0.85rem;
+    padding: 0.35rem 0.65rem;
+  }
+  
+  #preview-excerpt {
+    font-size: 1.15rem;
+    color: #555;
+    border-left: 3px solid #e0e0e0;
+    padding-left: 1rem;
+  }
+  
+  #preview-content {
+    font-size: 1.1rem;
+    line-height: 1.6;
+  }
+  
+  #preview-footer {
+    font-size: 0.95rem;
+    color: #555;
+  }
+
+  /* Status badge styles */
+  .published-badge {
+    background-color: #28a745;
+  }
+
+  .draft-badge {
+    background-color: #ffc107;
+    color: #212529 !important;
+  }
+
+  /* Keep preview styling consistent in dark mode */
+  [data-theme="dark"] .article-preview {
+    background-color: var(--card-bg);
+    color: var(--text-color);
+    border: 1px solid var(--border-color);
+    box-shadow: 0 0 15px rgba(0, 0, 0, 0.3);
+  }
+
+  [data-theme="dark"] .article-preview h1 {
+    color: var(--text-color);
+  }
+  
+  [data-theme="dark"] #preview-excerpt {
+    color: var(--text-color);
+    opacity: 0.8;
+    border-left: 3px solid var(--border-color);
+  }
+  
+  [data-theme="dark"] #preview-content {
+    color: var(--text-color);
+  }
+  
+  [data-theme="dark"] #preview-footer {
+    color: var(--text-color);
+    opacity: 0.9;
+  }
+
+  [data-theme="dark"] .modal-content {
+    background-color: var(--card-bg);
+    color: var(--text-color);
+    border-color: var(--border-color);
+  }
+
+  [data-theme="dark"] .modal-header,
+  [data-theme="dark"] .modal-footer {
+    border-color: var(--border-color);
+  }
+
+  [data-theme="dark"] .modal-title {
+    color: var(--text-color);
+  }
+  
+  /* Fix modal width for better readability */
+  @media (min-width: 1200px) {
+    .modal-xl {
+      max-width: 1140px;
+    }
+  }
+  
+  /* Make preview more readable on smaller screens */
+  @media (max-width: 768px) {
+    .article-preview {
+      padding: 1.5rem;
+    }
+    
+    .article-preview h1 {
+      font-size: 1.8rem;
+    }
+    
+    #preview-excerpt {
+      font-size: 1rem;
+    }
+    
+    #preview-content {
+      font-size: 1rem;
+    }
   }
 </style>
 {% endblock %}
@@ -204,10 +330,67 @@
                         
                         <div class="d-flex justify-content-between">
                             <a href="/admin/articles" class="btn btn-secondary">Cancel</a>
-                            <button type="submit" class="btn btn-primary">Update Article</button>
+                            <div>
+                                <button type="button" id="previewButton" class="btn btn-outline-primary me-2">Preview</button>
+                                <button type="submit" class="btn btn-primary">Update Article</button>
+                            </div>
                         </div>
                     </form>
                 </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Preview Modal -->
+<div class="modal fade" id="previewModal" tabindex="-1" aria-labelledby="previewModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-xl modal-dialog-scrollable">
+        <div class="modal-content">
+            <div class="modal-header d-flex justify-content-between align-items-center">
+                <h5 class="modal-title" id="previewModalLabel">Article Preview</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body p-0">
+                <div class="container-fluid article-preview">
+                    <div class="row justify-content-center g-0">
+                        <div class="col-12">
+                            <article>
+                                <!-- Status badge -->
+                                <div class="mb-3">
+                                  <span id="preview-status-badge" class="badge"></span>
+                                </div>
+                                
+                                <!-- Category and Tags -->
+                                <div class="d-flex flex-wrap gap-2 mb-4">
+                                    <span class="badge bg-secondary me-2">Category: <span id="preview-category"></span></span>
+                                    <div id="preview-tags"></div>
+                                </div>
+                                
+                                <!-- Featured Image -->
+                                <div id="preview-image-container" class="mb-4 text-center">
+                                    <img id="preview-image" class="img-fluid rounded" style="max-height: 400px;" alt="Featured image">
+                                </div>
+                                
+                                <!-- Title -->
+                                <h1 id="preview-title" class="mb-3"></h1>
+                                
+                                <!-- Excerpt -->
+                                <div id="preview-excerpt" class="mb-4 lead fst-italic"></div>
+                                
+                                <!-- Content -->
+                                <div id="preview-content" class="mb-4"></div>
+                                
+                                <!-- Footer Content -->
+                                <div id="preview-footer-container" class="border-top pt-3 mt-4">
+                                    <div id="preview-footer"></div>
+                                </div>
+                            </article>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
             </div>
         </div>
     </div>
@@ -312,6 +495,86 @@
             
             // Submit the form
             this.submit();
+        });
+
+        // Handle preview button click
+        const previewButton = document.getElementById('previewButton');
+        const previewModal = new bootstrap.Modal(document.getElementById('previewModal'));
+        
+        // Fix modal backdrop issue
+        document.getElementById('previewModal').addEventListener('hidden.bs.modal', function () {
+            // Remove modal backdrop manually if it's stuck
+            const modalBackdrops = document.querySelectorAll('.modal-backdrop');
+            modalBackdrops.forEach(backdrop => {
+                backdrop.remove();
+            });
+            // Also restore body styling
+            document.body.classList.remove('modal-open');
+            document.body.style.overflow = '';
+            document.body.style.paddingRight = '';
+        });
+        
+        previewButton.addEventListener('click', function() {
+            // Get form values
+            const title = document.getElementById('title').value;
+            const excerpt = document.getElementById('excerpt').value;
+            const imageUrl = document.getElementById('image_url_option').checked 
+                ? document.getElementById('featured_image_url').value 
+                : document.getElementById('featured_image_file').files.length > 0
+                    ? URL.createObjectURL(document.getElementById('featured_image_file').files[0])
+                    : document.querySelector('img.img-thumbnail')?.src || '';
+            
+            const htmlContent = editor.getHTML();
+            const footerHtmlContent = footerEditor.getHTML();
+            
+            // Get selected category name
+            const categorySelect = document.getElementById('category_id');
+            const categoryName = categorySelect.options[categorySelect.selectedIndex]?.text || '';
+            
+            // Get selected tags
+            const tagsSelect = document.getElementById('tags');
+            const selectedTags = Array.from(tagsSelect.selectedOptions).map(option => {
+                return `<span class="badge bg-primary me-1">${option.text}</span>`;
+            });
+            
+            // Get published status
+            const isPublished = document.getElementById('published').checked;
+            
+            // Show status badge
+            const statusBadge = document.getElementById('preview-status-badge');
+            if (isPublished) {
+                statusBadge.textContent = 'Published';
+                statusBadge.className = 'badge published-badge';
+            } else {
+                statusBadge.textContent = 'Draft';
+                statusBadge.className = 'badge draft-badge';
+            }
+            
+            // Populate preview modal
+            document.getElementById('preview-title').innerText = title;
+            
+            // Set excerpt if available
+            if (excerpt) {
+                document.getElementById('preview-excerpt').innerText = excerpt;
+                document.getElementById('preview-excerpt').classList.remove('d-none');
+            } else {
+                document.getElementById('preview-excerpt').classList.add('d-none');
+            }
+            
+            if (imageUrl) {
+                document.getElementById('preview-image').src = imageUrl;
+                document.getElementById('preview-image-container').classList.remove('d-none');
+            } else {
+                document.getElementById('preview-image-container').classList.add('d-none');
+            }
+            
+            document.getElementById('preview-content').innerHTML = htmlContent;
+            document.getElementById('preview-footer').innerHTML = footerHtmlContent;
+            document.getElementById('preview-category').innerText = categoryName;
+            document.getElementById('preview-tags').innerHTML = selectedTags.join('');
+            
+            // Show modal
+            previewModal.show();
         });
 
         // Handle featured image source toggle

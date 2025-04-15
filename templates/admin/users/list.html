@@ -310,23 +310,6 @@ content %}
 </style>
 
 <div class="container-fluid">
-  <div class="row mb-3">
-    <div
-      class="col-12 d-flex justify-content-between align-items-center flex-wrap"
-    >
-      <div class="d-flex gap-2">
-        <a href="/admin/users/add" class="btn btn-primary btn-sm">
-          <i class="bi bi-person-plus me-1"></i><span>Add</span>
-        </a>
-        {% if users and users|length > 1 %}
-        <a href="/admin/users/delete-all" class="btn btn-danger btn-sm">
-          <i class="bi bi-trash me-1"></i><span>Delete All</span>
-        </a>
-        {% endif %}
-      </div>
-    </div>
-  </div>
-
   {% if message %}
   <div class="row">
     <div class="col-12">
@@ -445,6 +428,18 @@ content %}
       {% endif %} 
       
       {% if users %}
+      <!-- Action buttons above the table -->
+      <div class="d-flex justify-content-end mb-3 gap-2">
+        <a href="/admin/users/add" class="btn btn-primary">
+          <i class="bi bi-person-plus me-1"></i><span>Add User</span>
+        </a>
+        {% if users and users|length > 1 %}
+        <a href="/admin/users/delete-all" class="btn btn-danger">
+          <i class="bi bi-trash me-1"></i><span>Delete All</span>
+        </a>
+        {% endif %}
+      </div>
+      
       <!-- Table view for desktop -->
       <div class="d-none d-lg-block mb-4">
         <div class="card">

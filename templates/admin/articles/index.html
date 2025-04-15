@@ -63,6 +63,45 @@ content %}
     flex: 1;
     display: flex;
     flex-direction: column;
+    justify-content: space-between;
+    padding: 1rem;
+  }
+  
+  /* Equal height rows with variable content */
+  .card-row {
+    display: flex;
+    flex-wrap: nowrap;
+    margin-bottom: 0.75rem;
+  }
+  
+  .card-row:last-of-type {
+    margin-bottom: 0;
+  }
+  
+  .card-label {
+    width: 70px;
+    flex-shrink: 0;
+    font-size: 0.85rem;
+    color: #6c757d;
+  }
+  
+  .card-value {
+    flex-grow: 1;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+  }
+  
+  .card-value > * {
+    margin-right: 0.25rem;
+    margin-bottom: 0.25rem;
+  }
+  
+  /* Action buttons alignment */
+  .action-buttons {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
   }
 
   /* Status badge styles */
@@ -203,6 +242,22 @@ content %}
     color: var(--input-text);
   }
 
+  /* Placeholder color for dark mode */
+  [data-theme="dark"] .form-control::placeholder {
+    color: rgba(255, 255, 255, 0.5);
+    opacity: 1;
+  }
+  
+  [data-theme="dark"] .form-control::-webkit-input-placeholder {
+    color: rgba(255, 255, 255, 0.5);
+    opacity: 1;
+  }
+  
+  [data-theme="dark"] .form-control::-moz-placeholder {
+    color: rgba(255, 255, 255, 0.5);
+    opacity: 1;
+  }
+
   /* Override Bootstrap table styles for dark mode */
   [data-theme="dark"] .table-striped tbody tr {
     background-color: var(--card-bg) !important;
@@ -263,26 +318,41 @@ content %}
     background-color: transparent;
     border-color: var(--border-color);
   }
+
+  /* Compact table styles */
+  .table-compact th {
+    padding: 0.5rem 0.75rem;
+    font-size: 0.875rem;
+    font-weight: 500;
+    vertical-align: middle;
+  }
+  
+  .table-compact td {
+    padding: 0.5rem 0.75rem;
+    vertical-align: middle;
+  }
+  
+  .table-compact .btn-sm {
+    padding: 0.25rem 0.5rem;
+    font-size: 0.75rem;
+  }
+  
+  /* Extra small buttons */
+  .btn-xs {
+    padding: 0.125rem 0.25rem;
+    font-size: 0.7rem;
+    line-height: 1.2;
+    border-radius: 0.2rem;
+  }
+  
+  /* Compact badges */
+  .table-compact .badge {
+    padding: 0.35em 0.65em;
+    font-size: 0.75em;
+  }
 </style>
 
 <div class="container-fluid">
-  <div class="row mb-3">
-    <div
-      class="col-12 d-flex justify-content-between align-items-center flex-wrap"
-    >
-      <div class="d-flex gap-2">
-        <a href="/admin/articles/add" class="btn btn-primary btn-sm">
-          <i class="bi bi-plus-circle me-1"></i><span>Add</span>
-        </a>
-        {% if articles and articles|length > 0 %}
-        <a href="/admin/articles/delete-all" class="btn btn-danger btn-sm">
-          <i class="bi bi-trash me-1"></i><span>Delete All</span>
-        </a>
-        {% endif %}
-      </div>
-    </div>
-  </div>
-
   {% if message %}
   <div class="row">
     <div class="col-12">
@@ -340,7 +410,7 @@ content %}
 
   <div class="row mb-3">
     <div class="col-12">
-      <div class="card mb-4">
+      <div class="card mb-2">
         <div class="card-header filter-header d-flex justify-content-between align-items-center">
           <div class="d-flex align-items-center gap-2">
             <div class="text-muted small d-flex align-items-center">
@@ -418,41 +488,56 @@ content %}
         </div>
       </div>
       {% endif %} {% if articles %}
+      
+      <!-- Action buttons above the table -->
+      <div class="d-flex justify-content-end mb-3 gap-2">
+        <a href="/admin/articles/add" class="btn btn-primary">
+          <i class="bi bi-plus-circle me-1"></i><span>Add Article</span>
+        </a>
+        {% if articles and articles|length > 0 %}
+        <a href="/admin/articles/delete-all" class="btn btn-danger">
+          <i class="bi bi-trash me-1"></i><span>Delete All</span>
+        </a>
+        {% endif %}
+      </div>
+      
       <!-- Table view for desktop -->
       <div class="d-none d-lg-block mb-4">
         <div class="card">
-          <div class="card-body">
+          <div class="card-body p-0">
             <div class="table-responsive">
-              <table class="table table-striped table-hover">
+              <table class="table table-striped table-hover table-compact mb-0">
                 <thead>
                   <tr>
-                    <th>Title</th>
-                    <th>Category</th>
-                    <th>Status</th>
-                    <th>Tags</th>
-                    <th>Created</th>
-                    <th>Actions</th>
+                    <th class="border-bottom">Title</th>
+                    <th class="border-bottom">Category</th>
+                    <th class="border-bottom">Status</th>
+                    <th class="border-bottom">Tags</th>
+                    <th class="border-bottom">Created</th>
+                    <th class="border-bottom text-center">Actions</th>
                   </tr>
                 </thead>
                 <tbody>
                   {% for article in articles %}
                   <tr>
                     <td
-                      class="text-truncate"
+                      class="align-middle text-truncate"
                       style="max-width: 300px"
                       title="{{ article.title }}"
                     >
-                      {{ article.title }}
+                      <span class="fw-medium">{{ article.title }}</span>
                     </td>
-                    <td>{{ article.category.name }}</td>
-                    <td>
+                    <td class="align-middle">
+                      {{ article.category.name }}
+                    </td>
+                    <td class="align-middle">
                       {% if article.published %}
                       <span class="badge published-badge">Published</span>
                       {% else %}
                       <span class="badge draft-badge">Draft</span>
                       {% endif %}
                     </td>
-                    <td>
+                    <td class="align-middle">
                       <div class="d-flex flex-wrap gap-1">
                         {% if article.tags %} {% for tag in article.tags %}
                         <span
@@ -463,18 +548,32 @@ content %}
                         {% endfor %} {% endif %}
                       </div>
                     </td>
-                    <td>{{ article.created_at.strftime('%Y-%m-%d') }}</td>
-                    <td>
-                      <div class="d-flex gap-2">
+                    <td class="align-middle">{{ article.created_at.strftime('%Y-%m-%d') }}</td>
+                    <td class="align-middle text-center">
+                      <div class="d-flex gap-2 justify-content-center">
+                        <button
+                          type="button"
+                          class="btn btn-sm btn-info preview-button"
+                          data-id="{{ article.id }}"
+                          data-title="{{ article.title }}"
+                          data-category="{{ article.category.name }}"
+                          data-excerpt="{{ article.excerpt or '' }}"
+                          data-image="{{ article.featured_image or '' }}"
+                          data-published="{% if article.published %}true{% else %}false{% endif %}"
+                          title="Preview"
+                        >
+                          <i class="bi bi-eye"></i>
+                          <span class="d-none d-md-inline-block ms-1">Preview</span>
+                          <div class="d-none" id="content-{{ article.id }}">{{ article.content|safe }}</div>
+                          <div class="d-none" id="footer-{{ article.id }}">{{ article.footer_content|safe }}</div>
+                        </button>
                         <a
                           href="/admin/articles/{{ article.id }}/edit"
                           class="btn btn-sm btn-primary"
                           title="Edit"
                         >
                           <i class="bi bi-pencil-square"></i>
-                          <span class="d-none d-md-inline-block ms-1"
-                            >Edit</span
-                          >
+                          <span class="d-none d-md-inline-block ms-1">Edit</span>
                         </a>
                         <button
                           type="button"
@@ -484,9 +583,7 @@ content %}
                           title="Delete"
                         >
                           <i class="bi bi-trash"></i>
-                          <span class="d-none d-md-inline-block ms-1"
-                            >Delete</span
-                          >
+                          <span class="d-none d-md-inline-block ms-1">Delete</span>
                         </button>
                       </div>
                     </td>
@@ -555,16 +652,31 @@ content %}
                   <div class="card-label">Actions</div>
                   <div class="card-value">
                     <div class="action-buttons">
+                      <button
+                        type="button"
+                        class="btn btn-sm btn-info preview-button"
+                        data-id="{{ article.id }}"
+                        data-title="{{ article.title }}"
+                        data-category="{{ article.category.name }}"
+                        data-excerpt="{{ article.excerpt or '' }}"
+                        data-image="{{ article.featured_image or '' }}"
+                        data-published="{% if article.published %}true{% else %}false{% endif %}"
+                        title="Preview"
+                      >
+                        <i class="bi bi-eye"></i>
+                        <div class="d-none" id="content-{{ article.id }}">{{ article.content|safe }}</div>
+                        <div class="d-none" id="footer-{{ article.id }}">{{ article.footer_content|safe }}</div>
+                      </button>
                       <a
                         href="/admin/articles/{{ article.id }}/edit"
-                        class="btn btn-primary"
+                        class="btn btn-sm btn-primary"
                         title="Edit"
                       >
                         <i class="bi bi-pencil-square"></i>
                       </a>
                       <button
                         type="button"
-                        class="btn btn-danger"
+                        class="btn btn-sm btn-danger"
                         data-bs-toggle="modal"
                         data-bs-target="#deleteModal{{ article.id }}"
                         title="Delete"
@@ -640,4 +752,235 @@ content %}
     </div>
   </div>
 </div>
+
+<!-- Add preview modal at the end -->
+<div class="modal fade" id="previewModal" tabindex="-1" aria-labelledby="previewModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-xl modal-dialog-scrollable">
+    <div class="modal-content">
+      <div class="modal-header d-flex justify-content-between align-items-center">
+        <h5 class="modal-title" id="previewModalLabel">Article Preview</h5>
+        <div>
+          <a id="preview-edit-link" href="#" class="btn btn-sm btn-primary me-2">
+            <i class="bi bi-pencil-square"></i> Edit
+          </a>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+      </div>
+      <div class="modal-body p-0 mt-2">
+        <div class="container-fluid article-preview">
+          <div class="row justify-content-center g-0">
+            <div class="col-12">
+              <article>
+                <!-- Status badge -->
+                <div class="mb-3">
+                  <span id="preview-status-badge" class="badge"></span>
+                </div>
+                
+                <!-- Category and Tags -->
+                <div class="d-flex flex-wrap gap-2 mb-4">
+                  <span class="badge bg-secondary me-2">Category: <span id="preview-category"></span></span>
+                  <div id="preview-tags"></div>
+                </div>
+                
+                <!-- Featured Image -->
+                <div id="preview-image-container" class="mb-4 text-center">
+                  <img id="preview-image" class="img-fluid rounded" style="max-height: 400px;" alt="Featured image">
+                </div>
+                
+                <!-- Title -->
+                <h1 id="preview-title" class="mb-3"></h1>
+                
+                <!-- Excerpt -->
+                <div id="preview-excerpt" class="mb-4 lead fst-italic"></div>
+                
+                <!-- Content -->
+                <div id="preview-content" class="mb-4"></div>
+                
+                <!-- Footer Content -->
+                <div id="preview-footer-container" class="border-top pt-3 mt-4">
+                  <div id="preview-footer"></div>
+                </div>
+              </article>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+{% block additional_js %}
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    // Check if Bootstrap is loaded
+    console.log('Bootstrap available?', typeof bootstrap !== 'undefined');
+    console.log('Bootstrap Modal available?', typeof bootstrap?.Modal !== 'undefined');
+    
+    // Initialize the preview modal
+    console.log('Preview Modal Element:', document.getElementById('previewModal'));
+    let previewModal;
+    try {
+      previewModal = new bootstrap.Modal(document.getElementById('previewModal'), {
+        keyboard: true,
+        backdrop: true,
+        focus: true
+      });
+      console.log('Preview Modal Object:', previewModal);
+    } catch (error) {
+      console.error('Error initializing modal:', error);
+    }
+    
+    // Fix modal backdrop issue
+    document.getElementById('previewModal').addEventListener('hidden.bs.modal', function () {
+      // Remove modal backdrop manually if it's stuck
+      const modalBackdrops = document.querySelectorAll('.modal-backdrop');
+      modalBackdrops.forEach(backdrop => {
+        backdrop.remove();
+      });
+      // Also restore body styling
+      document.body.classList.remove('modal-open');
+      document.body.style.overflow = '';
+      document.body.style.paddingRight = '';
+    });
+    
+    // Add event listeners to all preview buttons
+    const previewButtons = document.querySelectorAll('.preview-button');
+    previewButtons.forEach(button => {
+      button.addEventListener('click', function() {
+        try {
+          // Get data from button attributes
+          const articleId = this.getAttribute('data-id') || '';
+          const title = this.getAttribute('data-title') || '';
+          const category = this.getAttribute('data-category') || '';
+          const excerpt = this.getAttribute('data-excerpt') || '';
+          const imageUrl = this.getAttribute('data-image') || '';
+          const isPublished = this.getAttribute('data-published') === 'true';
+          
+          // Get content and footer from hidden divs
+          let content = '';
+          try {
+            const contentEl = this.querySelector(`#content-${articleId}`);
+            if (contentEl) {
+              content = contentEl.innerHTML;
+            }
+            console.log('Content from hidden div:', content);
+          } catch (e) {
+            console.error('Error getting content:', e);
+            content = '';
+          }
+          
+          let footer = '';
+          try {
+            const footerEl = this.querySelector(`#footer-${articleId}`);
+            if (footerEl) {
+              footer = footerEl.innerHTML;
+            }
+            console.log('Footer from hidden div:', footer);
+          } catch (e) {
+            console.error('Error getting footer:', e);
+            footer = '';
+          }
+          
+          // Get tags for this article from the same row/card
+          let tags = '';
+          try {
+            if (window.innerWidth >= 992) { // Desktop view
+              const row = this.closest('tr');
+              if (row) {
+                const tagCell = row.querySelector('td:nth-child(4)');
+                if (tagCell) {
+                  const tagElements = tagCell.querySelectorAll('.badge');
+                  tagElements.forEach(tag => {
+                    if (!tag.classList.contains('published-badge') && !tag.classList.contains('draft-badge')) {
+                      tags += `<span class="badge bg-primary me-1">${tag.textContent.trim()}</span>`;
+                    }
+                  });
+                }
+              }
+            } else { // Mobile view
+              const card = this.closest('.entity-card');
+              if (card) {
+                const tagContainer = card.querySelector('.card-tags');
+                if (tagContainer) {
+                  const tagElements = tagContainer.querySelectorAll('.badge');
+                  tagElements.forEach(tag => {
+                    if (!tag.classList.contains('published-badge') && !tag.classList.contains('draft-badge')) {
+                      tags += `<span class="badge bg-primary me-1">${tag.textContent.trim()}</span>`;
+                    }
+                  });
+                }
+              }
+            }
+          } catch (error) {
+            console.error('Error getting tags:', error);
+          }
+          
+          // Set up the edit link
+          const editLink = document.getElementById('preview-edit-link');
+          editLink.href = `/admin/articles/${articleId}/edit`;
+          
+          // Show status badge
+          const statusBadge = document.getElementById('preview-status-badge');
+          if (isPublished) {
+            statusBadge.textContent = 'Published';
+            statusBadge.className = 'badge published-badge';
+          } else {
+            statusBadge.textContent = 'Draft';
+            statusBadge.className = 'badge draft-badge';
+          }
+          
+          // Populate preview modal
+          document.getElementById('preview-title').textContent = title;
+          document.getElementById('preview-category').textContent = category;
+          document.getElementById('preview-tags').innerHTML = tags;
+          
+          // Set excerpt if available
+          if (excerpt && excerpt.trim() !== '') {
+            document.getElementById('preview-excerpt').textContent = excerpt;
+            document.getElementById('preview-excerpt').classList.remove('d-none');
+          } else {
+            document.getElementById('preview-excerpt').classList.add('d-none');
+          }
+          
+          // Set image if available
+          if (imageUrl && imageUrl.trim() !== '') {
+            document.getElementById('preview-image').src = imageUrl;
+            document.getElementById('preview-image-container').classList.remove('d-none');
+          } else {
+            document.getElementById('preview-image-container').classList.add('d-none');
+          }
+          
+          // Set content and footer
+          console.log('Final content for display:', content);
+          document.getElementById('preview-content').innerHTML = content;
+          
+          // Hide footer section if no content
+          console.log('Final footer for display:', footer);
+          if (footer && footer.trim() !== '') {
+            document.getElementById('preview-footer').innerHTML = footer;
+            document.getElementById('preview-footer-container').classList.remove('d-none');
+          } else {
+            document.getElementById('preview-footer-container').classList.add('d-none');
+          }
+          
+          // Show modal
+          console.log('About to show modal:', previewModal);
+          if (previewModal) {
+            previewModal.show();
+          } else {
+            console.error('Modal object is not initialized');
+            alert('Could not open preview. Please try again.');
+          }
+        } catch (error) {
+          console.error('Error showing preview:', error);
+          alert('Could not load article preview. Please try again or edit the article directly.');
+        }
+      });
+    });
+  });
+</script>
+{% endblock %}
 {% endblock %}
