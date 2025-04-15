@@ -22,6 +22,8 @@ wheels/
 MANIFEST
 alembic/versions/*
 
+frontend/*
+
 # Virtual environments
 .env
 .venv
