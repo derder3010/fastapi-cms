@@ -20,6 +20,7 @@ async def admin_users(
     q: str = None, 
     page: int = 1, 
     page_size: int = 10,
+    role: Optional[str] = None,
     status: Optional[str] = None,
     date_from: Optional[str] = None,
     date_to: Optional[str] = None,
@@ -48,12 +49,21 @@ async def admin_users(
             )
         )
     
+    # Apply role filter
+    if role:
+        if role == 'admin':
+            query = query.where(User.is_superuser == True)
+            applied_filters += 1
+        elif role == 'user':
+            query = query.where(User.is_superuser == False)
+            applied_filters += 1
+    
     # Apply status filter
     if status:
-        if status == 'published':  # We'll use 'published' for active users to be consistent with article status
+        if status == 'active':
             query = query.where(User.is_active == True)
             applied_filters += 1
-        elif status == 'draft':    # We'll use 'draft' for inactive users
+        elif status == 'inactive':
             query = query.where(User.is_active == False)
             applied_filters += 1
     
@@ -109,6 +119,7 @@ async def admin_users(
                 "has_next": page < total_pages
             },
             # Filter variables
+            "filter_role": role,
             "filter_status": status,
             "filter_date_from": date_from,
             "filter_date_to": date_to,
