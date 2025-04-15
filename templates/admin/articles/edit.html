@@ -45,6 +45,48 @@
   [data-theme="dark"] .text-muted {
     color: var(--text-muted, #cccccc) !important;
   }
+
+  /* Additional Toast UI Editor styles to maintain consistent appearance */
+  .toastui-editor-defaultUI {
+    border-color: #e2e2e2 !important;
+    background-color: #ffffff !important;
+  }
+
+  .toastui-editor-toolbar,
+  .toastui-editor-defaultUI-toolbar {
+    background-color: #f7f9fc !important;
+    border-bottom-color: #e2e2e2 !important;
+  }
+
+  .toastui-editor-dropdown-toolbar {
+    background-color: #ffffff !important;
+    border-color: #e2e2e2 !important;
+  }
+
+  .toastui-editor-contents,
+  .toastui-editor-ww-container,
+  .toastui-editor-md-container {
+    background-color: #ffffff !important;
+    color: #222222 !important;
+  }
+
+  /* Force text color in the editor content area */
+  .toastui-editor-contents * {
+    color: #222222 !important;
+  }
+
+  /* Ensure buttons and UI elements maintain visibility */
+  .toastui-editor-toolbar-icons,
+  .toastui-editor-toolbar button {
+    color: #333 !important;
+  }
+
+  .toastui-editor-popup,
+  .toastui-editor-context-menu {
+    background-color: #fff !important;
+    color: #222 !important;
+    border-color: #e2e2e2 !important;
+  }
 </style>
 {% endblock %}
 

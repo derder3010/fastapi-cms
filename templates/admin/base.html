@@ -1679,26 +1679,58 @@
         color: var(--input-text);
       }
 
-      /* Toast UI Editor dark mode overrides */
-      [data-theme="dark"] .toastui-editor-defaultUI {
-        border-color: var(--border-color);
+      /* Toast UI Editor overrides - keep consistent in both light and dark modes */
+      .toastui-editor-defaultUI {
+        border-color: #e2e2e2;
+        background-color: #ffffff;
       }
 
-      [data-theme="dark"] .toastui-editor-toolbar,
-      [data-theme="dark"] .toastui-editor-defaultUI-toolbar {
-        background-color: var(--card-bg);
-        border-bottom-color: var(--border-color);
+      .toastui-editor-toolbar,
+      .toastui-editor-defaultUI-toolbar {
+        background-color: #f7f9fc;
+        border-bottom-color: #e2e2e2;
       }
 
-      [data-theme="dark"] .toastui-editor-dropdown-toolbar {
-        background-color: var(--card-bg);
-        border-color: var(--border-color);
+      .toastui-editor-dropdown-toolbar {
+        background-color: #ffffff;
+        border-color: #e2e2e2;
       }
 
-      [data-theme="dark"] .toastui-editor-contents,
-      [data-theme="dark"] .toastui-editor-ww-container {
-        background-color: var(--input-bg);
-        color: var(--input-text);
+      .toastui-editor-contents,
+      .toastui-editor-ww-container {
+        background-color: #ffffff;
+        color: #222222;
+      }
+
+      /* Ensure editor uses consistent colors regardless of theme */
+      .toastui-editor-md-container,
+      .toastui-editor-ww-container {
+        background-color: #ffffff !important;
+      }
+
+      .toastui-editor-contents p,
+      .toastui-editor-contents h1,
+      .toastui-editor-contents h2,
+      .toastui-editor-contents h3,
+      .toastui-editor-contents h4,
+      .toastui-editor-contents h5,
+      .toastui-editor-contents h6,
+      .toastui-editor-contents ul,
+      .toastui-editor-contents ol,
+      .toastui-editor-contents blockquote {
+        color: #222222 !important;
+      }
+
+      /* Force default colors for UI elements in the editor */
+      .toastui-editor-toolbar-icons {
+        color: #333 !important;
+      }
+
+      .toastui-editor-popup,
+      .toastui-editor-context-menu {
+        background-color: #fff !important;
+        color: #222 !important;
+        border-color: #e2e2e2 !important;
       }
 
       /* Specific header styles for dark mode */
