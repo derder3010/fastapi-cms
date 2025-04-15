@@ -8,7 +8,7 @@ A modern, high-performance Content Management System built with FastAPI, SQLMode
 - **Admin Dashboard**: Intuitive web interface for content management
 - **Authentication**: JWT-based authentication system
 - **Content Management**: Articles, categories, tags, comments, and products
-- **Database**: SQLite by default, with support for PostgreSQL
+- **Database**: SQLite by default, with support for PostgreSQL, MySQL, Oracle, SQL Server and many others
 - **Docker Support**: Easy deployment using Docker
 - **Responsive Design**: Mobile-friendly admin interface
 
@@ -178,6 +178,31 @@ fastapi-cms/
 ## API Documentation
 
 The API documentation is automatically generated using Swagger UI and available at `/docs` endpoint.
+
+## Database Support
+
+FastAPI CMS supports multiple database backends through SQLAlchemy:
+
+### Built-in Support
+
+- **SQLite**: Default, no additional packages needed
+- **PostgreSQL/CockroachDB**: Requires `psycopg2` or `psycopg2-binary` and `sqlalchemy-cockroachdb`
+- **MySQL/MariaDB**: Requires `pymysql` or `mysqlclient`
+- **Oracle**: Requires `cx_Oracle`
+- **Microsoft SQL Server**: Requires `pyodbc`
+- **Firebird**: Requires `fdb`
+
+### Extended Support (External Dialects)
+
+- **MongoDB**: Requires `pymongo`
+- **Cassandra**: Requires `cassandra-driver`
+- **IBM DB2**: Requires `ibm_db_sa`
+- **SAP HANA**: Requires `hdbcli`
+- **Snowflake**: Requires `snowflake-sqlalchemy`
+- **Amazon Redshift**: Requires `redshift_connector`
+- **Google BigQuery**: Requires `pybigquery`
+
+To use a specific database, update the `DATABASE_URL` in your `.env` file with the appropriate connection string. See the comments in `.env.example` and `app/database.py` for connection string formats.
 
 ## Contributing
 

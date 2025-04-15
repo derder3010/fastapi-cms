@@ -1,18 +1,43 @@
+# Core FastAPI dependencies
 fastapi>=0.104.1
-# uvicorn==0.24.0
-sqlmodel>=0.0.8
+uvicorn>=0.24.0
 pydantic>=2.4.2
 pydantic-settings>=2.0.3
-alembic>=1.12.1
+jinja2>=3.1.2
 python-multipart>=0.0.6
+httpx>=0.25.0
+
+# Database dependencies
+sqlalchemy>=2.0.22
+sqlmodel>=0.0.8
+alembic>=1.12.1
+
+# Database drivers (uncomment as needed)
+# Default database
+psycopg2-binary>=2.9.9  # PostgreSQL
+sqlalchemy-cockroachdb>=2.0.2  # CockroachDB
+# pymysql>=1.1.0  # MySQL/MariaDB
+# mysqlclient>=2.2.0  # Alternative MySQL driver
+# cx_Oracle>=8.3.0  # Oracle
+# pyodbc>=5.0.1  # Microsoft SQL Server
+# fdb>=2.0.2  # Firebird
+
+# External database dialects (uncomment as needed)
+# pymongo>=4.6.1  # MongoDB
+# cassandra-driver>=3.28.0  # Cassandra
+# ibm_db_sa>=0.4.0  # IBM DB2
+# hdbcli>=2.19.0  # SAP HANA
+# snowflake-sqlalchemy>=1.5.1  # Snowflake
+# redshift_connector>=2.0.918  # Amazon Redshift
+# pybigquery>=0.10.2  # Google BigQuery
+
+# Authentication and security
 python-jose>=3.3.0
 passlib>=1.7.4
 bcrypt>=4.0.1
-psycopg2-binary
-jinja2>=3.1.2
-email-validator
-python-dotenv
-httpx
-faker
+email-validator>=2.0.0
+
+# Storage and utilities
 boto3>=1.37.0
-sqlalchemy>=2.0.22
+python-dotenv>=1.0.0
+faker>=19.0.0
