@@ -7,6 +7,7 @@ from app.database import get_db
 from app.models import Category, Article, Comment
 from app.auth.utils import get_user_from_cookie
 from app.utils.logging import log_admin_action
+from app.utils.text import slugify
 
 router = APIRouter(prefix="/categories")
 
@@ -92,6 +93,7 @@ async def admin_add_category(
     request: Request,
     name: str = Form(...),
     description: str = Form(""),
+    slug: str = Form(""),
     db: Session = Depends(get_db)
 ):
     # Verify user is logged in and is an admin
@@ -113,10 +115,28 @@ async def admin_add_category(
                 status_code=400
             )
         
+        # Generate slug if empty
+        if not slug:
+            slug = slugify(name)
+        
+        # Check if slug already exists
+        existing_slug = db.execute(select(Category).where(Category.slug == slug)).scalar_one_or_none()
+        if existing_slug:
+            return templates.TemplateResponse(
+                "admin/categories/add.html", 
+                {
+                    "request": request,
+                    "user": user,
+                    "error": f"Category with slug '{slug}' already exists."
+                },
+                status_code=400
+            )
+        
         # Create new category
         category = Category(
             name=name,
             description=description,
+            slug=slug
         )
         db.add(category)
         
@@ -184,6 +204,7 @@ async def admin_edit_category(
     category_id: int,
     name: str = Form(...),
     description: str = Form(""),
+    slug: str = Form(""),
     db: Session = Depends(get_db)
 ):
     # Verify user is logged in and is an admin
@@ -215,21 +236,39 @@ async def admin_edit_category(
                     status_code=400
                 )
         
+        # Generate slug if empty
+        if not slug:
+            slug = slugify(name)
+        
+        # Check if slug already exists (excluding current category)
+        if slug != category.slug:
+            existing_slug = db.execute(select(Category).where(Category.slug == slug)).scalar_one_or_none()
+            if existing_slug:
+                return templates.TemplateResponse(
+                    "admin/categories/edit.html",
+                    {
+                        "request": request,
+                        "user": user,
+                        "category": category,
+                        "error": f"Category with slug '{slug}' already exists."
+                    },
+                    status_code=400
+                )
+        
         # Update category
-        old_name = category.name
         category.name = name
         category.description = description
+        category.slug = slug
         
         # Log the action
         log_admin_action(
             db=db,
             user_id=user.id,
             action="Update Category",
-            details=f"Updated category: {old_name} → {name}",
+            details=f"Updated category: {name}",
             request=request
         )
         
-        db.add(category)
         db.commit()
         
         return RedirectResponse(
@@ -242,7 +281,7 @@ async def admin_edit_category(
             {
                 "request": request,
                 "user": user,
-                "category": category if 'category' in locals() else None,
+                "category": category,
                 "error": f"Error: {str(e)}."
             },
             status_code=500

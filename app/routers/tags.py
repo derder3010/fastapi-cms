@@ -7,6 +7,7 @@ from app.database import get_db
 from app.models import Tag, Article, ArticleTagLink
 from app.auth.utils import get_user_from_cookie
 from app.utils.logging import log_admin_action
+from app.utils.text import slugify
 
 router = APIRouter(prefix="/tags")
 
@@ -88,6 +89,7 @@ async def admin_add_tag_form(request: Request, db: Session = Depends(get_db)):
 async def admin_add_tag(
     request: Request,
     name: str = Form(...),
+    slug: str = Form(""),
     db: Session = Depends(get_db)
 ):
     # Verify user is logged in and is an admin
@@ -109,8 +111,28 @@ async def admin_add_tag(
                 status_code=400
             )
         
+        # Generate slug if empty
+        if not slug:
+            slug = slugify(name)
+        
+        # Check if slug already exists
+        existing_slug = db.execute(select(Tag).where(Tag.slug == slug)).scalar_one_or_none()
+        if existing_slug:
+            return templates.TemplateResponse(
+                "admin/tags/add.html", 
+                {
+                    "request": request,
+                    "user": user,
+                    "error": f"Tag with slug '{slug}' already exists."
+                },
+                status_code=400
+            )
+        
         # Create new tag
-        tag = Tag(name=name)
+        tag = Tag(
+            name=name,
+            slug=slug
+        )
         db.add(tag)
         
         # Log the action
@@ -176,6 +198,7 @@ async def admin_edit_tag(
     request: Request,
     tag_id: int,
     name: str = Form(...),
+    slug: str = Form(""),
     db: Session = Depends(get_db)
 ):
     # Verify user is logged in and is an admin
@@ -207,16 +230,35 @@ async def admin_edit_tag(
                     status_code=400
                 )
         
-        old_name = tag.name
+        # Generate slug if empty
+        if not slug:
+            slug = slugify(name)
+        
+        # Check if slug already exists (excluding current tag)
+        if slug != tag.slug:
+            existing_slug = db.execute(select(Tag).where(Tag.slug == slug)).scalar_one_or_none()
+            if existing_slug:
+                return templates.TemplateResponse(
+                    "admin/tags/edit.html",
+                    {
+                        "request": request,
+                        "user": user,
+                        "tag": tag,
+                        "error": f"Tag with slug '{slug}' already exists."
+                    },
+                    status_code=400
+                )
+        
         # Update tag
         tag.name = name
+        tag.slug = slug
         
         # Log the action
         log_admin_action(
             db=db,
             user_id=user.id,
             action="Update Tag",
-            details=f"Updated tag: {old_name} → {name}",
+            details=f"Updated tag: {name}",
             request=request
         )
         
@@ -232,7 +274,7 @@ async def admin_edit_tag(
             {
                 "request": request,
                 "user": user,
-                "tag": tag if 'tag' in locals() else None,
+                "tag": tag,
                 "error": f"Error: {str(e)}."
             },
             status_code=500

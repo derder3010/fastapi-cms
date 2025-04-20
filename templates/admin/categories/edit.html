@@ -61,6 +61,21 @@ additional_css %}
             </div>
 
             <div class="mb-3">
+              <label for="slug" class="form-label">Slug</label>
+              <input
+                type="text"
+                class="form-control"
+                id="slug"
+                name="slug"
+                value="{{ category.slug or '' }}"
+              />
+              <div class="form-text">
+                Leave empty to auto-generate from name. The slug is used in
+                URLs.
+              </div>
+            </div>
+
+            <div class="mb-3">
               <label for="description" class="form-label">Description</label>
               <textarea
                 class="form-control"
@@ -87,4 +102,31 @@ additional_css %}
     </div>
   </div>
 </div>
+{% endblock %} {% block additional_js %}
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    const nameInput = document.getElementById("name");
+    const slugInput = document.getElementById("slug");
+
+    // Function to generate slug from name
+    function generateSlug(name) {
+      return name
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, "-")
+        .replace(/(^-|-$)/g, "");
+    }
+
+    // Auto-generate slug when name changes
+    nameInput.addEventListener("input", function () {
+      if (!slugInput.value) {
+        slugInput.value = generateSlug(this.value);
+      }
+    });
+
+    // Allow manual slug editing
+    slugInput.addEventListener("input", function () {
+      this.value = generateSlug(this.value);
+    });
+  });
+</script>
 {% endblock %}

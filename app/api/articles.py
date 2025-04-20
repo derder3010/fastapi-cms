@@ -1,10 +1,19 @@
 from fastapi import APIRouter, Depends, HTTPException, Form, UploadFile, File
 from sqlmodel import Session, select, delete
+from sqlalchemy.orm import selectinload
 from typing import List, Optional
 import json
 
 from app.database import get_db
-from app.models import Article, ArticleCreate, ArticleRead, ArticleUpdate
+from app.models import (
+    Article, 
+    ArticleCreate, 
+    ArticleRead, 
+    ArticleUpdate,
+    TagRead,
+    CategoryRead,
+    UserRead
+)
 from app.auth.deps import get_current_active_user, get_current_active_superuser
 from app.utils.text import generate_unique_slug
 from app.utils.media import save_upload
@@ -74,14 +83,45 @@ async def create_article_with_file(
 
 @router.get("/", response_model=List[ArticleRead])
 async def get_articles(db: Session = Depends(get_db)):
-    articles = db.execute(select(Article)).scalars().all()
+    articles = db.execute(
+        select(Article).options(
+            selectinload(Article.category),
+            selectinload(Article.author),
+            selectinload(Article.tags)
+        )
+    ).scalars().all()
     return articles
 
 @router.get("/{article_id}", response_model=ArticleRead)
 async def get_article(article_id: int, db: Session = Depends(get_db)):
-    article = db.get(Article, article_id)
+    article = db.execute(
+        select(Article)
+        .where(Article.id == article_id)
+        .options(
+            selectinload(Article.category),
+            selectinload(Article.author),
+            selectinload(Article.tags)
+        )
+    ).scalar_one_or_none()
     if not article:
         raise HTTPException(status_code=404, detail="Article not found")
+    return article
+
+@router.get("/by-slug/{slug}", response_model=ArticleRead)
+async def get_article_by_slug(slug: str, db: Session = Depends(get_db)):
+    article = db.execute(
+        select(Article)
+        .where(Article.slug == slug)
+        .options(
+            selectinload(Article.category),
+            selectinload(Article.author),
+            selectinload(Article.tags)
+        )
+    ).scalar_one_or_none()
+    
+    if not article:
+        raise HTTPException(status_code=404, detail="Article not found")
+    
     return article
 
 @router.put("/{article_id}", response_model=ArticleRead)

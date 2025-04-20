@@ -37,6 +37,9 @@ class UserRead(UserBase):
     created_at: datetime
     updated_at: datetime
 
+    class Config:
+        from_attributes = True
+
 
 class UserUpdate(SQLModel):
     username: Optional[str] = None
@@ -51,6 +54,7 @@ class UserUpdate(SQLModel):
 class CategoryBase(SQLModel):
     name: str = Field(max_length=100, index=True, unique=True)
     description: Optional[str] = None
+    slug: Optional[str] = Field(default=None, max_length=100, index=True, unique=True)
 
 
 class Category(CategoryBase, table=True):
@@ -70,6 +74,9 @@ class CategoryRead(CategoryBase):
     id: int
     created_at: datetime
     updated_at: datetime
+
+    class Config:
+        from_attributes = True
 
 
 class CategoryUpdate(SQLModel):
@@ -129,6 +136,12 @@ class ArticleRead(ArticleBase):
     id: int
     created_at: datetime
     updated_at: datetime
+    category: Optional["CategoryRead"] = None
+    author: Optional["UserRead"] = None
+    tags: List["TagRead"] = []
+
+    class Config:
+        from_attributes = True
 
 
 class ArticleUpdate(SQLModel):
@@ -174,6 +187,7 @@ class CommentUpdate(SQLModel):
 
 class TagBase(SQLModel):
     name: str = Field(max_length=50, index=True, unique=True)
+    slug: Optional[str] = Field(default=None, max_length=50, index=True, unique=True)
 
 
 class Tag(TagBase, table=True):
@@ -193,6 +207,9 @@ class TagRead(TagBase):
     id: int
     created_at: datetime
     updated_at: datetime
+
+    class Config:
+        from_attributes = True
 
 
 class TagUpdate(SQLModel):
