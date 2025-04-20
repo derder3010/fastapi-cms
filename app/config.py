@@ -20,7 +20,7 @@ class Settings(BaseSettings):
     JWT_ACCESS_TOKEN_EXPIRE_MINUTES: int = 180
     
     # CORS settings
-    CORS_ALLOW_ORIGINS_STR: str = '["http://localhost", "http://localhost:8000", "http://127.0.0.1", "http://127.0.0.1:8000"]'
+    CORS_ALLOW_ORIGINS_STR: str = '["http://localhost", "http://localhost:8000", "http://127.0.0.1", "http://127.0.0.1:8000", "http://localhost:3000"]'
     
     @property
     def CORS_ALLOW_ORIGINS(self) -> List[str]:
