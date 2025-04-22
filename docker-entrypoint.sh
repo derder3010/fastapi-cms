@@ -11,7 +11,7 @@ mkdir -p static media alembic/versions
 # alembic revision --autogenerate -m "Initial migration"
 # alembic upgrade head
 
-python scripts/generate_test_data.py
+# python scripts/generate_test_data.py
 
 # Start the application
 exec fastapi "$@" 
