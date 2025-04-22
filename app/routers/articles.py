@@ -55,19 +55,18 @@ async def admin_articles(
         )
     
     # Apply category filter
-    if category_id and category_id.isdigit():
-        query = query.where(Article.category_id == int(category_id))
+    if category_id:
+        query = query.where(Article.category_id == category_id)
         applied_filters += 1
     
     # Apply author filter
-    if author_id and author_id.isdigit():
-        query = query.where(Article.author_id == int(author_id))
+    if author_id:
+        query = query.where(Article.author_id == author_id)
         applied_filters += 1
     
     # Apply tag filter
-    if tag_id and tag_id.isdigit():
-        tag_id_int = int(tag_id)
-        query = query.join(ArticleTagLink).where(ArticleTagLink.tag_id == tag_id_int)
+    if tag_id:
+        query = query.join(ArticleTagLink).where(ArticleTagLink.tag_id == tag_id)
         applied_filters += 1
     
     # Apply status filter
@@ -179,7 +178,7 @@ async def admin_add_article_form(request: Request, db: Session = Depends(get_db)
 async def admin_add_article(
     request: Request,
     title: str = Form(...),
-    category_id: int = Form(...),
+    category_id: str = Form(...),
     content: str = Form(...),
     slug: Optional[str] = Form(None),
     excerpt: Optional[str] = Form(None),
@@ -188,7 +187,7 @@ async def admin_add_article(
     featured_image_url: Optional[str] = Form(None),
     featured_image_file: Optional[UploadFile] = None,
     published: bool = Form(False),
-    tag_ids: List[int] = Form([]),
+    tag_ids: List[str] = Form([]),
     db: Session = Depends(get_db)
 ):
     # Verify user is logged in and is an admin
@@ -227,7 +226,7 @@ async def admin_add_article(
             # Save uploaded file
             featured_image = await save_upload(featured_image_file, folder="articles")
         
-        # Create new article
+        # Create article
         article = Article(
             title=title,
             content=content,
@@ -240,29 +239,29 @@ async def admin_add_article(
             footer_content=footer_content if footer_content and footer_content.strip() else None
         )
         db.add(article)
-        db.flush()  # Get the article ID
         
-        # Add tags to article
-        if tag_ids:
-            for tag_id in tag_ids:
-                tag = db.get(Tag, tag_id)
-                if tag:
-                    article_tag_link = ArticleTagLink(article_id=article.id, tag_id=tag_id)
-                    db.add(article_tag_link)
+        # Add tags
+        for tag_id in tag_ids:
+            tag = db.get(Tag, tag_id)
+            if tag:
+                article_tag = ArticleTagLink(article_id=article.id, tag_id=tag_id)
+                db.add(article_tag)
         
         # Log the action
-        status_text = "Published" if published else "Draft"
         log_admin_action(
             db=db,
             user_id=user.id,
             action="Create Article",
-            details=f"Created article: {title} (ID: {article.id}, Status: {status_text})",
+            details=f"Created article: {title}",
             request=request
         )
         
         db.commit()
         
-        return RedirectResponse(url=f"/admin/articles?message=Article '{title}' created successfully", status_code=303)
+        return RedirectResponse(
+            url=f"/admin/articles?message=Article '{title}' created successfully",
+            status_code=303
+        )
     except Exception as e:
         categories = db.execute(select(Category)).scalars().all()
         tags = db.execute(select(Tag)).scalars().all()
@@ -279,7 +278,7 @@ async def admin_add_article(
         )
 
 @router.get("/{article_id}/edit", response_class=HTMLResponse)
-async def admin_edit_article_form(request: Request, article_id: int, db: Session = Depends(get_db)):
+async def admin_edit_article_form(request: Request, article_id: str, db: Session = Depends(get_db)):
     # Verify user is logged in and is an admin
     user = await get_user_from_cookie(request, db)
     if not user or not user.is_superuser:
@@ -314,9 +313,9 @@ async def admin_edit_article_form(request: Request, article_id: int, db: Session
 @router.post("/{article_id}/edit")
 async def admin_edit_article(
     request: Request,
-    article_id: int,
+    article_id: str,
     title: str = Form(...),
-    category_id: int = Form(...),
+    category_id: str = Form(...),
     content: str = Form(...),
     slug: Optional[str] = Form(None),
     excerpt: Optional[str] = Form(None),
@@ -325,7 +324,7 @@ async def admin_edit_article(
     featured_image_url: Optional[str] = Form(None),
     featured_image_file: Optional[UploadFile] = None,
     published: bool = Form(False),
-    tag_ids: List[int] = Form([]),
+    tag_ids: List[str] = Form([]),
     db: Session = Depends(get_db)
 ):
     # Verify user is logged in and is an admin
@@ -380,49 +379,50 @@ async def admin_edit_article(
         article.excerpt = excerpt if excerpt and excerpt.strip() else None
         article.footer_content = footer_content if footer_content and footer_content.strip() else None
         
+        # Update tags
+        # First, remove all existing tags
+        db.execute(delete(ArticleTagLink).where(ArticleTagLink.article_id == article_id))
+        
+        # Then add new tags
+        for tag_id in tag_ids:
+            tag = db.get(Tag, tag_id)
+            if tag:
+                article_tag = ArticleTagLink(article_id=article_id, tag_id=tag_id)
+                db.add(article_tag)
+        
         # Log the action
-        old_title = article.title
-        old_status = "Published" if article.published else "Draft"
-        new_status = "Published" if published else "Draft"
-        status_changed = old_status != new_status
-        
-        change_details = []
-        if old_title != title:
-            change_details.append(f"title: '{old_title}' → '{title}'")
-        if status_changed:
-            change_details.append(f"status: {old_status} → {new_status}")
-        
         log_admin_action(
             db=db,
             user_id=user.id,
             action="Update Article",
-            details=f"Updated article: {title} (ID: {article_id}). Changes: {', '.join(change_details) if change_details else 'minor updates'}",
+            details=f"Updated article: {title}",
             request=request
         )
         
-        db.add(article)
         db.commit()
         
-        # Update tags for article
-        # First, delete all existing article-tag relationships
-        db.execute(delete(ArticleTagLink).where(ArticleTagLink.article_id == article_id))
-        db.commit()
-        
-        # Then, add the new tag relationships
-        if tag_ids:
-            for tag_id in tag_ids:
-                tag = db.get(Tag, tag_id)
-                if tag:
-                    article_tag_link = ArticleTagLink(article_id=article.id, tag_id=tag_id)
-                    db.add(article_tag_link)
-            db.commit()
-        
-        return RedirectResponse(url=f"/admin/articles?message=Article '{title}' updated successfully", status_code=303)
+        return RedirectResponse(
+            url=f"/admin/articles?message=Article '{title}' updated successfully",
+            status_code=303
+        )
     except Exception as e:
-        return HTMLResponse(f"Error: {str(e)}. <a href='/admin/articles/{article_id}/edit'>Try again</a>")
+        categories = db.execute(select(Category)).scalars().all()
+        tags = db.execute(select(Tag)).scalars().all()
+        return templates.TemplateResponse(
+            "admin/articles/edit.html",
+            {
+                "request": request, 
+                "user": user, 
+                "article": article,
+                "categories": categories,
+                "tags": tags,
+                "error": f"Error: {str(e)}."
+            },
+            status_code=500
+        )
 
 @router.get("/{article_id}/delete")
-async def admin_delete_article(request: Request, article_id: int, db: Session = Depends(get_db)):
+async def admin_delete_article(request: Request, article_id: str, db: Session = Depends(get_db)):
     # Verify user is logged in and is an admin
     user = await get_user_from_cookie(request, db)
     if not user or not user.is_superuser:

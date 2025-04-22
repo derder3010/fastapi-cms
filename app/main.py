@@ -2,7 +2,7 @@ import logging
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
-from fastapi.responses import HTMLResponse
+from fastapi.responses import HTMLResponse, JSONResponse, PlainTextResponse
 from fastapi.templating import Jinja2Templates
 from sqlmodel import Session, select
 import boto3
@@ -152,4 +152,9 @@ app.include_router(auth_router, prefix="/admin")
 # Root route for welcome page
 @app.get("/", response_class=HTMLResponse)
 async def root(request: Request):
-    return templates.TemplateResponse("index.html", {"request": request}) 
+    return templates.TemplateResponse("index.html", {"request": request})
+
+# Simple health check endpoint
+@app.get("/healthcheck", response_class=PlainTextResponse)
+async def healthcheck():
+    return "ok" 

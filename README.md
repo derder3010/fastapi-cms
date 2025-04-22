@@ -151,6 +151,53 @@ fastapi-cms/
 - `PUT /api/articles/{article_id}`: Update article
 - `DELETE /api/articles/{article_id}`: Delete an article
 
+#### Article Filtering and Pagination
+
+The article listing endpoint (`GET /api/articles/`) supports filtering, sorting, and pagination with the following query parameters:
+
+- `category_id`: Filter by category ID
+- `tag_id`: Filter by tag ID
+- `author_id`: Filter by author ID
+- `published`: Filter by published status (true/false)
+- `search`: Search in title and content
+- `sort_by`: Sort by field (created_at, updated_at)
+- `sort_order`: Sort order (asc, desc)
+- `page`: Page number (default: 1)
+- `per_page`: Items per page (default: 10, max: 100)
+
+Example responses:
+
+```json
+{
+  "items": [
+    {
+      "id": 1,
+      "title": "Sample Article",
+      "content": "Article content...",
+      "published": true,
+      "category": {...},
+      "author": {...},
+      "tags": [...],
+      "created_at": "2024-01-01T00:00:00",
+      "updated_at": "2024-01-01T00:00:00"
+    }
+  ],
+  "total": 100,
+  "page": 1,
+  "per_page": 10,
+  "total_pages": 10
+}
+```
+
+Example queries:
+
+- Get published articles: `/api/articles?published=true`
+- Search articles: `/api/articles?search=python`
+- Filter by category and tag: `/api/articles?category_id=1&tag_id=2`
+- Sort by creation date: `/api/articles?sort_by=created_at&sort_order=desc`
+- Pagination: `/api/articles?page=2&per_page=20`
+- Combined filters: `/api/articles?category_id=1&published=true&search=python&sort_by=created_at&sort_order=desc&page=1&per_page=10`
+
 ### Comments
 
 - `GET /api/comments/`: List all comments

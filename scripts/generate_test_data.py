@@ -78,7 +78,8 @@ def create_test_data():
         for name in category_names:
             category = Category(
                 name=name,
-                description=fake.paragraph(nb_sentences=3)
+                description=fake.paragraph(nb_sentences=3),
+                slug=fake.slug()
             )
             session.add(category)
             categories.append(category)
@@ -98,7 +99,10 @@ def create_test_data():
         ]
         
         for name in tag_names:
-            tag = Tag(name=name)
+            tag = Tag(
+                name=name,
+                slug=fake.slug()
+            )
             session.add(tag)
             tags.append(tag)
         

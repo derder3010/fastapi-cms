@@ -204,7 +204,7 @@ async def admin_add_user(
     )
 
 @router.get("/{user_id}/edit", response_class=HTMLResponse)
-async def admin_edit_user_form(request: Request, user_id: int, db: Session = Depends(get_db)):
+async def admin_edit_user_form(request: Request, user_id: str, db: Session = Depends(get_db)):
     # Verify user is logged in and is an admin
     user = await get_user_from_cookie(request, db)
     if not user or not user.is_superuser:
@@ -224,7 +224,7 @@ async def admin_edit_user_form(request: Request, user_id: int, db: Session = Dep
 @router.post("/{user_id}/edit")
 async def admin_edit_user(
     request: Request,
-    user_id: int,
+    user_id: str,
     username: str = Form(...),
     email: str = Form(...),
     password: str = Form(None),
@@ -322,7 +322,7 @@ async def admin_edit_user(
     )
 
 @router.get("/{user_id}/delete")
-async def admin_delete_user(request: Request, user_id: int, db: Session = Depends(get_db)):
+async def admin_delete_user(request: Request, user_id: str, db: Session = Depends(get_db)):
     # Verify user is logged in and is an admin
     user = await get_user_from_cookie(request, db)
     if not user or not user.is_superuser:

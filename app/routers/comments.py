@@ -78,7 +78,7 @@ async def admin_comments(
     )
 
 @router.get("/{comment_id}/edit", response_class=HTMLResponse)
-async def admin_edit_comment_form(request: Request, comment_id: int, db: Session = Depends(get_db)):
+async def admin_edit_comment_form(request: Request, comment_id: str, db: Session = Depends(get_db)):
     # Verify user is logged in and is an admin
     user = await get_user_from_cookie(request, db)
     if not user or not user.is_superuser:
@@ -104,7 +104,7 @@ async def admin_edit_comment_form(request: Request, comment_id: int, db: Session
 @router.post("/{comment_id}/edit")
 async def admin_edit_comment(
     request: Request,
-    comment_id: int,
+    comment_id: str,
     content: str = Form(...),
     db: Session = Depends(get_db)
 ):
@@ -143,7 +143,7 @@ async def admin_edit_comment(
     )
 
 @router.get("/{comment_id}/delete")
-async def admin_delete_comment(request: Request, comment_id: int, db: Session = Depends(get_db)):
+async def admin_delete_comment(request: Request, comment_id: str, db: Session = Depends(get_db)):
     # Verify user is logged in and is an admin
     user = await get_user_from_cookie(request, db)
     if not user or not user.is_superuser:

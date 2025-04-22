@@ -60,7 +60,7 @@ async def admin_dashboard(request: Request, db: Session = Depends(get_db)):
         'labels': [article.title[:20] + '...' if len(article.title) > 20 else article.title for article in top_articles_by_views],
         'views': [article.views for article in top_articles_by_views],
         'categories': [article.category.name for article in top_articles_by_views],
-        'ids': [article.id for article in top_articles_by_views]
+        'ids': [str(article.id) for article in top_articles_by_views]
     }
     
     return templates.TemplateResponse(

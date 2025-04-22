@@ -167,7 +167,7 @@ async def admin_add_category(
         )
 
 @router.get("/{category_id}/edit", response_class=HTMLResponse)
-async def admin_edit_category_form(request: Request, category_id: int, db: Session = Depends(get_db)):
+async def admin_edit_category_form(request: Request, category_id: str, db: Session = Depends(get_db)):
     # Verify user is logged in and is an admin
     user = await get_user_from_cookie(request, db)
     if not user or not user.is_superuser:
@@ -201,7 +201,7 @@ async def admin_edit_category_form(request: Request, category_id: int, db: Sessi
 @router.post("/{category_id}/edit")
 async def admin_edit_category(
     request: Request,
-    category_id: int,
+    category_id: str,
     name: str = Form(...),
     description: str = Form(""),
     slug: str = Form(""),
@@ -288,7 +288,7 @@ async def admin_edit_category(
         )
 
 @router.get("/{category_id}/delete")
-async def admin_delete_category(request: Request, category_id: int, db: Session = Depends(get_db)):
+async def admin_delete_category(request: Request, category_id: str, db: Session = Depends(get_db)):
     # Verify user is logged in and is an admin
     user = await get_user_from_cookie(request, db)
     if not user or not user.is_superuser:

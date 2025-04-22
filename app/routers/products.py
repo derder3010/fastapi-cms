@@ -318,7 +318,7 @@ async def admin_add_product(
         )
 
 @router.get("/edit/{id}", response_class=HTMLResponse)
-async def admin_edit_product_form(request: Request, id: int, db: Session = Depends(get_db)):
+async def admin_edit_product_form(request: Request, id: str, db: Session = Depends(get_db)):
     # Verify user is logged in and is an admin
     user = await get_user_from_cookie(request, db)
     if not user or not user.is_superuser:
@@ -348,14 +348,14 @@ async def admin_edit_product_form(request: Request, id: int, db: Session = Depen
 @router.post("/edit/{id}")
 async def admin_edit_product(
     request: Request,
-    id: int,
+    id: str,
     name: str = Form(...),
     price: int = Form(0),
     slug: str = Form(None),
     description: str = Form(None),
     social_links: str = Form(None),
     featured_image: UploadFile = File(None),
-    article_ids: list[int] = Form([]),
+    article_ids: list[str] = Form([]),
     db: Session = Depends(get_db)
 ):
     # Verify user is logged in and is an admin
@@ -512,7 +512,7 @@ async def admin_edit_product(
         )
 
 @router.get("/{product_id}/delete")
-async def admin_delete_product(request: Request, product_id: int, db: Session = Depends(get_db)):
+async def admin_delete_product(request: Request, product_id: str, db: Session = Depends(get_db)):
     # Verify user is logged in and is an admin
     user = await get_user_from_cookie(request, db)
     if not user or not user.is_superuser:
@@ -611,7 +611,7 @@ async def admin_delete_all_products(request: Request, db: Session = Depends(get_
 @router.get("/{product_id}/articles", response_class=HTMLResponse)
 async def admin_product_articles(
     request: Request, 
-    product_id: int, 
+    product_id: str, 
     q: Optional[str] = None,
     db: Session = Depends(get_db)
 ):

@@ -3,6 +3,8 @@ from pydantic import EmailStr
 from typing import Optional, List
 from datetime import datetime
 import json
+import uuid
+from uuid import UUID
 
 
 class UserBase(SQLModel):
@@ -15,7 +17,7 @@ class UserBase(SQLModel):
 
 
 class User(UserBase, table=True):
-    id: Optional[int] = Field(default=None, primary_key=True)
+    id: Optional[UUID] = Field(default_factory=uuid.uuid4, primary_key=True)
     password: str = Field(max_length=200)
     created_at: datetime = Field(default_factory=datetime.utcnow)
     updated_at: datetime = Field(default_factory=datetime.utcnow, sa_column_kwargs={"onupdate": datetime.utcnow})
@@ -33,7 +35,7 @@ class UserCreate(UserBase):
 
 
 class UserRead(UserBase):
-    id: int
+    id: UUID
     created_at: datetime
     updated_at: datetime
 
@@ -58,7 +60,7 @@ class CategoryBase(SQLModel):
 
 
 class Category(CategoryBase, table=True):
-    id: Optional[int] = Field(default=None, primary_key=True)
+    id: Optional[UUID] = Field(default_factory=uuid.uuid4, primary_key=True)
     created_at: datetime = Field(default_factory=datetime.utcnow)
     updated_at: datetime = Field(default_factory=datetime.utcnow, sa_column_kwargs={"onupdate": datetime.utcnow})
     
@@ -71,7 +73,7 @@ class CategoryCreate(CategoryBase):
 
 
 class CategoryRead(CategoryBase):
-    id: int
+    id: UUID
     created_at: datetime
     updated_at: datetime
 
@@ -92,31 +94,31 @@ class ArticleBase(SQLModel):
     excerpt: Optional[str] = None
     footer_content: Optional[str] = None
     views: int = Field(default=0)
-    category_id: int = Field(foreign_key="category.id")
-    author_id: int = Field(foreign_key="user.id")
+    category_id: UUID = Field(foreign_key="category.id")
+    author_id: UUID = Field(foreign_key="user.id")
     slug: Optional[str] = Field(default=None, max_length=200, index=True, unique=True)
 
 
 class ArticleTagLink(SQLModel, table=True):
-    article_id: Optional[int] = Field(
+    article_id: Optional[UUID] = Field(
         default=None, foreign_key="article.id", primary_key=True
     )
-    tag_id: Optional[int] = Field(
+    tag_id: Optional[UUID] = Field(
         default=None, foreign_key="tag.id", primary_key=True
     )
 
 
 class ProductArticleLink(SQLModel, table=True):
-    product_id: Optional[int] = Field(
+    product_id: Optional[UUID] = Field(
         default=None, foreign_key="product.id", primary_key=True
     )
-    article_id: Optional[int] = Field(
+    article_id: Optional[UUID] = Field(
         default=None, foreign_key="article.id", primary_key=True
     )
 
 
 class Article(ArticleBase, table=True):
-    id: Optional[int] = Field(default=None, primary_key=True)
+    id: Optional[UUID] = Field(default_factory=uuid.uuid4, primary_key=True)
     created_at: datetime = Field(default_factory=datetime.utcnow)
     updated_at: datetime = Field(default_factory=datetime.utcnow, sa_column_kwargs={"onupdate": datetime.utcnow})
     
@@ -133,12 +135,13 @@ class ArticleCreate(ArticleBase):
 
 
 class ArticleRead(ArticleBase):
-    id: int
+    id: UUID
     created_at: datetime
     updated_at: datetime
     category: Optional["CategoryRead"] = None
     author: Optional["UserRead"] = None
     tags: List["TagRead"] = []
+    products: List["ProductRead"] = []
 
     class Config:
         from_attributes = True
@@ -151,18 +154,18 @@ class ArticleUpdate(SQLModel):
     featured_image: Optional[str] = None
     excerpt: Optional[str] = None
     footer_content: Optional[str] = None
-    category_id: Optional[int] = None
+    category_id: Optional[UUID] = None
     slug: Optional[str] = None
 
 
 class CommentBase(SQLModel):
     content: str
-    article_id: int = Field(foreign_key="article.id")
-    author_id: int = Field(foreign_key="user.id")
+    article_id: UUID = Field(foreign_key="article.id")
+    author_id: UUID = Field(foreign_key="user.id")
 
 
 class Comment(CommentBase, table=True):
-    id: Optional[int] = Field(default=None, primary_key=True)
+    id: Optional[UUID] = Field(default_factory=uuid.uuid4, primary_key=True)
     created_at: datetime = Field(default_factory=datetime.utcnow)
     updated_at: datetime = Field(default_factory=datetime.utcnow, sa_column_kwargs={"onupdate": datetime.utcnow})
     
@@ -176,7 +179,7 @@ class CommentCreate(CommentBase):
 
 
 class CommentRead(CommentBase):
-    id: int
+    id: UUID
     created_at: datetime
     updated_at: datetime
 
@@ -191,7 +194,7 @@ class TagBase(SQLModel):
 
 
 class Tag(TagBase, table=True):
-    id: Optional[int] = Field(default=None, primary_key=True)
+    id: Optional[UUID] = Field(default_factory=uuid.uuid4, primary_key=True)
     created_at: datetime = Field(default_factory=datetime.utcnow)
     updated_at: datetime = Field(default_factory=datetime.utcnow, sa_column_kwargs={"onupdate": datetime.utcnow})
     
@@ -204,7 +207,7 @@ class TagCreate(TagBase):
 
 
 class TagRead(TagBase):
-    id: int
+    id: UUID
     created_at: datetime
     updated_at: datetime
 
@@ -226,7 +229,7 @@ class ProductBase(SQLModel):
 
 
 class Product(ProductBase, table=True):
-    id: Optional[int] = Field(default=None, primary_key=True)
+    id: Optional[UUID] = Field(default_factory=uuid.uuid4, primary_key=True)
     created_at: datetime = Field(default_factory=datetime.utcnow)
     updated_at: datetime = Field(default_factory=datetime.utcnow, sa_column_kwargs={"onupdate": datetime.utcnow})
     
@@ -239,7 +242,7 @@ class ProductCreate(ProductBase):
 
 
 class ProductRead(ProductBase):
-    id: int
+    id: UUID
     created_at: datetime
     updated_at: datetime
     
@@ -248,10 +251,7 @@ class ProductRead(ProductBase):
         """Return social_links as a parsed JSON object if it exists."""
         if not self.social_links:
             return None
-        try:
-            return json.loads(self.social_links)
-        except json.JSONDecodeError:
-            return None
+        return json.loads(self.social_links)
 
     class Config:
         json_encoders = {
@@ -259,14 +259,13 @@ class ProductRead(ProductBase):
         }
         json_schema_extra = {
             "example": {
-                "id": 1,
-                "name": "Sample Product",
-                "price": 100,
-                "slug": "sample-product",
-                "description": "This is a sample product",
-                "featured_image": "products/sample.jpg",
-                "social_links": None,
-                "parsed_social_links": {"shopee": "https://shopee.com/product1", "lazada": "https://lazada.com/product1"},
+                "id": "123e4567-e89b-12d3-a456-426614174000",
+                "name": "Product Name",
+                "price": 1000,
+                "slug": "product-name",
+                "description": "Product description",
+                "featured_image": "https://example.com/image.jpg",
+                "social_links": '{"facebook": "https://facebook.com/product", "twitter": "https://twitter.com/product"}',
                 "created_at": "2023-01-01T00:00:00",
                 "updated_at": "2023-01-01T00:00:00"
             }
@@ -283,7 +282,7 @@ class ProductUpdate(SQLModel):
 
 
 class ProductReadWithParsedLinks(SQLModel):
-    id: int
+    id: UUID
     name: str
     price: int
     slug: str
@@ -292,22 +291,22 @@ class ProductReadWithParsedLinks(SQLModel):
     social_links: Optional[dict] = None  # This will be filled with parsed links
     created_at: datetime
     updated_at: datetime
-    
+
     class Config:
         json_encoders = {
             datetime: lambda v: v.isoformat()
         }
         json_schema_extra = {
             "example": {
-                "id": 1,
-                "name": "Sample Product",
-                "price": 100,
-                "slug": "sample-product",
-                "description": "This is a sample product",
-                "featured_image": "products/sample.jpg",
-                "social_links": {"facebook": "https://facebook.com/sample"},
-                "created_at": "2023-01-01T12:00:00",
-                "updated_at": "2023-01-01T12:00:00"
+                "id": "123e4567-e89b-12d3-a456-426614174000",
+                "name": "Product Name",
+                "price": 1000,
+                "slug": "product-name",
+                "description": "Product description",
+                "featured_image": "https://example.com/image.jpg",
+                "social_links": {"facebook": "https://facebook.com/product", "twitter": "https://twitter.com/product"},
+                "created_at": "2023-01-01T00:00:00",
+                "updated_at": "2023-01-01T00:00:00"
             }
         }
 
@@ -315,12 +314,12 @@ class ProductReadWithParsedLinks(SQLModel):
 class SystemLogBase(SQLModel):
     action: str
     details: Optional[str] = None
-    user_id: int = Field(foreign_key="user.id")
+    user_id: UUID = Field(foreign_key="user.id")
     ip_address: Optional[str] = None
 
 
 class SystemLog(SystemLogBase, table=True):
-    id: Optional[int] = Field(default=None, primary_key=True)
+    id: Optional[UUID] = Field(default_factory=uuid.uuid4, primary_key=True)
     created_at: datetime = Field(default_factory=datetime.utcnow)
     
     # Relationships
@@ -332,7 +331,7 @@ class SystemLogCreate(SystemLogBase):
 
 
 class SystemLogRead(SystemLogBase):
-    id: int
+    id: UUID
     created_at: datetime
 
 
@@ -343,7 +342,7 @@ class SystemSettingsBase(SQLModel):
 
 
 class SystemSettings(SystemSettingsBase, table=True):
-    id: Optional[int] = Field(default=None, primary_key=True)
+    id: Optional[UUID] = Field(default_factory=uuid.uuid4, primary_key=True)
     created_at: datetime = Field(default_factory=datetime.utcnow)
     updated_at: datetime = Field(default_factory=datetime.utcnow, sa_column_kwargs={"onupdate": datetime.utcnow})
 
@@ -353,7 +352,7 @@ class SystemSettingsCreate(SystemSettingsBase):
 
 
 class SystemSettingsRead(SystemSettingsBase):
-    id: int
+    id: UUID
     created_at: datetime
     updated_at: datetime
 

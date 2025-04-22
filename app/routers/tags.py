@@ -162,7 +162,7 @@ async def admin_add_tag(
         )
 
 @router.get("/{tag_id}/edit", response_class=HTMLResponse)
-async def admin_edit_tag_form(request: Request, tag_id: int, db: Session = Depends(get_db)):
+async def admin_edit_tag_form(request: Request, tag_id: str, db: Session = Depends(get_db)):
     # Verify user is logged in and is an admin
     user = await get_user_from_cookie(request, db)
     if not user or not user.is_superuser:
@@ -196,7 +196,7 @@ async def admin_edit_tag_form(request: Request, tag_id: int, db: Session = Depen
 @router.post("/{tag_id}/edit")
 async def admin_edit_tag(
     request: Request,
-    tag_id: int,
+    tag_id: str,
     name: str = Form(...),
     slug: str = Form(""),
     db: Session = Depends(get_db)
@@ -281,7 +281,7 @@ async def admin_edit_tag(
         )
 
 @router.get("/{tag_id}/delete")
-async def admin_delete_tag(request: Request, tag_id: int, db: Session = Depends(get_db)):
+async def admin_delete_tag(request: Request, tag_id: str, db: Session = Depends(get_db)):
     # Verify user is logged in and is an admin
     user = await get_user_from_cookie(request, db)
     if not user or not user.is_superuser:

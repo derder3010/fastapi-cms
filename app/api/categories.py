@@ -1,12 +1,16 @@
 from fastapi import APIRouter, Depends, HTTPException
-from sqlmodel import Session, select, delete
+from sqlmodel import Session, select, delete, func
 from typing import List
+from pydantic import BaseModel
 
 from app.database import get_db
-from app.models import Category, CategoryCreate, CategoryRead, CategoryUpdate
+from app.models import Category, CategoryCreate, CategoryRead, CategoryUpdate, Article
 from app.auth.deps import get_current_active_user, get_current_active_superuser
 
 router = APIRouter(prefix="/categories", tags=["categories"])
+
+class CategoryWithCount(CategoryRead):
+    article_count: int
 
 @router.post("/", response_model=CategoryRead)
 async def create_category(
@@ -25,8 +29,31 @@ async def get_categories(db: Session = Depends(get_db)):
     categories = db.execute(select(Category)).scalars().all()
     return categories
 
+@router.get("/counts", response_model=List[CategoryWithCount])
+async def get_categories_with_counts(db: Session = Depends(get_db)):
+    # Query to get categories with their article counts
+    stmt = (
+        select(
+            Category,
+            func.count(Article.id).label('article_count')
+        )
+        .outerjoin(Article)
+        .group_by(Category.id)
+    )
+    
+    results = db.execute(stmt).all()
+    
+    # Convert results to CategoryWithCount objects
+    categories_with_counts = []
+    for category, count in results:
+        category_dict = category.dict()
+        category_dict['article_count'] = count
+        categories_with_counts.append(CategoryWithCount(**category_dict))
+    
+    return categories_with_counts
+
 @router.get("/{category_id}", response_model=CategoryRead)
-async def get_category(category_id: int, db: Session = Depends(get_db)):
+async def get_category(category_id: str, db: Session = Depends(get_db)):
     category = db.get(Category, category_id)
     if not category:
         raise HTTPException(status_code=404, detail="Category not found")
@@ -34,7 +61,7 @@ async def get_category(category_id: int, db: Session = Depends(get_db)):
 
 @router.put("/{category_id}", response_model=CategoryRead)
 async def update_category(
-    category_id: int,
+    category_id: str,
     category_update: CategoryUpdate,
     current_user = Depends(get_current_active_superuser),
     db: Session = Depends(get_db)
@@ -54,7 +81,7 @@ async def update_category(
 
 @router.delete("/{category_id}", status_code=204)
 async def delete_category(
-    category_id: int,
+    category_id: str,
     current_user = Depends(get_current_active_superuser),
     db: Session = Depends(get_db)
 ):
