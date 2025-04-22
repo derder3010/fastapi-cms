@@ -11,10 +11,6 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-RUN mkdir -p /root/.postgresql
-
-COPY /etc/secrets/ROOT_CRT /root/.postgresql/root.crt
-RUN chmod 0600 /root/.postgresql/root.crt
 
 # Copy project files
 COPY . .
