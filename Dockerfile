@@ -1,47 +1,36 @@
-# Sử dụng base image của uv
-FROM ghcr.io/astral-sh/uv:bookworm-slim AS builder
+FROM python:3.10-slim-bookworm
 
-# Cài đặt curl và các dependencies cần thiết
+# Install curl + clean cache
 RUN apt-get update \
  && apt-get install -y curl \
  && rm -rf /var/lib/apt/lists/*
 
-# Cấu hình Python và cài đặt dependencies
 WORKDIR /app
 
-# Enable bytecode compilation
-ENV UV_COMPILE_BYTECODE=1
+# Set environment variables
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1 \
+    PYTHONPATH=/app
 
-# Copy from the cache instead of linking since it's a mounted volume
-ENV UV_LINK_MODE=copy
+# Install dependencies
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
 
-# Install the project's dependencies using the lockfile and settings
-RUN --mount=type=cache,target=/root/.cache/uv \
-    --mount=type=bind,source=uv.lock,target=uv.lock \
-    --mount=type=bind,source=pyproject.toml,target=pyproject.toml \
-    uv sync --frozen --no-install-project --no-dev
 
-# Copy toàn bộ dự án vào container
-COPY . /app
+# Copy project files
+COPY . .
 
-RUN --mount=type=cache,target=/root/.cache/uv \
-    uv sync --frozen --no-dev
-
-# Place executables in the environment at the front of the path
-ENV PATH="/app/.venv/bin:$PATH"
-
-# Tạo các thư mục cần thiết
-RUN mkdir -p static media
-
-# Tạo entrypoint script executable
+# Make the entrypoint script executable
 RUN chmod +x /app/docker-entrypoint.sh
 
-# Expose port 8000
+# Create directories
+RUN mkdir -p static media
+
+# Expose port
 EXPOSE 8000
 
-# Đặt entrypoint
+# Set the entrypoint
 ENTRYPOINT ["/app/docker-entrypoint.sh"]
-
 
 # Default command
 CMD ["run", "--host", "0.0.0.0", "--port", "8000"] 
