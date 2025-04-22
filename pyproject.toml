@@ -1,0 +1,37 @@
+[project]
+name = "fastapi-app"
+version = "0.1.0"
+description = "FastAPI project using uv"
+requires-python = ">=3.10"
+
+dependencies = [
+    # Core FastAPI dependencies
+    "fastapi[standard]",
+    "pydantic-settings>=2.0.3",
+    "jinja2>=3.1.2",
+    "python-multipart>=0.0.6",
+    "httpx>=0.25.0",
+
+    # Database dependencies
+    "sqlalchemy>=2.0.22",
+    "sqlmodel>=0.0.8",
+    "alembic>=1.12.1",
+
+    # PostgreSQL + CockroachDB (default)
+    "psycopg2-binary>=2.9.9",
+    "sqlalchemy-cockroachdb>=2.0.2",
+
+    # Authentication & security
+    "python-jose>=3.3.0",
+    "passlib>=1.7.4",
+    "bcrypt>=4.0.1",
+    "email-validator>=2.0.0",
+
+    # Storage & utilities
+    "boto3>=1.37.0",
+    "python-dotenv>=1.0.0",
+    "faker>=19.0.0"
+]
+
+[tool.uv]
+# Optional: bạn có thể chỉ định các tool cụ thể như dev-dependencies hoặc các tuỳ chọn khác

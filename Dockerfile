@@ -1,31 +1,29 @@
-FROM python:3.10-slim-bookworm
+# Sử dụng base image của uv
+FROM ghcr.io/astral-sh/uv:bookworm-slim AS builder
 
-# Install curl, build deps, and uv
-RUN apt-get update && apt-get install -y curl build-essential libssl-dev libffi-dev \
- && curl -LsSf https://astral.sh/uv/install.sh | sh \
- && mv /root/.cargo/bin/uv /usr/local/bin/uv \
- && rm -rf /var/lib/apt/lists/*
-
+# Cấu hình Python và cài đặt dependencies
 WORKDIR /app
 
-# Environment variables
-ENV PYTHONDONTWRITEBYTECODE=1 \
-    PYTHONUNBUFFERED=1 \
-    PYTHONPATH=/app
+# Copy pyproject.toml và uv.lock vào container
+COPY pyproject.toml uv.lock ./
 
-# Copy and install dependencies
-COPY requirements.txt .
-RUN uv pip install -r requirements.txt
+# Cài đặt dependencies bằng uv
+RUN uv sync --frozen --no-dev
 
-# Copy app files
-COPY . .
+# Copy toàn bộ dự án vào container
+COPY . /app
 
-# Set permissions
-RUN chmod +x /app/docker-entrypoint.sh
+# Tạo các thư mục cần thiết
 RUN mkdir -p static media
 
+# Tạo entrypoint script executable
+RUN chmod +x /app/docker-entrypoint.sh
+
+# Expose port 8000
 EXPOSE 8000
 
+# Đặt entrypoint
 ENTRYPOINT ["/app/docker-entrypoint.sh"]
 
-CMD ["run", "--host", "0.0.0.0", "--port", "8000"]
+# Lệnh mặc định để chạy ứng dụng FastAPI
+CMD ["fastapi", "run", "--host", "0.0.0.0", "/app/main.py"]
