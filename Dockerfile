@@ -1,33 +1,27 @@
 FROM python:3.10-slim-bookworm
 
-# Install curl and dependencies for uv
-RUN apt-get update && apt-get install -y curl gcc libffi-dev libssl-dev \
+# Install curl, build deps, and uv
+RUN apt-get update && apt-get install -y curl build-essential libssl-dev libffi-dev \
  && curl -LsSf https://astral.sh/uv/install.sh | sh \
+ && mv /root/.cargo/bin/uv /usr/local/bin/uv \
  && rm -rf /var/lib/apt/lists/*
-
-# Add uv to PATH (nếu cài theo mặc định)
-ENV PATH="/root/.cargo/bin:$PATH"
 
 WORKDIR /app
 
-# Set environment variables
+# Environment variables
 ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
     PYTHONPATH=/app
 
-# Copy requirements
+# Copy and install dependencies
 COPY requirements.txt .
-
-# Install dependencies using uv (fast)
 RUN uv pip install -r requirements.txt
 
-# Copy the entire app
+# Copy app files
 COPY . .
 
-# Make entrypoint executable
+# Set permissions
 RUN chmod +x /app/docker-entrypoint.sh
-
-# Create folders
 RUN mkdir -p static media
 
 EXPOSE 8000
