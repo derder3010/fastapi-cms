@@ -2,6 +2,11 @@
 
 A modern, high-performance Content Management System built with FastAPI, SQLModel, and Pydantic.
 
+![Dashboard Preview](media/dashboard.png)
+
+<a href="https://www.buymeacoffee.com/duytrander" target="_blank"><img src="https://cdn.buymeacoffee.com/buttons/v2/default-yellow.png" alt="Buy Me A Coffee" style="height: 60px !important;width: 217px !important;" ></a>
+<a href="https://ko-fi.com/duytrandev" target="_blank"><img src="https://storage.ko-fi.com/cdn/kofi3.png?v=3" alt="Support me on Ko-fi" style="height: 60px !important;" ></a>
+
 ## Features
 
 - **API-first design**: RESTful API endpoints for all resources
@@ -90,13 +95,20 @@ fastapi-cms/
    cp .env.example .env
    ```
 
-5. Run the application:
+5. Initialize the database with Alembic:
 
    ```bash
-   uvicorn app.main:app --reload
+   alembic revision --autogenerate -m "Initial migration"
+   alembic upgrade head
    ```
 
-6. Access the application:
+6. Run the application:
+
+   ```bash
+   fastapi dev app/main.py
+   ```
+
+7. Access the application:
    - Admin interface: http://localhost:8000/admin
    - API documentation: http://localhost:8000/docs
 
@@ -254,6 +266,13 @@ To use a specific database, update the `DATABASE_URL` in your `.env` file with t
 ## Contributing
 
 Contributions are welcome! Please feel free to submit a Pull Request.
+
+## Support
+
+If you find this project helpful, consider buying me a coffee!
+
+<a href="https://www.buymeacoffee.com/duytrander" target="_blank"><img src="https://cdn.buymeacoffee.com/buttons/v2/default-yellow.png" alt="Buy Me A Coffee" style="height: 60px !important;width: 217px !important;" ></a>
+<a href="https://ko-fi.com/duytrander" target="_blank"><img src="https://storage.ko-fi.com/cdn/kofi3.png?v=3" alt="Support me on Ko-fi" style="height: 60px !important;" ></a>
 
 ## License
 

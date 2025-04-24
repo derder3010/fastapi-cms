@@ -21,6 +21,7 @@ wheels/
 *.egg
 MANIFEST
 alembic/versions/*
+scripts/*
 
 frontend/*
 
