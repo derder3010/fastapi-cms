@@ -60,7 +60,6 @@ yarn-error.log*
 
 # Media and static files in development
 upload/
-media/
 staticfiles/
 
 # Environment variables

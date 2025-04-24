@@ -4,8 +4,8 @@ A modern, high-performance Content Management System built with FastAPI, SQLMode
 
 ![Dashboard Preview](media/dashboard.png)
 
-<a href="https://www.buymeacoffee.com/duytrander" target="_blank"><img src="https://cdn.buymeacoffee.com/buttons/v2/default-yellow.png" alt="Buy Me A Coffee" style="height: 60px !important;width: 217px !important;" ></a>
-<a href="https://ko-fi.com/duytrandev" target="_blank"><img src="https://storage.ko-fi.com/cdn/kofi3.png?v=3" alt="Support me on Ko-fi" style="height: 60px !important;" ></a>
+<a href="https://www.buymeacoffee.com/duytrandev" target="_blank"><img src="https://cdn.buymeacoffee.com/buttons/v2/default-yellow.png" alt="Buy Me A Coffee" style="height: 45px !important;width: 163px !important;" ></a>&nbsp;&nbsp;
+<a href="https://ko-fi.com/duytrandev" target="_blank"><img src="https://storage.ko-fi.com/cdn/kofi3.png?v=3" alt="Support me on Ko-fi" style="height: 45px !important;" ></a>
 
 ## Features
 
@@ -271,8 +271,8 @@ Contributions are welcome! Please feel free to submit a Pull Request.
 
 If you find this project helpful, consider buying me a coffee!
 
-<a href="https://www.buymeacoffee.com/duytrander" target="_blank"><img src="https://cdn.buymeacoffee.com/buttons/v2/default-yellow.png" alt="Buy Me A Coffee" style="height: 60px !important;width: 217px !important;" ></a>
-<a href="https://ko-fi.com/duytrander" target="_blank"><img src="https://storage.ko-fi.com/cdn/kofi3.png?v=3" alt="Support me on Ko-fi" style="height: 60px !important;" ></a>
+<a href="https://www.buymeacoffee.com/duytrandev" target="_blank"><img src="https://cdn.buymeacoffee.com/buttons/v2/default-yellow.png" alt="Buy Me A Coffee" style="height: 45px !important;width: 163px !important;" ></a>&nbsp;&nbsp;
+<a href="https://ko-fi.com/duytrandev" target="_blank"><img src="https://storage.ko-fi.com/cdn/kofi3.png?v=3" alt="Support me on Ko-fi" style="height: 45px !important;" ></a>
 
 ## License
 
