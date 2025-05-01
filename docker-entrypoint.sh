@@ -3,7 +3,6 @@ set -e
 
 curl --create-dirs -o $HOME/.postgresql/root.crt 'https://cockroachlabs.cloud/clusters/35b32ca9-ac3c-435b-8f1c-56defee5d735/cert'
 
-postgres://avnadmin:AVNS_zRoEmM04i53o4om4eLO@blogs-nguoiaoden111-decd.c.aivencloud.com:11749/defaultdb?sslmode=require
 
 # Create necessary directories
 mkdir -p static media alembic/versions
