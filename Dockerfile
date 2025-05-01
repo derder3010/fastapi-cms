@@ -2,7 +2,7 @@ FROM python:3.10-slim-bookworm
 
 # Install curl + clean cache
 RUN apt-get update \
- && apt-get install -y curl \
+ && apt-get install -y curl postgresql-client-common postgresql-client-16 \
  && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
