@@ -7,7 +7,7 @@ from app.database import get_db
 from app.models import User
 from app.auth.deps import get_current_active_superuser
 from app.config import settings
-from scripts.utils.r2_storage import (
+from app.utils.r2_storage import (
     list_all_objects, 
     delete_all_objects, 
     delete_objects_by_prefix,
