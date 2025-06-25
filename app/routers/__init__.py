@@ -12,6 +12,7 @@ from app.routers.comments import router as comments_router
 from app.routers.tags import router as tags_router
 from app.routers.products import router as products_router
 from app.routers.settings import router as settings_router
+from app.routers.admin.storage import router as storage_router
 
 # Tạo router chính cho admin với tiền tố /admin
 admin_router = APIRouter(prefix="/admin", include_in_schema=False)
@@ -34,4 +35,5 @@ admin_router.include_router(articles_router)
 admin_router.include_router(comments_router)
 admin_router.include_router(tags_router)
 admin_router.include_router(products_router)
-admin_router.include_router(settings_router) 
+admin_router.include_router(settings_router)
+admin_router.include_router(storage_router) 
